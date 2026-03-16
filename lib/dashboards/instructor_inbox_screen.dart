@@ -35,21 +35,9 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
           
           const SizedBox(height: 20),
 
-          // 2. Chat List
+          // 2. Dynamic Content List
           Expanded(
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              children: [
-                _buildChatTile("Natasha", "Hi, Good Evening Prof!", "3", "14:59", Colors.purple),
-                _buildChatTile("Alex", "I Just Finished It..!", "2", "06:35", Colors.orange),
-                _buildChatTile("John", "How are you?", "", "08:10", Colors.blue),
-                _buildChatTile("Mia", "Could we get an extension?", "5", "Yesterday", Colors.green),
-                _buildChatTile("Maria", "Understood, thank you.", "", "Yesterday", Colors.red),
-                _buildChatTile("Tiya", "When is the next lecture?", "1", "Mon", Colors.teal),
-                _buildChatTile("Manisha", "I've uploaded my assignment.", "", "Mon", Colors.indigo),
-              ],
-            ),
+            child: isChatSelected ? _buildChatList() : _buildAnnouncementsList(),
           ),
         ],
       ),
@@ -58,7 +46,11 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         onPressed: () {},
         backgroundColor: const Color(0xFF09AEF5),
         elevation: 4,
-        child: const Icon(Icons.maps_ugc_rounded, color: Colors.white, size: 28),
+        child: Icon(
+          isChatSelected ? Icons.maps_ugc_rounded : Icons.campaign_rounded, 
+          color: Colors.white, 
+          size: 28
+        ),
       ),
     );
   }
@@ -192,6 +184,117 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+  Widget _buildChatList() {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      children: [
+        _buildChatTile("Natasha", "Hi, Good Evening Prof!", "3", "14:59", Colors.purple),
+        _buildChatTile("Alex", "I Just Finished It..!", "2", "06:35", Colors.orange),
+        _buildChatTile("John", "How are you?", "", "08:10", Colors.blue),
+        _buildChatTile("Mia", "Could we get an extension?", "5", "Yesterday", Colors.green),
+        _buildChatTile("Maria", "Understood, thank you.", "", "Yesterday", Colors.red),
+        _buildChatTile("Tiya", "When is the next lecture?", "1", "Mon", Colors.teal),
+        _buildChatTile("Manisha", "I've uploaded my assignment.", "", "Mon", Colors.indigo),
+      ],
+    );
+  }
+
+  Widget _buildAnnouncementsList() {
+    return ListView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      children: [
+        _buildAnnouncementTile(
+          "Final Exam Schedule", 
+          "The final exam for ITCS 414 will be held on Dec 15th at 9:00 AM.", 
+          "2 hrs ago", 
+          Icons.event_note_rounded,
+          Colors.orange
+        ),
+        _buildAnnouncementTile(
+          "Assignment 3 Grades Posted", 
+          "Grades for Assignment 3 have been published to the portal. Please review the feedback.", 
+          "Yesterday", 
+          Icons.grade_rounded,
+          Colors.green
+        ),
+        _buildAnnouncementTile(
+          "Guest Speaker Tomorrow", 
+          "We will have a guest speaker from Google joining our class tomorrow. Attendance is mandatory.", 
+          "Oct 24", 
+          Icons.campaign_rounded,
+          Colors.blue
+        ),
+        _buildAnnouncementTile(
+          "Syllabus Update", 
+          "Please check the updated syllabus for changes regarding the final project requirements.", 
+          "Oct 15", 
+          Icons.info_outline_rounded,
+          const Color(0xFF09AEF5)
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title, 
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    ),
+                    Text(time, style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  description, 
+                  style: const TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

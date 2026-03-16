@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'instructor_materials_screen.dart';
+import 'instructor_groups_screen.dart';
 
 class InstructorCoursesScreen extends StatelessWidget {
   const InstructorCoursesScreen({super.key});
@@ -25,7 +27,7 @@ class InstructorCoursesScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Sleek Category Grid (Materials, Assessments, etc.)
-            _buildCategoryGrid(),
+            _buildCategoryGrid(context),
             
             const SizedBox(height: 35),
             
@@ -58,7 +60,7 @@ class InstructorCoursesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryGrid() {
+  Widget _buildCategoryGrid(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -67,16 +69,34 @@ class InstructorCoursesScreen extends StatelessWidget {
       mainAxisSpacing: 15,
       childAspectRatio: 1.4,
       children: [
-        _buildCategoryTile("Materials", Icons.layers_rounded, const Color(0xFF09AEF5), const Color(0xFF05398F)),
-        _buildCategoryTile("Assessments", Icons.description_rounded, const Color(0xFF66BB6A), const Color(0xFF2E7D32)),
-        _buildCategoryTile("Grades", Icons.bar_chart_rounded, const Color(0xFFFFCA28), const Color(0xFFFF8F00)),
-        _buildCategoryTile("Groups", Icons.groups_rounded, const Color(0xFFAB47BC), const Color(0xFF6A1B9A)),
+        _buildCategoryTile(
+          "Materials", 
+          Icons.layers_rounded, 
+          const Color(0xFF09AEF5), 
+          const Color(0xFF05398F),
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const InstructorMaterialsScreen()),
+            );
+          }
+        ),
+        _buildCategoryTile("Assessments", Icons.description_rounded, const Color(0xFF66BB6A), const Color(0xFF2E7D32), () {}),
+        _buildCategoryTile("Grades", Icons.bar_chart_rounded, const Color(0xFFFFCA28), const Color(0xFFFF8F00), () {}),
+        _buildCategoryTile("Groups", Icons.groups_rounded, const Color(0xFFAB47BC), const Color(0xFF6A1B9A), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const InstructorGroupsScreen()),
+          );
+        }),
       ],
     );
   }
 
-  Widget _buildCategoryTile(String title, IconData icon, Color gradientStart, Color gradientEnd) {
-    return Container(
+  Widget _buildCategoryTile(String title, IconData icon, Color gradientStart, Color gradientEnd, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [gradientStart, gradientEnd],
@@ -123,6 +143,7 @@ class InstructorCoursesScreen extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 

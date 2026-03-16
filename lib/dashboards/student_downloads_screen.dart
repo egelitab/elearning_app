@@ -296,10 +296,11 @@ class _LessStretchyScrollPhysics extends BouncingScrollPhysics {
 
   @override
   double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    final bool isOverscrollingTop = position.pixels <= position.minScrollExtent && offset > 0;
+    // Add significant drag resistance when revealing the 190.0 top storage region
+    // so it requires a purposeful downward drag and doesn't reveal easily on normal scroll.
+    final bool isOverscrollingTop = position.pixels <= 190.0 && offset > 0.0;
     if (isOverscrollingTop) {
-      // Significantly reduce the elasticity when pulled down past the top limit
-      return super.applyPhysicsToUserOffset(position, offset) * 0.15;
+      return super.applyPhysicsToUserOffset(position, offset) * 0.20;
     }
     return super.applyPhysicsToUserOffset(position, offset);
   }
