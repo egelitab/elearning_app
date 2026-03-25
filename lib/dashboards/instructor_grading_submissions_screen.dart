@@ -12,6 +12,11 @@ class InstructorGradingSubmissionsScreen extends StatefulWidget {
 class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSubmissionsScreen> {
   late List<Map<String, dynamic>> _submissions;
   String _filter = 'All'; // All, Needs Grading, Graded
+  String _selectedSection = 'All Sections';
+  final List<String> _sections = ['All Sections', '3rd Year Section A', '3rd Year Section B', '4th Year Section A'];
+
+  String _selectedDepartment = 'All Departments';
+  final List<String> _departments = ['All Departments', 'Computer Science', 'Software Engineering', 'Information Systems'];
 
   @override
   void initState() {
@@ -22,19 +27,22 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
     int gradedCount = widget.gradingTask['graded'] ?? 0;
     
     _submissions = List.generate(submittedCount, (index) {
+      String section = _sections[(index % (_sections.length - 1)) + 1];
+      String department = _departments[(index % (_departments.length - 1)) + 1];
+
       bool isGraded = index < gradedCount;
-      List<String> sections = ['Section A', 'Section B', 'Section C'];
       return {
         "id": "s$index",
         "name": isGroup ? "Group ${index + 1}" : "Student ${index + 1} Name",
-        "section": sections[index % sections.length],
         "initials": isGroup ? "G${index + 1}" : "S${index + 1}",
         "status": isGraded ? "Graded" : "Needs Grading",
         "score": isGraded ? (80 + index % 20).toString() : "",
         "maxScore": "100",
         "submittedAt": "Oct ${20 + index % 10}, 11:59 PM",
         "file": "${isGroup ? 'Group_${index+1}' : 'Student_${index+1}'}_submission.pdf",
-        "feedback": isGraded ? "Good job, but watch out for..." : ""
+        "feedback": isGraded ? "Good job, but watch out for..." : "",
+        "section": section,
+        "department": department,
       };
     });
   }
@@ -182,19 +190,11 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
     Color typeColor = widget.gradingTask['color'] ?? Colors.blue;
     
     final filteredSubmissions = _submissions.where((sub) {
-      if (_filter == 'All') return true;
-      return sub['status'] == _filter;
+      bool statusMatches = _filter == 'All' || sub['status'] == _filter;
+      bool sectionMatches = _selectedSection == 'All Sections' || sub['section'] == _selectedSection;
+      bool departmentMatches = _selectedDepartment == 'All Departments' || sub['department'] == _selectedDepartment;
+      return statusMatches && sectionMatches && departmentMatches;
     }).toList();
-
-    // Group by section
-    Map<String, List<Map<String, dynamic>>> groupedSubmissions = {};
-    for (var sub in filteredSubmissions) {
-      String sec = sub['section'];
-      if (!groupedSubmissions.containsKey(sec)) {
-        groupedSubmissions[sec] = [];
-      }
-      groupedSubmissions[sec]!.add(sub);
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FC),
@@ -222,10 +222,96 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
       ),
       body: Column(
         children: [
+          // Dropdowns
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedDepartment,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF05398F)),
+                        items: _departments.map((String dept) {
+                          return DropdownMenuItem<String>(
+                            value: dept,
+                            child: Text(
+                              dept,
+                              style: TextStyle(
+                                color: _selectedDepartment == dept ? const Color(0xFF05398F) : Colors.black87,
+                                fontWeight: _selectedDepartment == dept ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedDepartment = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: _selectedSection,
+                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF05398F)),
+                        items: _sections.map((String section) {
+                          return DropdownMenuItem<String>(
+                            value: section,
+                            child: Text(
+                              section,
+                              style: TextStyle(
+                                color: _selectedSection == section ? const Color(0xFF05398F) : Colors.black87,
+                                fontWeight: _selectedSection == section ? FontWeight.bold : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          if (newValue != null) {
+                            setState(() {
+                              _selectedSection = newValue;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
           // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
             child: Row(
               children: ['All', 'Needs Grading', 'Graded'].map((filter) {
                 final isSelected = _filter == filter;
@@ -255,43 +341,15 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
           ),
           
           Expanded(
-            child: groupedSubmissions.isEmpty
+            child: filteredSubmissions.isEmpty
               ? const Center(child: Text("No submissions found", style: TextStyle(color: Colors.black54)))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
-                  itemCount: groupedSubmissions.length,
+                  itemCount: filteredSubmissions.length,
                   itemBuilder: (context, index) {
-                    String sectionName = groupedSubmissions.keys.elementAt(index);
-                    List<Map<String, dynamic>> sectionSubmissions = groupedSubmissions[sectionName]!;
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Section Header
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12, top: 10),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(8)
-                                ),
-                                child: Text(sectionName, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                              ),
-                              const SizedBox(width: 8),
-                              Text("${sectionSubmissions.length} submissions", style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                            ],
-                          ),
-                        ),
-                        // Section Items
-                        ...sectionSubmissions.map((item) {
-                          int originalIndex = _submissions.indexOf(item);
-                          return _buildSubmissionCard(item, originalIndex);
-                        }),
-                      ],
-                    );
+                    final item = filteredSubmissions[index];
+                    int originalIndex = _submissions.indexOf(item);
+                    return _buildSubmissionCard(item, originalIndex);
                   },
                 ),
           ),
@@ -345,6 +403,8 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                     children: [
                       Text(item['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
                       const SizedBox(height: 2),
+                      Text("${item['department']} - ${item['section']}", style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           const Icon(Icons.access_time_rounded, size: 12, color: Colors.black45),
