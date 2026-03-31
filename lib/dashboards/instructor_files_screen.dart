@@ -11,51 +11,21 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   bool isLocalSelected = true; 
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Documents', 'Videos', 'Images']; 
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController(initialScrollOffset: 190.0);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FC), // Professional light grayish blue background
       body: CustomScrollView(
-        controller: _scrollController,
-        physics: const _LessStretchyScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
         slivers: [
           SliverAppBar(
             backgroundColor: const Color(0xFFF4F7FC),
             elevation: 0,
             pinned: true,
-            expandedHeight: isLocalSelected ? 250.0 : 60.0,
-            collapsedHeight: 60.0,
             title: const Text(
               "My Files", 
               style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
             ),
-            flexibleSpace: isLocalSelected 
-              ? FlexibleSpaceBar(
-                  background: SafeArea(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        _buildStorageStatus(),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                )
-              : null,
           ),
           SliverToBoxAdapter(
             child: Column(
@@ -72,7 +42,11 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   // 3. Recent Files Section (Horizontal Carousel)
                   _buildRecentFilesSection(context),
                   
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
+
+                  _buildStorageStatus(),
+
+                  const SizedBox(height: 25),
 
                   // 4. Folder Hierarchy View (Fixed Border Logic)
                   _buildFolderHierarchyView(),
@@ -562,26 +536,5 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         ],
       ),
     );
-  }
-}
-
-// Custom ScrollPhysics to reduce the overscroll stretch dramatically
-class _LessStretchyScrollPhysics extends BouncingScrollPhysics {
-  const _LessStretchyScrollPhysics({ScrollPhysics? parent}) : super(parent: parent);
-
-  @override
-  _LessStretchyScrollPhysics applyTo(ScrollPhysics? ancestor) {
-    return _LessStretchyScrollPhysics(parent: buildParent(ancestor));
-  }
-
-  @override
-  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    // Add significant drag resistance when revealing the 190.0 top storage region
-    // so it requires a purposeful downward drag and doesn't reveal easily on normal scroll.
-    final bool isOverscrollingTop = position.pixels <= 190.0 && offset > 0.0;
-    if (isOverscrollingTop) {
-      return super.applyPhysicsToUserOffset(position, offset) * 0.20;
-    }
-    return super.applyPhysicsToUserOffset(position, offset);
   }
 }

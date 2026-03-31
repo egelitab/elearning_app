@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'instructor_materials_screen.dart';
 import 'instructor_groups_screen.dart';
+import 'instructor_assessments_screen.dart';
+import 'instructor_grades_screen.dart';
 
 class InstructorCoursesScreen extends StatelessWidget {
   const InstructorCoursesScreen({super.key});
@@ -81,8 +83,18 @@ class InstructorCoursesScreen extends StatelessWidget {
             );
           }
         ),
-        _buildCategoryTile("Assessments", Icons.description_rounded, const Color(0xFF66BB6A), const Color(0xFF2E7D32), () {}),
-        _buildCategoryTile("Grades", Icons.bar_chart_rounded, const Color(0xFFFFCA28), const Color(0xFFFF8F00), () {}),
+        _buildCategoryTile("Assessments", Icons.description_rounded, const Color(0xFF66BB6A), const Color(0xFF2E7D32), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const InstructorAssessmentsScreen()),
+          );
+        }),
+        _buildCategoryTile("Grades", Icons.bar_chart_rounded, const Color(0xFFFFCA28), const Color(0xFFFF8F00), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const InstructorGradesScreen()),
+          );
+        }),
         _buildCategoryTile("Groups", Icons.groups_rounded, const Color(0xFFAB47BC), const Color(0xFF6A1B9A), () {
           Navigator.push(
             context,
