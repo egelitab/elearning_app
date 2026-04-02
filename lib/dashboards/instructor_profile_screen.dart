@@ -129,11 +129,11 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildProfileOption(Icons.person_outline_rounded, "Account Information", Colors.blue),
-                  _buildProfileOption(Icons.notifications_none_rounded, "Notifications", Colors.orange),
-                  _buildProfileOption(Icons.security_rounded, "Privacy & Security", Colors.green),
+                  _buildProfileOption(Icons.menu_book_rounded, "Assigned Courses", Colors.blue),
+                  _buildProfileOption(Icons.calendar_month_rounded, "Schedule & Office Hours", Colors.orange),
+                  _buildProfileOption(Icons.business_rounded, "Department Information", Colors.green),
+                  _buildProfileOption(Icons.settings_rounded, "Account Settings", Colors.grey.shade700),
                   _buildProfileOption(Icons.help_outline_rounded, "Help & Support", Colors.purple),
-                  _buildProfileOption(Icons.info_outline_rounded, "About App", Colors.grey.shade600),
                 ],
               ),
             ),

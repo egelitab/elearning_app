@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'student_home_screen.dart';
 import 'student_courses_screen.dart';
 import 'student_inbox_screen.dart';
@@ -13,6 +14,7 @@ class StudentDashboard extends StatefulWidget {
 
 class _StudentDashboardState extends State<StudentDashboard> {
   int _index = 0;
+  DateTime? currentBackPressTime;
   
   final List<Widget> _screens = [
     const StudentHomeScreen(),
@@ -24,8 +26,22 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_index],
+    return WillPopScope(
+      onWillPop: () async {
+        DateTime now = DateTime.now();
+        if (currentBackPressTime == null ||
+            now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+          currentBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Press back again to exit')),
+          );
+          return Future.value(false);
+        }
+        SystemNavigator.pop();
+        return Future.value(true);
+      },
+      child: Scaffold(
+        body: _screens[_index],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -55,6 +71,6 @@ class _StudentDashboardState extends State<StudentDashboard> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

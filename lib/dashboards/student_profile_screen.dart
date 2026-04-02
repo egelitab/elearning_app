@@ -136,8 +136,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildProfileOption(Icons.school_rounded, "Academic Record", Colors.blue),
-                  _buildProfileOption(Icons.payment_rounded, "Tuition & Fees", Colors.green),
+                  _buildProfileOption(Icons.library_books_rounded, "My Courses", Colors.blue),
+                  _buildProfileOption(Icons.school_rounded, "Grades & Assessment", Colors.green),
+                  _buildProfileOption(Icons.local_library_rounded, "Library Resources", Colors.orange),
                   _buildProfileOption(Icons.settings_rounded, "Account Settings", Colors.grey.shade700),
                   _buildProfileOption(Icons.help_outline_rounded, "Help & Support", Colors.purple),
                 ],
