@@ -67,18 +67,9 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
             const SizedBox(height: 35),
             
             // 2. Section Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Assigned Courses",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-                TextButton(
-                  onPressed: () {}, 
-                  child: const Text("See All", style: TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold))
-                )
-              ],
+            const Text(
+              "Assigned Courses",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
             const SizedBox(height: 10),
             

@@ -124,15 +124,15 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                  _buildDateSection("December 21 2025"),
-                 _buildDownloadFileTile("Compiler Design Lecture Note - 2", "8.14 MB", "Miraf M.", Icons.insert_drive_file_rounded, Colors.blue),
-                 _buildDownloadFileTile("Research Methods in Computer Scie...", "5.9 MB", "Muluken B.", Icons.insert_drive_file_rounded, Colors.blue),
+                 _buildDownloadFileTile("Compiler Design Lecture Note - 2.pdf", "8.14 MB", "Miraf M."),
+                 _buildDownloadFileTile("Research Methods in Computer Scie...txt", "5.9 MB", "Muluken B."),
                  
                  const SizedBox(height: 15),
                  
                  _buildDateSection("January 23 2026"),
-                 _buildDownloadFileTile("Complexity Classes Part 2 | NPC (N...", "38.3 MB", "Dr. Debas", Icons.play_circle_fill_rounded, Colors.purple),
-                 _buildDownloadFileTile("Image 02", "122 KB", "Abebe M.", Icons.image_rounded, Colors.green),
-                 _buildDownloadFileTile("Complexity Theory", "4.4 MB", "Dr. Debas", Icons.insert_drive_file_rounded, Colors.blue),
+                 _buildDownloadFileTile("Complexity Classes Part 2 | NPC (N....mp4", "38.3 MB", "Dr. Debas"),
+                 _buildDownloadFileTile("Image 02.png", "122 KB", "Abebe M."),
+                 _buildDownloadFileTile("Complexity Theory.pptx", "4.4 MB", "Dr. Debas"),
                  
                  const SizedBox(height: 80), // Padding at bottom for navigation bar
               ]),
@@ -204,7 +204,10 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
     );
   }
 
-  Widget _buildDownloadFileTile(String name, String size, String author, IconData icon, Color iconColor) {
+  Widget _buildDownloadFileTile(String name, String size, String author) {
+    IconData icon = _getIconForFile(name);
+    Color iconColor = _getColorForFile(name);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -259,6 +262,34 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getIconForFile(String name) {
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
+    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
+    
+    return Icons.insert_drive_file_rounded;
+  }
+
+  Color _getColorForFile(String name) {
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Colors.red.shade600;
+    if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
+
+    return Colors.blueGrey;
   }
 }
 

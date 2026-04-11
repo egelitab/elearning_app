@@ -184,10 +184,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           padding: const EdgeInsets.only(left: 20, bottom: 20),
           child: Row(
             children: [
-              _buildRecentFileItem("Lecture_2.pdf", Icons.picture_as_pdf_rounded, "2 hrs ago", itemWidth, Colors.red),
-              _buildRecentFileItem("History_5.mp4", Icons.videocam_rounded, "7 hrs ago", itemWidth, Colors.blue),
-              _buildRecentFileItem("Lecture_1.pdf", Icons.picture_as_pdf_rounded, "This week", itemWidth, Colors.red),
-              _buildRecentFileItem("Code_zip.zip", Icons.folder_zip_rounded, "This week", itemWidth, Colors.orange),
+              _buildRecentFileItem("Lecture_2.pdf", "2 hrs ago", itemWidth),
+              _buildRecentFileItem("History_5.mp4", "7 hrs ago", itemWidth),
+              _buildRecentFileItem("Lecture_1.pdf", "This week", itemWidth),
+              _buildRecentFileItem("Code_zip.zip", "This week", itemWidth),
             ],
           ),
         ),
@@ -195,7 +195,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     );
   }
 
-  Widget _buildRecentFileItem(String name, IconData icon, String time, double width, Color iconColor) {
+  Widget _buildRecentFileItem(String name, String time, double width) {
+    IconData icon = _getIconForFile(name);
+    Color iconColor = _getColorForFile(name);
+    
     return Container(
       width: width,
       margin: const EdgeInsets.only(right: 15),
@@ -228,6 +231,34 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getIconForFile(String name) {
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
+    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
+    
+    return Icons.insert_drive_file_rounded;
+  }
+
+  Color _getColorForFile(String name) {
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Colors.red.shade600;
+    if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
+
+    return Colors.blueGrey;
   }
 
   Widget _buildFolderHierarchyView() {
@@ -334,10 +365,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8EAF6),
+              color: _getColorForFile(name).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.description_rounded, color: Color(0xFF3F51B5), size: 28),
+            child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -406,15 +437,15 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
            _buildDateSection("December 21 2025"),
-           _buildDownloadFileTile("Compiler Design Lecture Note - 2", "8.14 MB", "Author", Icons.insert_drive_file_rounded, Colors.blue),
-           _buildDownloadFileTile("Research Methods in Computer Scie...", "5.9 MB", "Author", Icons.insert_drive_file_rounded, Colors.blue),
+           _buildDownloadFileTile("Compiler Design Lecture Note - 2.pdf", "8.14 MB", "Author"),
+           _buildDownloadFileTile("Research Methods in Computer Scie...txt", "5.9 MB", "Author"),
            
            const SizedBox(height: 15),
            
            _buildDateSection("January 23 2026"),
-           _buildDownloadFileTile("Complexity Classes Part 2 | NPC (N...", "38.3 MB", "Author", Icons.play_circle_fill_rounded, Colors.purple),
-           _buildDownloadFileTile("Image 02", "122 KB", "Author", Icons.image_rounded, Colors.green),
-           _buildDownloadFileTile("Complexity Theory", "4.4 MB", "Author", Icons.insert_drive_file_rounded, Colors.blue),
+           _buildDownloadFileTile("Complexity Classes Part 2 | NPC (N....mp4", "38.3 MB", "Author"),
+           _buildDownloadFileTile("Image 02.png", "122 KB", "Author"),
+           _buildDownloadFileTile("Complexity Theory.pptx", "4.4 MB", "Author"),
         ],
       ),
     );
@@ -481,7 +512,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     );
   }
 
-  Widget _buildDownloadFileTile(String name, String size, String author, IconData icon, Color iconColor) {
+  Widget _buildDownloadFileTile(String name, String size, String author) {
+    IconData icon = _getIconForFile(name);
+    Color iconColor = _getColorForFile(name);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

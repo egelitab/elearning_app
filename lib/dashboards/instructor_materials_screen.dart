@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import '../services/api_service.dart';
 
 class InstructorMaterialsScreen extends StatefulWidget {
   const InstructorMaterialsScreen({super.key});
@@ -8,46 +10,53 @@ class InstructorMaterialsScreen extends StatefulWidget {
 }
 
 class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
-  // Dummy data for materials
-  final List<Map<String, dynamic>> _materials = [
-    {"id": "m1", "name": "Week 1 Lecture Slides.pdf", "size": "2.4 MB", "date": "Oct 12", "icon": Icons.picture_as_pdf_rounded, "color": Colors.red},
-    {"id": "m2", "name": "Project Guidelines.docx", "size": "1.1 MB", "date": "Oct 15", "icon": Icons.description_rounded, "color": Colors.blue},
-    {"id": "m3", "name": "Intro Setup Video.mp4", "size": "15.0 MB", "date": "Oct 18", "icon": Icons.play_circle_fill_rounded, "color": Colors.purple},
-    {"id": "m4", "name": "Data Dataset.zip", "size": "4.5 MB", "date": "Oct 20", "icon": Icons.folder_zip_rounded, "color": Colors.orange},
-    {"id": "m5", "name": "Reference Book.pdf", "size": "8.8 MB", "date": "Oct 22", "icon": Icons.picture_as_pdf_rounded, "color": Colors.red},
-  ];
-
-  // Dummy data for courses/classes
-  final List<Map<String, dynamic>> _classes = [
-    {
-      "id": "c1", "name": "Computer Security (CoSc4051)", "initials": "CS", "color": Colors.blue,
-      "sections": [
-        {"id": "c1_s1", "name": "3rd Year Section A"},
-        {"id": "c1_s2", "name": "3rd Year Section B"}
-      ]
-    },
-    {
-      "id": "c2", "name": "Compiler Design (CoSc4022)", "initials": "CD", "color": Colors.purple,
-      "sections": [
-        {"id": "c2_s1", "name": "3rd Year Section A"}
-      ]
-    },
-    {
-      "id": "c3", "name": "Complexity Theory (CoSc4021)", "initials": "CT", "color": Colors.orange,
-      "sections": [
-        {"id": "c3_s1", "name": "4th Year Section A"},
-        {"id": "c3_s2", "name": "4th Year Section B"}
-      ]
-    },
-    {
-      "id": "c4", "name": "Research Methods (CoSc4111)", "initials": "RM", "color": Colors.green,
-      "sections": [
-        {"id": "c4_s1", "name": "4th Year Section C"}
-      ]
-    },
-  ];
-
+  final ApiService _apiService = ApiService();
+  
+  List<dynamic> _materials = [];
+  List<dynamic> _courses = [];
+  
+  bool _isLoading = true;
+  String? _error;
+  bool _isSelecting = false;
+  
+  List<dynamic> _targets = [];
+  
   final Set<String> _selectedMaterials = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    
+    try {
+      final materials = await _apiService.getInstructorMaterials();
+      final courses = await _apiService.getInstructorCourses();
+      final targetsData = await _apiService.getInstructorTargets();
+      
+      // The backend now returns a List of {id, name, sections: []}
+      List<dynamic> targets = (targetsData is List) ? (targetsData as List) : [];
+      
+      setState(() {
+        _materials = materials;
+        _courses = courses;
+        _targets = targets;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString().replaceAll('Exception: ', '');
+        _isLoading = false;
+      });
+    }
+  }
 
   void _toggleSelection(String id) {
     setState(() {
@@ -62,12 +71,217 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   void _clearSelection() {
     setState(() {
       _selectedMaterials.clear();
+      _isSelecting = false;
     });
   }
 
+  void _showUploadDialog() {
+    if (_courses.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You need to be assigned to a course first.")),
+      );
+      return;
+    }
+
+    String? selectedCourseId = _courses.first['id'];
+    String title = "";
+    PlatformFile? selectedFile;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            bool isUploading = false;
+
+            return Container(
+              padding: EdgeInsets.only(
+                top: 20, left: 20, right: 20, 
+                bottom: MediaQuery.of(context).viewInsets.bottom + 30
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Upload Material", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  const SizedBox(height: 20),
+                  
+                  // Course Dropdown
+                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCourseId,
+                        items: _courses.map((course) {
+                          return DropdownMenuItem<String>(
+                            value: course['id'],
+                            child: Text(course['title'] ?? course['course_code']),
+                          );
+                        }).toList(),
+                        onChanged: (val) => setSheetState(() => selectedCourseId = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  // File Picker
+                  const Text("File", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  GestureDetector(
+                    onTap: () async {
+                      FilePickerResult? result = await FilePicker.pickFiles();
+                      if (result != null) {
+                        setSheetState(() => selectedFile = result.files.first);
+                      }
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F7FC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.black12)
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.attach_file, color: Color(0xFF05398F)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              selectedFile != null ? selectedFile!.name : "Tap to select a file",
+                              style: TextStyle(color: selectedFile != null ? Colors.black87 : Colors.black54),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Upload Button
+                  isUploading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF09AEF5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))
+                          ),
+                          onPressed: () async {
+                            if (selectedFile == null || selectedCourseId == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a course and a file.")));
+                              return;
+                            }
+                            
+                            String autoTitle = selectedFile!.name;
+                            
+                            setSheetState(() => isUploading = true);
+                            try {
+                              await _apiService.uploadMaterial(selectedCourseId!, autoTitle, selectedFile!.path!);
+                              if (!mounted) return;
+                              Navigator.pop(context);
+                              _fetchData(); // reload
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploaded Successfully")));
+                            } catch (e) {
+                              setSheetState(() => isUploading = false);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                            }
+                          },
+                          child: const Text("Upload", style: TextStyle(color: Colors.white, fontSize: 16)),
+                        ),
+                      )
+                ],
+              ),
+            );
+          }
+        );
+      }
+    );
+  }
+
+  // Define helper UI builders ...
+  
+  IconData _getIconForFile(String ext) {
+    ext = ext.toLowerCase();
+    if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
+    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
+    
+    return Icons.insert_drive_file_rounded;
+  }
+
+  Color _getColorForFile(String ext) {
+    ext = ext.toLowerCase();
+    if (ext.contains('pdf')) return Colors.red.shade600;
+    if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
+
+    return Colors.blueGrey;
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return "$bytes B";
+    if (bytes < 1048576) return "${(bytes / 1024).toStringAsFixed(1)} KB";
+    return "${(bytes / 1048576).toStringAsFixed(2)} MB";
+  }
+
   void _showShareBottomSheet() {
-    Set<String> selectedSections = {};
-    Set<String> expandedCourses = {};
+    String selectedCourseTitle = "Selected Course";
+    if (_selectedMaterials.isNotEmpty) {
+      try {
+        var firstMatId = _selectedMaterials.first;
+        var firstMat = _materials.firstWhere((m) => m['id'].toString() == firstMatId);
+        var courseMatch = _courses.firstWhere((c) => c['id'].toString() == firstMat['course_id'].toString(), orElse: () => <String, dynamic>{});
+        if (courseMatch.isNotEmpty) {
+           selectedCourseTitle = courseMatch['title'] ?? courseMatch['course_code'] ?? "Course";
+        }
+      } catch (e) {}
+    }
+
+    String? selectedDeptId = _targets.isNotEmpty ? _targets.first['id'].toString() : null;
+    
+    // Helper to get sections for a dept
+    List<String> getCleanedSections(String? deptId) {
+      if (deptId == null) return [];
+      var dept = _targets.firstWhere((t) => t['id'].toString() == deptId, orElse: () => null);
+      if (dept == null) return [];
+      
+      List<String> raw = List<String>.from(dept['sections'] ?? []);
+      Set<String> cleaned = {};
+      for (String s in raw) {
+        String c = s.trim();
+        if (c.length == 1) c = "Section $c";
+        else if (!c.toLowerCase().startsWith('section ')) c = "Section $c";
+        cleaned.add(c);
+      }
+      return cleaned.toList()..sort();
+    }
+
+    List<String> currentSections = getCleanedSections(selectedDeptId);
+    String? selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
 
     showModalBottomSheet(
       context: context,
@@ -90,179 +304,80 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     child: Container(
                       width: 50,
                       height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.black12,
-                        borderRadius: BorderRadius.circular(10),
+                      decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  const SizedBox(height: 8),
+                  Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                  const SizedBox(height: 20),
+                  
+                  const Text("Course", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(color: const Color(0xFFF4F7FC), borderRadius: BorderRadius.circular(10)),
+                    child: Text(selectedCourseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF05398F), fontSize: 16)),
+                  ),
+                  const SizedBox(height: 20),
+
+                  const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedDeptId,
+                        items: _targets.map((d) => DropdownMenuItem<String>(value: d['id'].toString(), child: Text(d['name']))).toList(),
+                        onChanged: (val) {
+                          setSheetState(() {
+                            selectedDeptId = val;
+                            currentSections = getCleanedSections(val);
+                            selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+                          });
+                        },
                       ),
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    "Share Materials",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Select the classes/sections you want to share \${_selectedMaterials.length} material(s) with.",
-                    style: const TextStyle(color: Colors.black54, fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // List of classes and their expandable sections
-                  ..._classes.map((cls) {
-                    bool isExpanded = expandedCourses.contains(cls["id"]);
-                    List<dynamic> sections = cls["sections"];
-                    
-                    bool allSectionsSelected = sections.every((sec) => selectedSections.contains(sec["id"]));
-                    bool someSectionsSelected = sections.any((sec) => selectedSections.contains(sec["id"])) && !allSectionsSelected;
 
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setSheetState(() {
-                              if (isExpanded) {
-                                expandedCourses.remove(cls["id"]);
-                              } else {
-                                expandedCourses.add(cls["id"]);
-                              }
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: allSectionsSelected ? const Color(0xFF09AEF5).withOpacity(0.1) : Colors.white,
-                              border: Border.all(
-                                color: allSectionsSelected ? const Color(0xFF09AEF5) : Colors.black12,
-                                width: 1.5,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: (cls["color"] as Color).withOpacity(0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Center(
-                                    child: Text(cls["initials"], style: TextStyle(color: cls["color"], fontWeight: FontWeight.bold)),
-                                  ),
-                                ),
-                                const SizedBox(width: 15),
-                                Expanded(
-                                  child: Text(
-                                    cls["name"],
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold, 
-                                      color: allSectionsSelected ? const Color(0xFF05398F) : Colors.black87
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setSheetState(() {
-                                      if (allSectionsSelected) {
-                                        for (var sec in sections) {
-                                          selectedSections.remove(sec["id"]);
-                                        }
-                                      } else {
-                                        for (var sec in sections) {
-                                          selectedSections.add(sec["id"]);
-                                        }
-                                      }
-                                    });
-                                  },
-                                  child: Icon(
-                                    allSectionsSelected ? Icons.check_box_rounded : (someSectionsSelected ? Icons.indeterminate_check_box_rounded : Icons.check_box_outline_blank_rounded),
-                                    color: (allSectionsSelected || someSectionsSelected) ? const Color(0xFF09AEF5) : Colors.black26,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Icon(isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded, color: Colors.black45),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Expandable sections list
-                        if (isExpanded)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 20, right: 10, bottom: 10),
-                            child: Column(
-                              children: sections.map((sec) {
-                                bool isSecSelected = selectedSections.contains(sec["id"]);
-                                return GestureDetector(
-                                  onTap: () {
-                                    setSheetState(() {
-                                      if (isSecSelected) {
-                                        selectedSections.remove(sec["id"]);
-                                      } else {
-                                        selectedSections.add(sec["id"]);
-                                      }
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                    margin: const EdgeInsets.only(bottom: 6),
-                                    decoration: BoxDecoration(
-                                      color: isSecSelected ? const Color(0xFF09AEF5).withOpacity(0.05) : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          isSecSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                                          color: isSecSelected ? const Color(0xFF09AEF5) : Colors.black26,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Text(
-                                          sec["name"],
-                                          style: TextStyle(
-                                            color: isSecSelected ? const Color(0xFF05398F) : Colors.black87,
-                                            fontWeight: isSecSelected ? FontWeight.w600 : FontWeight.normal
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                      ],
-                    );
-                  }).toList(),
-
+                  const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedSection,
+                        hint: const Text("No sections available"),
+                        items: currentSections.map((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
+                        onChanged: (val) => setSheetState(() => selectedSection = val),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 30),
-                  
-                  // Share Button
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: selectedSections.isNotEmpty ? () {
-                         Navigator.pop(context); // close bottom sheet
-                         _clearSelection(); // clear selection after sharing
-                         
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(
-                             content: Text("Materials Successfully Shared!"),
-                             backgroundColor: Colors.green,
-                             behavior: SnackBarBehavior.floating,
-                           )
-                         );
-                      } : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09AEF5),
-                        disabledBackgroundColor: Colors.black12,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: selectedSections.isNotEmpty ? 4 : 0,
-                      ),
-                      child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                       onPressed: () {
+                          // TODO: implement actual share to groups API logic
+                          Navigator.pop(context);
+                          _clearSelection();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
+                          );
+                       },
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: const Color(0xFF09AEF5),
+                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                       ),
+                       child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -274,97 +389,60 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    bool isSelectionMode = _selectedMaterials.isNotEmpty;
+  List<Widget> _buildMaterialsList() {
+    List<Widget> widgets = [];
+    String? lastDateStr;
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
-      appBar: AppBar(
-        backgroundColor: isSelectionMode ? const Color(0xFFE3F2FD) : const Color(0xFFF4F7FC),
-        elevation: 0,
-        leading: isSelectionMode 
-          ? IconButton(
-              icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
-              onPressed: _clearSelection,
-            )
-          : IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-        title: Text(
-          isSelectionMode ? "\${_selectedMaterials.length} Selected" : "My Materials", 
-          style: const TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
-        ),
-        actions: [
-          if (isSelectionMode)
-            IconButton(
-              icon: const Icon(Icons.share_rounded, color: Color(0xFF09AEF5)),
-              onPressed: _showShareBottomSheet,
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)),
-              onPressed: () {},
-            ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isSelectionMode)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 15),
-                child: Text(
-                  "All Uploaded Materials",
-                  style: TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w600),
-                ),
-              ),
-
-            ..._materials.map((mat) => _buildMaterialTile(mat)).toList(),
-
-            const SizedBox(height: 100), // padding for FAB
-          ],
-        ),
-      ),
-      floatingActionButton: !isSelectionMode 
-        ? FloatingActionButton.extended(
-            onPressed: () {
-              // Simulate an upload action
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Upload Dialog..."),
-                  behavior: SnackBarBehavior.floating,
-                )
-              );
-            },
-            backgroundColor: const Color(0xFF05398F),
-            icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
-            label: const Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            elevation: 4,
-          )
-        : null,
-    );
+    for (var mat in _materials) {
+      if (mat['created_at'] != null) {
+        DateTime dt = DateTime.parse(mat['created_at']).toLocal();
+        String dateStr = "${months[dt.month - 1]} ${dt.day} ${dt.year}";
+        
+        if (lastDateStr != dateStr) {
+          widgets.add(Padding(
+            padding: const EdgeInsets.only(bottom: 12.0, top: 15.0),
+            child: Text(dateStr, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+          ));
+          lastDateStr = dateStr;
+        }
+      }
+      widgets.add(_buildMaterialTile(mat));
+    }
+    return widgets;
   }
 
   Widget _buildMaterialTile(Map<String, dynamic> material) {
-    bool isSelected = _selectedMaterials.contains(material["id"]);
+    String mId = material['id'] ?? material['id'].toString();
+    bool isSelected = _selectedMaterials.contains(mId);
+
+    String ext = (material['file_path'] ?? material['title'] ?? '').split('.').last.toLowerCase();
+    
+    // Fallback to file_type if no extension found in path/title
+    if (ext.isEmpty || !ext.contains(RegExp(r'[a-z0-9]'))) {
+      ext = (material['file_type'] ?? '').toLowerCase();
+    }
+    
+    IconData iconData = _getIconForFile(ext);
+    Color colorData = _getColorForFile(ext);
+
+    String timeStr = "Unknown Time";
+    if (material['created_at'] != null) {
+      DateTime dt = DateTime.parse(material['created_at']).toLocal();
+      timeStr = "${dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour)}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'pm' : 'am'}";
+    }
+
+    bool isSelectionMode = _selectedMaterials.isNotEmpty || _isSelecting;
 
     return GestureDetector(
       onTap: () {
-        if (_selectedMaterials.isNotEmpty) {
-          _toggleSelection(material["id"]);
+        if (isSelectionMode) {
+          _toggleSelection(mId);
         } else {
           // Open material...
         }
       },
-      onLongPress: () {
-        _toggleSelection(material["id"]);
-      },
+      onLongPress: () => _toggleSelection(mId),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -389,10 +467,10 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: (material["color"] as Color).withOpacity(0.1),
+                color: colorData.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(material["icon"], color: material["color"], size: 24),
+              child: Icon(iconData, color: colorData, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -400,7 +478,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    material["name"], 
+                    material["title"] ?? "Untitled", 
                     style: TextStyle(
                       fontWeight: FontWeight.bold, 
                       fontSize: 15, 
@@ -409,13 +487,14 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(material["size"], style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text(_formatBytes(int.tryParse(material["file_size_bytes"]?.toString() ?? '0') ?? 0), style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                       const SizedBox(width: 8),
                       const Text("•", style: TextStyle(color: Colors.black38, fontSize: 13)),
                       const SizedBox(width: 8),
-                      Text(material["date"], style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
+                      Text(timeStr, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ],
@@ -430,6 +509,118 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    bool isSelectionMode = _selectedMaterials.isNotEmpty || _isSelecting;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F7FC),
+      appBar: AppBar(
+        backgroundColor: isSelectionMode ? const Color(0xFFE3F2FD) : const Color(0xFFF4F7FC),
+        elevation: 0,
+        leading: isSelectionMode 
+          ? IconButton(
+              icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
+              onPressed: _clearSelection,
+            )
+          : IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+        title: Text(
+          isSelectionMode ? "${_selectedMaterials.length} Selected" : "My Materials", 
+          style: const TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+        ),
+      ),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator()) 
+        : _error != null 
+          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+          : SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (!isSelectionMode)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 15),
+                      child: Text(
+                        "All Uploaded Materials",
+                        style: TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+
+                  if (_materials.isEmpty)
+                    const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No materials uploaded yet.")))
+                  else
+                    ..._buildMaterialsList(),
+
+                  const SizedBox(height: 100),
+                ],
+              ),
+            ),
+      floatingActionButton: isSelectionMode ? null : Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: "upload_btn",
+            onPressed: _showUploadDialog,
+            backgroundColor: const Color(0xFF09AEF5),
+            elevation: 4,
+            child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 28),
+          ),
+          const SizedBox(height: 15),
+          FloatingActionButton(
+            heroTag: "share_btn",
+            onPressed: () {
+               setState(() {
+                 _isSelecting = true;
+               });
+               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the materials you wish to share.")));
+            },
+            backgroundColor: const Color(0xFF09AEF5),
+            elevation: 4,
+            child: const Icon(Icons.share_rounded, color: Colors.white, size: 28),
+          ),
+        ],
+      ),
+      bottomNavigationBar: isSelectionMode 
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
+                  ]
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                       if (_selectedMaterials.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select at least one material.")));
+                       } else {
+                          _showShareBottomSheet();
+                       }
+                    },
+                    icon: const Icon(Icons.share_rounded, color: Colors.white, size: 24),
+                    label: const Text("Share", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF09AEF5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 }
