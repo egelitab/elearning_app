@@ -361,23 +361,46 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     ),
                   ),
                   const SizedBox(height: 30),
+                  bool isSharing = false;
+                  StateSetter? sheetState;
+
                   SizedBox(
                     width: double.infinity,
                     height: 55,
-                    child: ElevatedButton(
-                       onPressed: () {
-                          // TODO: implement actual share to groups API logic
-                          Navigator.pop(context);
-                          _clearSelection();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
-                          );
-                       },
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: const Color(0xFF09AEF5),
-                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                       ),
-                       child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: StatefulBuilder(
+                      builder: (context, setInternalState) {
+                        sheetState = setInternalState;
+                        return ElevatedButton(
+                           onPressed: isSharing ? null : () async {
+                              if (selectedDeptId == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a department.")));
+                                return;
+                              }
+                              
+                              setInternalState(() => isSharing = true);
+                              
+                              try {
+                                await _apiService.shareMaterials(_selectedMaterials.toList(), selectedDeptId!, selectedSection);
+                                if (!mounted) return;
+                                Navigator.pop(context);
+                                _clearSelection();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
+                                );
+                              } catch (e) {
+                                setInternalState(() => isSharing = false);
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                              }
+                           },
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: const Color(0xFF09AEF5),
+                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                           ),
+                           child: isSharing 
+                             ? const CircularProgressIndicator(color: Colors.white)
+                             : const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        );
+                      }
                     ),
                   ),
                 ],

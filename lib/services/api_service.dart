@@ -154,4 +154,35 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  Future<Map<String, dynamic>> shareMaterials(List<String> materialIds, String departmentId, String? section) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/materials/share'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "material_ids": materialIds,
+          "department_id": departmentId,
+          "section": section,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data;
+      } else {
+        throw Exception(data['message'] ?? 'Sharing failed');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }
