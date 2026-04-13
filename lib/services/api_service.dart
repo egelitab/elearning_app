@@ -154,4 +154,66 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  Future<Map<String, dynamic>> renameMaterial(String id, String newTitle) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/materials/$id/rename'),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode({"title": newTitle}),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) return data;
+      throw Exception(data['message'] ?? 'Failed to rename material');
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteMaterial(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/materials/$id'),
+        headers: {"Authorization": "Bearer $token"},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) return data;
+      throw Exception(data['message'] ?? 'Failed to delete material');
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> shareMaterials(List<String> materialIds, String departmentId, String? section) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final body = {
+        "material_ids": materialIds,
+        "department_id": departmentId,
+      };
+      if (section != null) body["section"] = section;
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/materials/share'),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode(body),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) return data;
+      throw Exception(data['message'] ?? 'Failed to share materials');
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }

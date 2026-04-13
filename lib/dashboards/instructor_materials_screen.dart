@@ -77,8 +77,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
 
   void _showUploadDialog() {
     if (_courses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You need to be assigned to a course first.")),
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("You need to be assigned to a course first.")),
       );
       return;
     }
@@ -182,7 +181,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                           ),
                           onPressed: () async {
                             if (selectedFile == null || selectedCourseId == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a course and a file.")));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select a course and a file.")));
                               return;
                             }
                             
@@ -194,10 +193,10 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                               if (!mounted) return;
                               Navigator.pop(context);
                               _fetchData(); // reload
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploaded Successfully")));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploaded Successfully")));
                             } catch (e) {
                               setSheetState(() => isUploading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString())));
                             }
                           },
                           child: const Text("Upload", style: TextStyle(color: Colors.white, fontSize: 16)),
@@ -246,13 +245,20 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
             child: const Text("Cancel", style: TextStyle(color: Colors.black54)),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               // Re-attach the extension when saving
               String finalName = _controller.text.trim() + extension;
-              // TODO: Implement backend API for rename
-              Navigator.pop(context);
-              _fetchData();
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Renaming to $finalName is pending backend implementation")));
+              
+              Navigator.pop(context); // Close dialog early for better UX
+              try {
+                // Show loading snackbar
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Renaming...")));
+                await _apiService.renameMaterial(id, finalName);
+                _fetchData();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text("Renamed to $finalName", style: const TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             child: const Text("Save", style: TextStyle(color: Colors.white)),
@@ -275,11 +281,16 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
             child: const Text("Cancel", style: TextStyle(color: Colors.black54)),
           ),
           ElevatedButton(
-            onPressed: () {
-              // TODO: Implement backend API for delete
-              Navigator.pop(context);
-              _fetchData();
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Delete feature is pending backend implementation")));
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog early
+              try {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Deleting...")));
+                await _apiService.deleteMaterial(id);
+                _fetchData();
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Material deleted", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             child: const Text("Delete", style: TextStyle(color: Colors.white)),
@@ -354,7 +365,9 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         else if (!c.toLowerCase().startsWith('section ')) c = "Section $c";
         cleaned.add(c);
       }
-      return cleaned.toList()..sort();
+      List<String> sorted = cleaned.toList()..sort();
+      sorted.insert(0, "All Sections");
+      return sorted;
     }
 
     List<String> currentSections = getCleanedSections(selectedDeptId);
@@ -442,13 +455,30 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                       onPressed: () {
-                          // TODO: implement actual share to groups API logic
-                          Navigator.pop(context);
-                          _clearSelection();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
-                          );
+                       onPressed: () async {
+                          if (selectedDeptId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select a department.")));
+                            return;
+                          }
+                          
+                          Navigator.pop(context); // Close the sheet early
+                          try {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Sharing...")));
+                            
+                            String? finalSection = selectedSection == "All Sections" ? null : selectedSection;
+
+                            await _apiService.shareMaterials(
+                              _selectedMaterials.toList(), 
+                              selectedDeptId!, 
+                              finalSection
+                            );
+                            
+                            _clearSelection();
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
+                            );
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
+                          }
                        },
                        style: ElevatedButton.styleFrom(
                          backgroundColor: const Color(0xFF09AEF5),
@@ -644,12 +674,14 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         ? const Center(child: CircularProgressIndicator()) 
         : _error != null 
           ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
-          : SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          : Stack(
+              children: [
+                SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   if (!isSelectionMode)
                     const Padding(
                       padding: EdgeInsets.only(bottom: 15),
@@ -664,36 +696,39 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   else
                     ..._buildMaterialsList(),
 
-                  const SizedBox(height: 100),
-                ],
-              ),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
+                ),
+              ],
             ),
-      floatingActionButton: isSelectionMode ? null : Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: "upload_btn",
-            onPressed: _showUploadDialog,
-            backgroundColor: const Color(0xFF09AEF5),
-            elevation: 4,
-            child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 28),
-          ),
-          const SizedBox(height: 15),
-          FloatingActionButton(
-            heroTag: "share_btn",
-            onPressed: () {
-               setState(() {
-                 _isSelecting = true;
-               });
-               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the materials you wish to share.")));
-            },
-            backgroundColor: const Color(0xFF09AEF5),
-            elevation: 4,
-            child: const Icon(Icons.share_rounded, color: Colors.white, size: 28),
-          ),
-        ],
-      ),
+      floatingActionButton: !isSelectionMode
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton(
+                  heroTag: "upload_btn",
+                  onPressed: _showUploadDialog,
+                  backgroundColor: const Color(0xFF09AEF5),
+                  elevation: 4,
+                  child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 28),
+                ),
+                const SizedBox(width: 15),
+                FloatingActionButton(
+                  heroTag: "share_btn",
+                  onPressed: () {
+                    setState(() {
+                      _isSelecting = true;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the materials you wish to share.")));
+                  },
+                  backgroundColor: const Color(0xFF09AEF5),
+                  elevation: 4,
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 28),
+                ),
+              ],
+            )
+          : null,
       bottomNavigationBar: isSelectionMode 
           ? SafeArea(
               child: Container(
@@ -710,7 +745,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                        if (_selectedMaterials.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select at least one material.")));
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select at least one material.")));
                        } else {
                           _showShareBottomSheet();
                        }
