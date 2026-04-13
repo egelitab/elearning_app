@@ -19,9 +19,20 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   String? _error;
   bool _isSelecting = false;
   
+  // Search state
+  bool _isSearching = false;
+  String _searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+  
   List<dynamic> _targets = [];
   
   final Set<String> _selectedMaterials = {};
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -501,7 +512,15 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
     String? lastDateStr;
     const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    for (var mat in _materials) {
+    List<dynamic> filteredMaterials = _materials;
+    if (_searchQuery.isNotEmpty) {
+      filteredMaterials = _materials.where((mat) {
+        String title = (mat['title'] ?? '').toString().toLowerCase();
+        return title.contains(_searchQuery);
+      }).toList();
+    }
+
+    for (var mat in filteredMaterials) {
       if (mat['created_at'] != null) {
         DateTime dt = DateTime.parse(mat['created_at']).toLocal();
         String dateStr = "${months[dt.month - 1]} ${dt.day} ${dt.year}";
@@ -665,10 +684,43 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
               onPressed: () => Navigator.pop(context),
             ),
-        title: Text(
-          isSelectionMode ? "${_selectedMaterials.length} Selected" : "My Materials", 
-          style: const TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
-        ),
+        title: _isSearching && !isSelectionMode
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: "Search materials...",
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.black38),
+                ),
+                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+                onChanged: (val) {
+                  setState(() {
+                    _searchQuery = val.toLowerCase();
+                  });
+                },
+              )
+            : Text(
+                isSelectionMode ? "${_selectedMaterials.length} Selected" : "My Materials", 
+                style: const TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+              ),
+        actions: [
+          if (!isSelectionMode)
+            IconButton(
+              icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)),
+              onPressed: () {
+                setState(() {
+                  if (_isSearching) {
+                    _isSearching = false;
+                    _searchQuery = "";
+                    _searchController.clear();
+                  } else {
+                    _isSearching = true;
+                  }
+                });
+              },
+            ),
+        ],
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator()) 
@@ -693,6 +745,8 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
 
                   if (_materials.isEmpty)
                     const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No materials uploaded yet.")))
+                  else if (_searchQuery.isNotEmpty && _materials.where((m) => (m['title'] ?? '').toString().toLowerCase().contains(_searchQuery)).isEmpty)
+                    const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No matching materials found.")))
                   else
                     ..._buildMaterialsList(),
 
