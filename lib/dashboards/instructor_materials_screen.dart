@@ -775,15 +775,17 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
           ? Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FloatingActionButton(
+                FloatingActionButton.extended(
                   heroTag: "upload_btn",
                   onPressed: _showUploadDialog,
                   backgroundColor: const Color(0xFF09AEF5),
                   elevation: 4,
-                  child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 28),
+                  icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
+                  label: const Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
                 const SizedBox(width: 15),
-                FloatingActionButton(
+                FloatingActionButton.extended(
                   heroTag: "share_btn",
                   onPressed: () {
                     setState(() {
@@ -793,7 +795,9 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   },
                   backgroundColor: const Color(0xFF09AEF5),
                   elevation: 4,
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 28),
+                  icon: const Icon(Icons.share_rounded, color: Colors.white),
+                  label: const Text("Share", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ],
             )
