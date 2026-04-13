@@ -295,4 +295,27 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  Future<void> deleteGroupBatch(String courseId, String batchName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/groups/$courseId/batch?batchName=${Uri.encodeComponent(batchName)}'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to delete groups');
+      }
+    } catch (e) {
+      throw Exception("Error deleting groups: $e");
+    }
+  }
 }

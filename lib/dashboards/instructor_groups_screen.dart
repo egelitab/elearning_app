@@ -17,6 +17,21 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
   bool _isLoading = true;
   String? _error;
 
+  // Search state
+  bool _isSearching = false;
+  String _searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+
+  List<dynamic> get _filteredGroups {
+    if (_searchQuery.isEmpty) return _groups;
+    return _groups.where((g) {
+      final String batchName = (g["batch_name"] ?? "").toString().toLowerCase();
+      final String courseTitle = (g["course_title"] ?? "").toString().toLowerCase();
+      final String query = _searchQuery.toLowerCase();
+      return batchName.contains(query) || courseTitle.contains(query);
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -540,6 +555,40 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
     }
   }
 
+  void _confirmDeleteBatch(Map<String, dynamic> batch) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Remove Groups?"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Text("Are you sure you want to delete all groups in '${batch['batch_name']}'? This action cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _deleteBatch(batch);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            child: const Text("Remove"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteBatch(Map<String, dynamic> batch) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Removing groups..."), behavior: SnackBarBehavior.floating));
+      await _apiService.deleteGroupBatch(batch['course_id'].toString(), batch['batch_name']);
+      _fetchData();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Groups removed successfully"), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating));
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -551,12 +600,37 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Manage Groups", 
-          style: TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
-        ),
+        title: _isSearching 
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: "Search group sets...",
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.black38),
+              ),
+              style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+              onChanged: (val) => setState(() => _searchQuery = val),
+            )
+          : const Text(
+              "Manage Groups", 
+              style: TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+            ),
         actions: [
-          IconButton(icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)), onPressed: () {}),
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)), 
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = "";
+                  _searchController.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            }
+          ),
           const SizedBox(width: 8),
         ],
       ),
@@ -570,19 +644,19 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Active Course Groups",
-                    style: TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w600),
+                  Text(
+                    _isSearching ? "Search Results" : "Active Course Groups",
+                    style: const TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 15),
 
-                  ..._groups.map((groupSet) => _buildGroupSetTile(groupSet)).toList(),
+                  ..._filteredGroups.map((groupSet) => _buildGroupSetTile(groupSet)).toList(),
                   
-                  if (_groups.isEmpty)
+                  if (_filteredGroups.isEmpty)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.only(top: 40.0),
-                        child: Text("No groups formed yet.", style: TextStyle(color: Colors.black38)),
+                        child: Text("No groups found.", style: TextStyle(color: Colors.black38)),
                       )
                     ),
 
@@ -593,12 +667,14 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
+          FloatingActionButton.extended(
             heroTag: "form_groups_btn",
             onPressed: _showCreateGroupBottomSheet,
             backgroundColor: const Color(0xFF09AEF5),
             elevation: 4,
-            child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
+            icon: const Icon(Icons.groups_rounded, color: Colors.white),
+            label: const Text("Form New Groups", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         ],
       ),
@@ -634,6 +710,25 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     Text(batch["course_title"] ?? "Course", style: const TextStyle(fontSize: 13, color: Colors.black45)),
                   ],
                 ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert_rounded, color: Colors.black38),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                onSelected: (value) {
+                  if (value == 'delete') _confirmDeleteBatch(batch);
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                        SizedBox(width: 10),
+                        Text("Remove", style: TextStyle(color: Colors.redAccent)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
