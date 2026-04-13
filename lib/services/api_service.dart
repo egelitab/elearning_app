@@ -629,5 +629,87 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  // === Instructor Files Methods ===
+
+  Future<Map<String, dynamic>> getInstructorStorage({String? folderId}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final url = folderId != null 
+          ? '$baseUrl/instructor-files?folder_id=$folderId'
+          : '$baseUrl/instructor-files';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load storage');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> createFolder(String name, {String? parentId}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/instructor-files/folder'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "name": name,
+          "parent_id": parentId
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 201 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to create folder');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> uploadInstructorFile(String filePath, {String? folderId}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/instructor-files/upload'));
+      request.headers['Authorization'] = 'Bearer $token';
+      if (folderId != null) request.fields['folder_id'] = folderId;
+      
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      final data = jsonDecode(responseBody);
+
+      if (response.statusCode != 201 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to upload file');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }
 

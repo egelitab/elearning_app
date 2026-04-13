@@ -1,4 +1,10 @@
+import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 class InstructorFilesScreen extends StatefulWidget {
   const InstructorFilesScreen({super.key});
@@ -8,59 +14,181 @@ class InstructorFilesScreen extends StatefulWidget {
 }
 
 class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
+  final ApiService _apiService = ApiService();
   bool isLocalSelected = true; 
   String _selectedFilter = 'All';
   final List<String> _filters = ['All', 'Documents', 'Videos', 'Images']; 
+  
+  // Storage State
+  List<dynamic> _folders = [];
+  List<dynamic> _files = [];
+  List<dynamic> _recentFiles = [];
+  Map<String, dynamic> _stats = {'total_size': 0};
+  bool _isLoading = true;
+  String? _error;
+  
+  // Navigation State
+  List<Map<String, String?>> _navigationStack = [{'id': null, 'name': 'Main Storage'}];
+  String? get _currentFolderId => _navigationStack.last['id'];
+  String get _currentFolderName => _navigationStack.last['name']!;
+
+  // Download State
+  List<FileSystemEntity> _downloadedFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStorage();
+    _loadDownloadedFiles();
+  }
+
+  Future<void> _fetchStorage() async {
+    setState(() => _isLoading = true);
+    try {
+      final data = await _apiService.getInstructorStorage(folderId: _currentFolderId);
+      if (mounted) {
+        setState(() {
+          _folders = data['folders'] ?? [];
+          _files = data['files'] ?? [];
+          _recentFiles = data['recent'] ?? [];
+          _stats = data['stats'] ?? {'total_size': 0};
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadDownloadedFiles() async {
+    try {
+      final directory = await getExternalStorageDirectory();
+      if (directory != null) {
+        final List<FileSystemEntity> files = directory.listSync();
+        if (mounted) {
+          setState(() {
+            _downloadedFiles = files.where((f) => f is File).toList();
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading downloads: $e");
+    }
+  }
+
+  void _navigateToFolder(String id, String name) {
+    setState(() {
+      _navigationStack.add({'id': id, 'name': name});
+    });
+    _fetchStorage();
+  }
+
+  void _navigateBack() {
+    if (_navigationStack.length > 1) {
+      setState(() {
+        _navigationStack.removeLast();
+      });
+      _fetchStorage();
+    }
+  }
+
+  Future<void> _pickAndUploadFile() async {
+    FilePickerResult? result = await FilePicker.pickFiles();
+    if (result != null) {
+      setState(() => _isLoading = true);
+      try {
+        await _apiService.uploadInstructorFile(result.files.single.path!, folderId: _currentFolderId);
+        _fetchStorage();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File uploaded successfully!")));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _showNewFolderDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("New Folder"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: "Folder Name"),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.isNotEmpty) {
+                Navigator.pop(context);
+                setState(() => _isLoading = true);
+                try {
+                  await _apiService.createFolder(controller.text, parentId: _currentFolderId);
+                  _fetchStorage();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                  setState(() => _isLoading = false);
+                }
+              }
+            }, 
+            child: const Text("Create")
+          ),
+        ],
+      )
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Professional light grayish blue background
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: const Color(0xFFF4F7FC),
-            elevation: 0,
-            pinned: true,
-            title: const Text(
-              "My Files", 
-              style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                // 1. Search Bar
-                _buildSearchBar(),
-
-                // 2. Storage Toggle (Local / Cloud)
-                _buildStorageToggle(),
-                
-                if (isLocalSelected) ...[
-                  const SizedBox(height: 10),
-
-                  // 3. Recent Files Section (Horizontal Carousel)
-                  _buildRecentFilesSection(context),
-                  
-                  const SizedBox(height: 15),
-
-                  _buildStorageStatus(),
-
-                  const SizedBox(height: 25),
-
-                  // 4. Folder Hierarchy View (Fixed Border Logic)
-                  _buildFolderHierarchyView(),
-                ] else ...[
-                  _buildDownloadsFilters(),
-                  _buildDownloadsList(),
+      backgroundColor: const Color(0xFFF4F7FC),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                backgroundColor: const Color(0xFFF4F7FC),
+                elevation: 0,
+                pinned: true,
+                title: const Text(
+                  "My Files", 
+                  style: const TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+                ),
+                actions: [
+                   IconButton(icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), onPressed: _fetchStorage)
                 ],
-                
-                const SizedBox(height: 100), 
-              ],
-            ),
-          )
-        ],
-      ),
+              ),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    _buildSearchBar(),
+                    _buildStorageToggle(),
+                    
+                    if (isLocalSelected) ...[
+                      const SizedBox(height: 10),
+                      _buildRecentFilesSection(context),
+                      const SizedBox(height: 15),
+                      _buildStorageStatus(),
+                      const SizedBox(height: 25),
+                      _buildFolderHierarchyView(),
+                    ] else ...[
+                      _buildDownloadsFilters(),
+                      _buildDownloadsList(),
+                    ],
+                    const SizedBox(height: 100), 
+                  ],
+                ),
+              )
+            ],
+          ),
       floatingActionButton: Visibility(
         visible: isLocalSelected,
         child: Column(
@@ -69,7 +197,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           children: [
               FloatingActionButton(
                 heroTag: "upload_btn",
-                onPressed: () {},
+                onPressed: _pickAndUploadFile,
                 backgroundColor: const Color(0xFF09AEF5),
                 elevation: 4,
                 child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 28),
@@ -77,7 +205,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               const SizedBox(height: 15),
               FloatingActionButton(
                 heroTag: "add_btn",
-                onPressed: () {},
+                onPressed: _showNewFolderDialog,
                 backgroundColor: const Color(0xFF09AEF5),
                 elevation: 4,
                 child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
@@ -164,7 +292,8 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildRecentFilesSection(BuildContext context) {
-    double itemWidth = MediaQuery.of(context).size.width * 0.28;
+    if (_recentFiles.isEmpty) return const SizedBox.shrink();
+    double itemWidth = MediaQuery.of(context).size.width * 0.35;
 
     return Column(
       children: [
@@ -172,7 +301,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text("Recent Files", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               Icon(Icons.keyboard_arrow_up_rounded, color: Colors.black45), 
             ],
@@ -183,29 +312,25 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(left: 20, bottom: 20),
           child: Row(
-            children: [
-              _buildRecentFileItem("Lecture_2.pdf", "2 hrs ago", itemWidth),
-              _buildRecentFileItem("History_5.mp4", "7 hrs ago", itemWidth),
-              _buildRecentFileItem("Lecture_1.pdf", "This week", itemWidth),
-              _buildRecentFileItem("Code_zip.zip", "This week", itemWidth),
-            ],
+            children: _recentFiles.map((file) => _buildRecentFileItem(
+              file['name'], 
+              _formatDate(file['created_at']), 
+              itemWidth
+            )).toList(),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildRecentFileItem(String name, String time, double width) {
-    IconData icon = _getIconForFile(name);
-    Color iconColor = _getColorForFile(name);
-    
+  Widget _buildRecentFileItem(String name, String date, double width) {
     return Container(
       width: width,
       margin: const EdgeInsets.only(right: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -215,50 +340,40 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              shape: BoxShape.circle,
+              color: _getColorForFile(name).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 28),
+            child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 24),
           ),
           const SizedBox(height: 12),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87), overflow: TextOverflow.ellipsis),
+          Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+          ),
           const SizedBox(height: 4),
-          Text(time, style: const TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.w500)),
+          Text(
+            date,
+            style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500),
+          ),
         ],
       ),
     );
   }
 
-  IconData _getIconForFile(String name) {
-    String ext = name.toLowerCase().split('.').last;
-    if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
-    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
-    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
-    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
-    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
-    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
-    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
-    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
-    
-    return Icons.insert_drive_file_rounded;
-  }
-
-  Color _getColorForFile(String name) {
-    String ext = name.toLowerCase().split('.').last;
-    if (ext.contains('pdf')) return Colors.red.shade600;
-    if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
-    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
-    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
-    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
-    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
-    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
-    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
-
-    return Colors.blueGrey;
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr).toLocal();
+      return DateFormat('MMM d, yyyy').format(date);
+    } catch (e) {
+      return dateStr;
+    }
   }
 
   Widget _buildFolderHierarchyView() {
@@ -273,14 +388,25 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
-            children: const [
-              Icon(Icons.home_rounded, color: Color(0xFF05398F), size: 22),
-              SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded, color: Colors.black38, size: 20),
-              SizedBox(width: 8),
-              Text("Main Storage", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-              Spacer(),
-              Icon(Icons.more_horiz_rounded, color: Colors.black54),
+            children: [
+              if (_navigationStack.length > 1) 
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+                  onPressed: _navigateBack,
+                )
+              else
+                const Icon(Icons.home_rounded, color: Color(0xFF05398F), size: 22),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded, color: Colors.black38, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _currentFolderName, 
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                  overflow: TextOverflow.ellipsis
+                )
+              ),
+              const Icon(Icons.more_horiz_rounded, color: Colors.black54),
             ],
           ),
         ),
@@ -291,11 +417,24 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              _buildImageFolderTile("Books", "1 Apr 2025", "12:08 pm", "7 items"),
-              _buildImageFolderTile("Documents", "8 Feb 2025", "9:29 pm", "3 items"),
-              _buildImageFolderTile("Downloads", "1 Apr 2025", "12:08 pm", "2 items"),
-              _buildImageFolderTile("Assessments", "15 Apr 2025", "2:15 pm", "1 item"),
-              _buildImageFileTile("Lecture 5 Notes.docx", "6 Jan 2025", "10:04 am", "23.01 KB"),
+              if (_folders.isEmpty && _files.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Text("This folder is empty", style: TextStyle(color: Colors.black38)),
+                ),
+              ..._folders.map((folder) => GestureDetector(
+                onTap: () => _navigateToFolder(folder['id'].toString(), folder['name']),
+                child: _buildImageFolderTile(
+                  folder['name'], 
+                  _formatDate(folder['created_at']), 
+                  "0 items" 
+                ),
+              )),
+              ..._files.map((file) => _buildImageFileTile(
+                file['name'], 
+                _formatDate(file['created_at']), 
+                _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0)
+              )),
             ],
           ),
         ),
@@ -303,7 +442,14 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     );
   }
 
-  Widget _buildImageFolderTile(String name, String date, String time, String itemCount) {
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return "0 B";
+    const suffixes = ["B", "KB", "MB", "GB", "TB"];
+    var i = (log(bytes) / log(1024)).floor();
+    return ((bytes / pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
+  }
+
+  Widget _buildImageFolderTile(String name, String date, String itemCount) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -335,7 +481,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
                 const SizedBox(height: 4),
-                Text("$date • $time", style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
+                Text(date, style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -345,7 +491,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     );
   }
 
-  Widget _buildImageFileTile(String name, String date, String time, String size) {
+  Widget _buildImageFileTile(String name, String date, String size) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -377,7 +523,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87), overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 4),
-                Text("$date • $time", style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
+                Text(date, style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -417,11 +563,11 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               ),
               child: Text(
                 filter,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black54,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                  fontSize: 14,
-                ),
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black54,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                    fontSize: 14,
+                  ),
               ),
             ),
           );
@@ -431,22 +577,38 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildDownloadsList() {
+    if (_downloadedFiles.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(child: Text("No downloaded files found on device", style: TextStyle(color: Colors.black38))),
+      );
+    }
+
+    // Filter based on selected category simulation
+    final filtered = _downloadedFiles.where((f) {
+      if (_selectedFilter == 'All') return true;
+      final name = f.path.toLowerCase();
+      if (_selectedFilter == 'Documents') return name.contains('.pdf') || name.contains('.docx') || name.contains('.txt');
+      if (_selectedFilter == 'Videos') return name.contains('.mp4') || name.contains('.avi');
+      if (_selectedFilter == 'Images') return name.contains('.jpg') || name.contains('.png');
+      return true;
+    }).toList();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-           _buildDateSection("December 21 2025"),
-           _buildDownloadFileTile("Compiler Design Lecture Note - 2.pdf", "8.14 MB", "Author"),
-           _buildDownloadFileTile("Research Methods in Computer Scie...txt", "5.9 MB", "Author"),
-           
-           const SizedBox(height: 15),
-           
-           _buildDateSection("January 23 2026"),
-           _buildDownloadFileTile("Complexity Classes Part 2 | NPC (N....mp4", "38.3 MB", "Author"),
-           _buildDownloadFileTile("Image 02.png", "122 KB", "Author"),
-           _buildDownloadFileTile("Complexity Theory.pptx", "4.4 MB", "Author"),
-        ],
+        children: filtered.map((entity) {
+          final file = entity as File;
+          final stat = file.statSync();
+          final name = file.path.split(Platform.pathSeparator).last;
+          
+          return _buildDownloadFileTile(
+            name, 
+            _formatBytes(stat.size), 
+            "Local Device"
+          );
+        }).toList(),
       ),
     );
   }
@@ -466,6 +628,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildStorageStatus() {
+    final int usedBytes = int.tryParse(_stats['total_size']?.toString() ?? '0') ?? 0;
+    const int totalLimit = 1024 * 1024 * 1024; // 1 GB limit simulation
+    final double progress = (usedBytes / totalLimit).clamp(0.0, 1.0);
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
@@ -490,23 +656,23 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-               Text("Local Storage Used", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
-               Icon(Icons.sd_storage_rounded, color: Colors.white70, size: 20)
+            children: [
+               Text("Virtual Storage Used", style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600)),
+               const Icon(Icons.cloud_done_rounded, color: Colors.white70, size: 20)
             ],
           ),
           const SizedBox(height: 5),
-          const Text("182 MB", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+          Text(_formatBytes(usedBytes), style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
           LinearProgressIndicator(
-            value: 0.25, 
+            value: progress, 
             backgroundColor: Colors.white.withOpacity(0.3),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             borderRadius: BorderRadius.circular(5),
             minHeight: 6,
           ),
           const SizedBox(height: 8),
-          const Text("Available for Uploads", style: TextStyle(color: Colors.white60, fontSize: 11)),
+          Text("of 1.0 GB used", style: const TextStyle(color: Colors.white60, fontSize: 11)),
         ],
       ),
     );
@@ -570,5 +736,42 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getIconForFile(String filename) {
+    String ext = filename.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'pdf': return Icons.picture_as_pdf_rounded;
+      case 'docx':
+      case 'doc':
+      case 'txt': return Icons.description_rounded;
+      case 'mp4':
+      case 'avi':
+      case 'mov': return Icons.video_library_rounded;
+      case 'jpg':
+      case 'jpeg':
+      case 'png': return Icons.image_rounded;
+      case 'zip':
+      case 'rar': return Icons.archive_rounded;
+      default: return Icons.insert_drive_file_rounded;
+    }
+  }
+
+  Color _getColorForFile(String filename) {
+    String ext = filename.split('.').last.toLowerCase();
+    switch (ext) {
+      case 'pdf': return const Color(0xFFE91E63);
+      case 'docx':
+      case 'doc': return const Color(0xFF2196F3);
+      case 'txt': return const Color(0xFF607D8B);
+      case 'mp4':
+      case 'avi': return const Color(0xFFFF9800);
+      case 'jpg':
+      case 'jpeg':
+      case 'png': return const Color(0xFF4CAF50);
+      case 'zip':
+      case 'rar': return const Color(0xFF9C27B0);
+      default: return const Color(0xFF05398F);
+    }
   }
 }
