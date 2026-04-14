@@ -32,6 +32,9 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   String? get _currentFolderId => _navigationStack.last['id'];
   String get _currentFolderName => _navigationStack.last['name']!;
 
+  // Clipboard/Move State
+  Map<String, dynamic>? _clipboard; // {id, type, mode: 'cut'|'copy'}
+
   // Download State
   List<FileSystemEntity> _downloadedFiles = [];
 
@@ -98,15 +101,22 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Future<void> _pickAndUploadFile() async {
-    FilePickerResult? result = await FilePicker.pickFiles();
-    if (result != null) {
-      setState(() => _isLoading = true);
-      try {
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles();
+      if (result != null) {
+        setState(() => _isLoading = true);
         await _apiService.uploadInstructorFile(result.files.single.path!, folderId: _currentFolderId);
         _fetchStorage();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("File uploaded successfully!")));
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File uploaded successfully!")));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        String message = e.toString().contains("already exists") 
+            ? "A file with this name already exists here."
+            : "Upload failed: $e";
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
         setState(() => _isLoading = false);
       }
     }
@@ -124,7 +134,10 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           autofocus: true,
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: const Text("Cancel")
+          ),
           ElevatedButton(
             onPressed: () async {
               if (controller.text.isNotEmpty) {
@@ -134,12 +147,124 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   await _apiService.createFolder(controller.text, parentId: _currentFolderId);
                   _fetchStorage();
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                  String message = e.toString().contains("already exists") 
+                      ? "A folder with this name already exists here."
+                      : "Error creating folder: $e";
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
                   setState(() => _isLoading = false);
                 }
               }
             }, 
             child: const Text("Create")
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showEntryOptions(dynamic item, String type) {
+    final bool isUploads = type == 'folder' && item['name'] == 'Uploads' && _currentFolderId == null;
+    
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isUploads) ...[
+              _buildOptionTile(Icons.edit_rounded, "Rename", Colors.orange, () {
+                Navigator.pop(context);
+                _showRenameDialog(item, type);
+              }),
+              _buildOptionTile(Icons.content_cut_rounded, "Cut", Colors.blue, () {
+                Navigator.pop(context);
+                setState(() => _clipboard = {'id': item['id'], 'type': type, 'mode': 'cut'});
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item cut to clipboard")));
+              }),
+              _buildOptionTile(Icons.content_copy_rounded, "Copy (Soon)", Colors.blueGrey, () {}),
+            ],
+            if (type == 'file') 
+              _buildOptionTile(Icons.share_rounded, "Share", Colors.green, () {
+                Navigator.pop(context);
+                // Share logic
+              }),
+            if (!isUploads)
+              _buildOptionTile(Icons.delete_outline_rounded, "Delete", Colors.red, () {
+                Navigator.pop(context);
+                _showDeleteWarning(item, type);
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionTile(IconData icon, String title, Color color, VoidCallback onTap) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+        child: Icon(icon, color: color, size: 20),
+      ),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
+      onTap: onTap,
+    );
+  }
+
+  void _showRenameDialog(dynamic item, String type) {
+    final controller = TextEditingController(text: item['name']);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Rename ${type == 'folder' ? 'Folder' : 'File'}"),
+        content: TextField(controller: controller, autofocus: true, decoration: const InputDecoration(hintText: "New Name")),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () async {
+              if (controller.text.isNotEmpty && controller.text != item['name']) {
+                 Navigator.pop(context);
+                 setState(() => _isLoading = true);
+                 try {
+                   await _apiService.renameEntry(item['id'].toString(), type, controller.text);
+                   _fetchStorage();
+                 } catch (e) {
+                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Rename failed: $e")));
+                   setState(() => _isLoading = false);
+                 }
+              }
+            },
+            child: const Text("Rename"),
+          ),
+        ],
+      )
+    );
+  }
+
+  void _showDeleteWarning(dynamic item, String type) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Move to Recycle Bin?"),
+        content: Text("Are you sure you want to delete '${item['name']}'? It can be recovered from the Recycle Bin."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              setState(() => _isLoading = true);
+              try {
+                await _apiService.softDeleteEntry(item['id'].toString(), type);
+                _fetchStorage();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Delete failed: $e")));
+                setState(() => _isLoading = false);
+              }
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.white)),
           ),
         ],
       )
@@ -152,43 +277,53 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       backgroundColor: const Color(0xFFF4F7FC),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
-        : CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                backgroundColor: const Color(0xFFF4F7FC),
-                elevation: 0,
-                pinned: true,
-                title: const Text(
-                  "My Files", 
-                  style: const TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
-                ),
-                actions: [
-                   IconButton(icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), onPressed: _fetchStorage)
-                ],
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    _buildSearchBar(),
-                    _buildStorageToggle(),
-                    
-                    if (isLocalSelected) ...[
-                      const SizedBox(height: 10),
-                      _buildRecentFilesSection(context),
-                      const SizedBox(height: 15),
-                      _buildStorageStatus(),
-                      const SizedBox(height: 25),
-                      _buildFolderHierarchyView(),
-                    ] else ...[
-                      _buildDownloadsFilters(),
-                      _buildDownloadsList(),
-                    ],
-                    const SizedBox(height: 100), 
+        : _error != null
+          ? Center(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text("Error: $_error", style: const TextStyle(color: Colors.red)),
+                TextButton(onPressed: _fetchStorage, child: const Text("Retry"))
+              ],
+            ))
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: const Color(0xFFF4F7FC),
+                  elevation: 0,
+                  pinned: true,
+                  title: const Text(
+                    "My Files", 
+                    style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+                  ),
+                  actions: [
+                     IconButton(icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), onPressed: _fetchStorage)
                   ],
                 ),
-              )
-            ],
-          ),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      _buildSearchBar(),
+                      _buildStorageToggle(),
+                      
+                      if (isLocalSelected) ...[
+                        const SizedBox(height: 10),
+                        _buildRecentFilesSection(context),
+                        const SizedBox(height: 15),
+                        _buildStorageStatus(),
+                        const SizedBox(height: 25),
+                        _buildFolderHierarchyView(),
+                      ] else ...[
+                        _buildDownloadsFilters(),
+                        _buildDownloadsList(),
+                      ],
+                      const SizedBox(height: 100), 
+                    ],
+                  ),
+                )
+              ],
+            ),
       floatingActionButton: Visibility(
         visible: isLocalSelected,
         child: Column(
@@ -406,7 +541,26 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   overflow: TextOverflow.ellipsis
                 )
               ),
-              const Icon(Icons.more_horiz_rounded, color: Colors.black54),
+              if (_clipboard != null)
+                IconButton(
+                  icon: const Icon(Icons.paste_rounded, color: Colors.green),
+                  tooltip: "Move here",
+                  onPressed: _pasteItem,
+                ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_horiz_rounded, color: Colors.black54),
+                onSelected: (val) {
+                  if (val == 'recycle') {
+                    _showRecycleBin();
+                  } else if (val == 'sort') {
+                    _showSortOptions();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'sort', child: Text("Sort by...")),
+                  const PopupMenuItem(value: 'recycle', child: Text("Recycle Bin")),
+                ],
+              ),
             ],
           ),
         ),
@@ -422,18 +576,26 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   padding: EdgeInsets.symmetric(vertical: 40),
                   child: Text("This folder is empty", style: TextStyle(color: Colors.black38)),
                 ),
-              ..._folders.map((folder) => GestureDetector(
-                onTap: () => _navigateToFolder(folder['id'].toString(), folder['name']),
-                child: _buildImageFolderTile(
-                  folder['name'], 
-                  _formatDate(folder['created_at']), 
-                  "0 items" 
+              ..._folders.map((folder) {
+                final bool isUploads = folder['name'] == 'Uploads' && _currentFolderId == null;
+                return GestureDetector(
+                  onTap: () => _navigateToFolder(folder['id'].toString(), folder['name']),
+                  onLongPress: () => _showEntryOptions(folder, 'folder'),
+                  child: _buildImageFolderTile(
+                    folder['name'], 
+                    _formatDate(folder['created_at']), 
+                    "0 items",
+                    isSystemFolder: isUploads,
+                  ),
+                );
+              }),
+              ..._files.map((file) => GestureDetector(
+                onLongPress: () => _showEntryOptions(file, 'file'),
+                child: _buildImageFileTile(
+                  file['name'], 
+                  _formatDate(file['created_at']), 
+                  _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0)
                 ),
-              )),
-              ..._files.map((file) => _buildImageFileTile(
-                file['name'], 
-                _formatDate(file['created_at']), 
-                _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0)
               )),
             ],
           ),
@@ -449,7 +611,121 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     return ((bytes / pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
   }
 
-  Widget _buildImageFolderTile(String name, String date, String itemCount) {
+  Future<void> _pasteItem() async {
+    if (_clipboard == null) return;
+    
+    setState(() => _isLoading = true);
+    try {
+      await _apiService.moveEntry(
+        _clipboard!['id'].toString(), 
+        _clipboard!['type'], 
+        _currentFolderId
+      );
+      setState(() => _clipboard = null);
+      _fetchStorage();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item moved successfully")));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Move failed: $e")));
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.sort_by_alpha_rounded),
+            title: const Text("Name (A-Z)"),
+            onTap: () {
+              Navigator.pop(context);
+              setState(() {
+                _folders.sort((a, b) => a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase()));
+                _files.sort((a, b) => a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase()));
+              });
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.calendar_today_rounded),
+            title: const Text("Date (Newest)"),
+            onTap: () {
+              Navigator.pop(context);
+              setState(() {
+                _folders.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
+                _files.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRecycleBin() async {
+    setState(() => _isLoading = true);
+    try {
+      final items = await _apiService.getRecycleBin();
+      setState(() => _isLoading = false);
+      
+      if (!mounted) return;
+      
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24))
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 40, height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2)),
+              ),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text("Recycle Bin", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+              const Divider(),
+              Expanded(
+                child: items.isEmpty 
+                  ? const Center(child: Text("Recycle bin is empty"))
+                  : ListView.builder(
+                      itemCount: items.length,
+                      itemBuilder: (context, i) {
+                        final item = items[i];
+                        return ListTile(
+                          leading: Icon(item['type'] == 'folder' ? Icons.folder_rounded : Icons.insert_drive_file_rounded, color: Colors.grey),
+                          title: Text(item['name']),
+                          subtitle: Text("Deleted: ${_formatDate(item['deleted_at'])}"),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.restore_rounded, color: Colors.blue),
+                            onPressed: () {
+                              Navigator.pop(context);
+                              // Restore logic could go here
+                            },
+                          ),
+                        );
+                      },
+                    ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to load recycle bin: $e")));
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Widget _buildImageFolderTile(String name, String date, String itemCount, {bool isSystemFolder = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -469,17 +745,29 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFE3F2FD),
+              color: isSystemFolder ? const Color(0xFFE8F5E9) : const Color(0xFFE3F2FD),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.folder_rounded, color: Color(0xFF09AEF5), size: 28),
+            child: Icon(
+              isSystemFolder ? Icons.folder_shared_rounded : Icons.folder_rounded, 
+              color: isSystemFolder ? Colors.green : const Color(0xFF09AEF5), 
+              size: 28
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+                Row(
+                  children: [
+                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+                    if (isSystemFolder) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.lock_rounded, size: 14, color: Colors.black26),
+                    ]
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Text(date, style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
               ],

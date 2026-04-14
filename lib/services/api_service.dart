@@ -711,5 +711,97 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  Future<void> renameEntry(String id, String type, String newName) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final url = type == 'folder' 
+          ? '$baseUrl/instructor-files/folder/$id/rename'
+          : '$baseUrl/instructor-files/file/$id/rename';
+
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode({"name": newName}),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to rename $type');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> softDeleteEntry(String id, String type) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final url = type == 'folder' 
+          ? '$baseUrl/instructor-files/folder/$id'
+          : '$baseUrl/instructor-files/file/$id';
+
+      final response = await http.delete(
+        Uri.parse(url),
+        headers: {"Authorization": "Bearer $token"},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to delete $type');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> moveEntry(String id, String type, String? targetFolderId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/instructor-files/move'),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode({
+          "id": id,
+          "type": type,
+          "target_folder_id": targetFolderId
+        }),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to move $type');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<List<dynamic>> getRecycleBin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/instructor-files/recycle-bin'),
+        headers: {"Authorization": "Bearer $token"},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'] ?? [];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load recycle bin');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }
 
