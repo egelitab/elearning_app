@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
+import 'instructor_materials_screen.dart';
+import 'instructor_courses_screen.dart';
+import 'instructor_schedule_screen.dart';
+import 'instructor_grades_screen.dart';
+import 'instructor_groups_screen.dart';
+import 'instructor_files_screen.dart';
+import 'help_support_screen.dart';
+import 'account_settings_screen.dart';
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -9,13 +18,29 @@ class InstructorHomeScreen extends StatefulWidget {
 }
 
 class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
+  final ApiService _apiService = ApiService();
   String _title = 'Professor';
   String _firstName = '';
+  List<dynamic> _courses = [];
+  bool _isLoadingCourses = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _fetchCourses();
+  }
+
+  Future<void> _fetchCourses() async {
+    setState(() => _isLoadingCourses = true);
+    try {
+      final courses = await _apiService.getInstructorCourses();
+      setState(() => _courses = courses);
+    } catch (e) {
+      print("Error fetching courses for home: $e");
+    } finally {
+      setState(() => _isLoadingCourses = false);
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -59,8 +84,13 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                         const SizedBox(height: 25),
                         const Text("Quick Actions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
                         const SizedBox(height: 15),
-                        _buildQuickAction(Icons.send_rounded, "Post Announcement", "Notify all students"),
-                        _buildQuickAction(Icons.download_rounded, "Downloads", "Access offline materials"),
+                        _buildQuickAction(Icons.send_rounded, "Post Announcement", "Notify all students", () {
+                          _showPostAnnouncementDialog(context);
+                        }),
+                        _buildQuickAction(Icons.download_rounded, "Downloads", "Access offline materials", () {
+                          // Could nav to Download screen if applicable for instructors
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloads coming soon!")));
+                        }),
                       ],
                     ),
                   ),
@@ -69,6 +99,101 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showPostAnnouncementDialog(BuildContext context) {
+    if (_courses.isEmpty && !_isLoadingCourses) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No courses found to post announcements to.")));
+      return;
+    }
+
+    final titleController = TextEditingController();
+    final contentController = TextEditingController();
+    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          bool isPosting = false;
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text("Post Announcement", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(color: const Color(0xFFF4F7FC), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCourseId,
+                        items: _courses.map((c) => DropdownMenuItem<String>(value: c['id'], child: Text(c['title'] ?? c['course_code'], overflow: TextOverflow.ellipsis))).toList(),
+                        onChanged: (val) => setDialogState(() => selectedCourseId = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const Text("Title", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
+                  const SizedBox(height: 5),
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      hintText: "Announcement Title",
+                      filled: true,
+                      fillColor: const Color(0xFFF4F7FC),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  const Text("Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
+                  const SizedBox(height: 5),
+                  TextField(
+                    controller: contentController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: "Type your message here...",
+                      filled: true,
+                      fillColor: const Color(0xFFF4F7FC),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+              ElevatedButton(
+                onPressed: isPosting ? null : () async {
+                  if (selectedCourseId == null || titleController.text.isEmpty || contentController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+                    return;
+                  }
+
+                  setDialogState(() => isPosting = true);
+                  try {
+                    await _apiService.createAnnouncement(selectedCourseId!, titleController.text, contentController.text);
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Announcement published successfully!"), backgroundColor: Colors.green));
+                  } catch (e) {
+                    setDialogState(() => isPosting = false);
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+                  }
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                child: isPosting ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Post"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -103,16 +228,21 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-               color: Colors.white24,
-               shape: BoxShape.circle,
-            ),
-            child: const CircleAvatar(
-              backgroundColor: Colors.white, 
-              radius: 22,
-              child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+          GestureDetector(
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Notifications coming soon!")));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: const BoxDecoration(
+                 color: Colors.white24,
+                 shape: BoxShape.circle,
+              ),
+              child: const CircleAvatar(
+                backgroundColor: Colors.white, 
+                radius: 22,
+                child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+              ),
             ),
           ),
         ],
@@ -130,66 +260,82 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       child: Row(
         children: [
           // Blue Upcoming Class Card
-          _buildBaseCard(
-            width: cardWidth,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text("Upcoming Class", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                    Icon(Icons.video_call_rounded, color: Colors.white70, size: 20),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                const Text("Mon 8:30 AM", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                const Spacer(),
-                const Text("Computer Science 101", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 2),
-                const Text("Tap to view details ›", style: TextStyle(color: Colors.white60, fontSize: 12)),
-              ],
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()),
+              );
+            },
+            child: _buildBaseCard(
+              width: cardWidth,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text("Upcoming Class", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                      Icon(Icons.video_call_rounded, color: Colors.white70, size: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text("Mon 8:30 AM", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  const Text("Computer Science 101", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  const Text("Tap to view details ›", style: TextStyle(color: Colors.white60, fontSize: 12)),
+                ],
+              ),
             ),
           ),
           
           const SizedBox(width: 15),
 
           // Action Card for materials
-          _buildBaseCard(
-            width: cardWidth,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF26A69A), Color(0xFF00695C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text("Quick Action", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                    SizedBox(height: 8),
-                    Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
-                    Text("Materials", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const InstructorFilesScreen()),
+              );
+            },
+            child: _buildBaseCard(
+              width: cardWidth,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF26A69A), Color(0xFF00695C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text("Quick Action", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                      SizedBox(height: 8),
+                      Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
+                      Text("Files", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                    ],
                   ),
-                  child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 36),
-                ),
-              ],
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 36),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -225,58 +371,102 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       mainAxisSpacing: 25,
       crossAxisSpacing: 10,
       children: [
-        _buildIconBtn(Icons.folder_shared_rounded, "Materials", const Color(0xFFFFF3E0), Colors.orange),
-        _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue),
-        _buildIconBtn(Icons.book_rounded, "Courses", const Color(0xFFE8F5E9), Colors.green),
-        _buildIconBtn(Icons.schedule_rounded, "Schedule", const Color(0xFFF3E5F5), Colors.purple),
-        _buildIconBtn(Icons.assessment_rounded, "Grades", const Color(0xFFFFEBEE), Colors.red),
-        _buildIconBtn(Icons.groups_rounded, "Groups", const Color(0xFFE0F7FA), Colors.cyan),
-        _buildIconBtn(Icons.calendar_month_rounded, "Calendar", const Color(0xFFFFFDE7), Colors.amber),
-        _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700),
+        _buildIconBtn(Icons.folder_shared_rounded, "Materials", const Color(0xFFFFF3E0), Colors.orange, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorMaterialsScreen()));
+        }),
+        _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorFilesScreen()));
+        }),
+        _buildIconBtn(Icons.book_rounded, "Courses", const Color(0xFFE8F5E9), Colors.green, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
+        }),
+        _buildIconBtn(Icons.schedule_rounded, "Schedule", const Color(0xFFF3E5F5), Colors.purple, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()));
+        }),
+        _buildIconBtn(Icons.assessment_rounded, "Grades", const Color(0xFFFFEBEE), Colors.red, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorGradesScreen()));
+        }),
+        _buildIconBtn(Icons.groups_rounded, "Groups", const Color(0xFFE0F7FA), Colors.cyan, () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorGroupsScreen()));
+        }),
+        _buildIconBtn(Icons.calendar_month_rounded, "Calendar", const Color(0xFFFFFDE7), Colors.amber, () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calendar coming soon!")));
+        }),
+        _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700, () {
+          _showMoreOptions(context);
+        }),
       ],
     );
   }
 
-  Widget _buildIconBtn(IconData icon, String label, Color bgColor, Color iconColor) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          height: 55,
-          width: 55,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04), 
-                blurRadius: 10,
-                offset: const Offset(0, 4)
-              )
-            ]
-          ),
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: bgColor,
-                shape: BoxShape.circle,
+  Widget _buildIconBtn(IconData icon, String label, Color bgColor, Color iconColor, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            height: 55,
+            width: 55,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04), 
+                  blurRadius: 10,
+                  offset: const Offset(0, 4)
+                )
+              ]
+            ),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 22),
               ),
-              child: Icon(icon, color: iconColor, size: 22),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label, 
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(
+            label, 
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildQuickAction(IconData icon, String title, String sub) {
+  void _showMoreOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("More Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            const SizedBox(height: 20),
+            _buildQuickAction(Icons.help_outline_rounded, "Help & Support", "Get assistance", () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
+            }),
+            _buildQuickAction(Icons.settings_outlined, "Settings", "Account & app settings", () {
+              Navigator.pop(context);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAction(IconData icon, String title, String sub, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -294,7 +484,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
             child: Row(
