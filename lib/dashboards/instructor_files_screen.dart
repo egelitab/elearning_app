@@ -428,7 +428,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
 
   Widget _buildRecentFilesSection(BuildContext context) {
     if (_recentFiles.isEmpty) return const SizedBox.shrink();
-    double itemWidth = MediaQuery.of(context).size.width * 0.35;
+    double itemWidth = MediaQuery.of(context).size.width * 0.28;
 
     return Column(
       children: [
@@ -437,8 +437,11 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text("Recent Files", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-              Icon(Icons.keyboard_arrow_up_rounded, color: Colors.black45), 
+              const Text("Recent Files", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              GestureDetector(
+                onTap: _showAllRecentFiles,
+                child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black45), 
+              ),
             ],
           ),
         ),
@@ -449,7 +452,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           child: Row(
             children: _recentFiles.map((file) => _buildRecentFileItem(
               file['name'], 
-              _formatDate(file['created_at']), 
+              _getRelativeTime(file['created_at']), 
               itemWidth
             )).toList(),
           ),
@@ -475,31 +478,116 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: _getColorForFile(name).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
             ),
-            child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 24),
+            child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 28),
           ),
           const SizedBox(height: 12),
           Text(
             name,
             maxLines: 1,
+            textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
           ),
           const SizedBox(height: 4),
           Text(
             date,
+            textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500),
           ),
         ],
       ),
     );
+  }
+
+  void _showAllRecentFiles() {
+    // Group files by category
+    Map<String, List<dynamic>> categories = {
+      'Today': [],
+      'This week': [],
+      'This month': [],
+      'Earlier': [],
+    };
+
+    final now = DateTime.now();
+    for (var file in _recentFiles) {
+      final date = DateTime.parse(file['created_at']);
+      final diff = now.difference(date);
+
+      if (diff.inDays == 0) {
+        categories['Today']!.add(file);
+      } else if (diff.inDays < 7) {
+        categories['This week']!.add(file);
+      } else if (diff.inDays < 30) {
+        categories['This month']!.add(file);
+      } else {
+        categories['Earlier']!.add(file);
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: const BoxDecoration(
+          color: Color(0xFFF4F7FC),
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 15),
+              decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2)),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text("Recent Activity", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            ),
+            const Divider(),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: categories.entries.where((e) => e.value.isNotEmpty).expand((entry) => [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(entry.key, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45, letterSpacing: 0.5)),
+                  ),
+                  ...entry.value.map((file) => _buildImageFileTile(
+                    file['name'], 
+                    _getRelativeTime(file['created_at']), 
+                    _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0)
+                  )),
+                ]).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getRelativeTime(String dateStr) {
+    final date = DateTime.parse(dateStr);
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inMinutes < 60) return "${diff.inMinutes} mins ago";
+    if (diff.inHours < 24) return "${diff.inHours} hrs ago";
+    if (diff.inDays == 1) return "Yesterday";
+    if (diff.inDays < 7) return "${diff.inDays} days ago";
+    if (diff.inDays < 30) return "${(diff.inDays / 7).floor()} weeks ago";
+    return DateFormat('MMM dd, yyyy').format(date);
   }
 
   String _formatDate(String dateStr) {
