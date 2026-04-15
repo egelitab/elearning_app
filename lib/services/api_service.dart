@@ -803,5 +803,39 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
+  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profileData) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.patch(
+        Uri.parse('$baseUrl/users/me'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(profileData),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        // Update local storage with new data
+        final updated = data['data'];
+        if (updated['title'] != null) await prefs.setString('title', updated['title']);
+        if (updated['first_name'] != null) await prefs.setString('first_name', updated['first_name']);
+        if (updated['middle_name'] != null) await prefs.setString('middle_name', updated['middle_name']);
+        if (updated['last_name'] != null) await prefs.setString('last_name', updated['last_name']);
+        if (updated['email'] != null) await prefs.setString('email', updated['email']);
+        
+        return data;
+      } else {
+        throw Exception(data['message'] ?? 'Failed to update profile');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }
 

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 import '../auth/welcome_screen.dart';
+import 'instructor_courses_screen.dart';
+import 'account_settings_screen.dart';
+import 'instructor_schedule_screen.dart';
+import 'department_info_screen.dart';
+import 'help_support_screen.dart';
 
 class InstructorProfileScreen extends StatefulWidget {
   const InstructorProfileScreen({super.key});
@@ -47,96 +52,117 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
           style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-
-            // 1. Profile Header Hero
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF09AEF5).withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        )
-                      ]
-                    ),
-                    child: const CircleAvatar(
-                      radius: 65,
-                      backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Color(0xFFE3F2FD),
-                        child: Icon(Icons.person_rounded, size: 70, color: Color(0xFF09AEF5)),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
+      body: RefreshIndicator(
+        onRefresh: _loadUserData,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+  
+              // 1. Profile Header Hero
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: const Color(0xFF09AEF5).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
                           )
                         ]
                       ),
-                      child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                      child: const CircleAvatar(
+                        radius: 65,
+                        backgroundColor: Colors.white,
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundColor: Color(0xFFE3F2FD),
+                          child: Icon(Icons.person_rounded, size: 70, color: Color(0xFF09AEF5)),
+                        ),
+                      ),
                     ),
+                    Positioned(
+                      bottom: 0,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                          ).then((_) => _loadUserData());
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              )
+                            ]
+                          ),
+                          child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+  
+              const SizedBox(height: 20),
+              
+              Text("$_title $_firstName $_middleName $_lastName".replaceAll(RegExp(r'\s+'), ' ').trim(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.black87)),
+              const SizedBox(height: 4),
+              if (_email.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF09AEF5).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            
-            Text("$_title $_firstName $_middleName $_lastName".replaceAll(RegExp(r'\s+'), ' ').trim(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.black87)),
-            const SizedBox(height: 4),
-            if (_email.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF09AEF5).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  child: Text(
+                    _email,
+                    style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 13)
+                  ),
                 ),
-                child: Text(
-                  _email,
-                  style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 13)
+  
+              const SizedBox(height: 40),
+  
+              // 2. Settings Options List
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    _buildProfileOption(Icons.menu_book_rounded, "Assigned Courses", Colors.blue, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
+                    }),
+                    _buildProfileOption(Icons.calendar_month_rounded, "Schedule & Office Hours", Colors.orange, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()));
+                    }),
+                    _buildProfileOption(Icons.business_rounded, "Department Information", Colors.green, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const DepartmentInfoScreen()));
+                    }),
+                    _buildProfileOption(Icons.settings_rounded, "Account Settings", Colors.grey.shade700, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen())).then((_) => _loadUserData());
+                    }),
+                    _buildProfileOption(Icons.help_outline_rounded, "Help & Support", Colors.purple, () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
+                    }),
+                  ],
                 ),
               ),
-
-            const SizedBox(height: 40),
-
-            // 2. Settings Options List
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  _buildProfileOption(Icons.menu_book_rounded, "Assigned Courses", Colors.blue),
-                  _buildProfileOption(Icons.calendar_month_rounded, "Schedule & Office Hours", Colors.orange),
-                  _buildProfileOption(Icons.business_rounded, "Department Information", Colors.green),
-                  _buildProfileOption(Icons.settings_rounded, "Account Settings", Colors.grey.shade700),
-                  _buildProfileOption(Icons.help_outline_rounded, "Help & Support", Colors.purple),
-                ],
-              ),
-            ),
 
             const SizedBox(height: 40),
 
@@ -176,10 +202,11 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
           ],
         ),
       ),
+     ),
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title, Color color) {
+  Widget _buildProfileOption(IconData icon, String title, Color color, VoidCallback onTap) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -197,7 +224,7 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
