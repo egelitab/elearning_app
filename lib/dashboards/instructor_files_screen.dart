@@ -101,7 +101,6 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     setState(() {
       if (_selectedIds.contains(id)) {
         _selectedIds.remove(id);
-        if (_selectedIds.isEmpty) _isSelectionMode = false;
       } else {
         _selectedIds.add(id);
         _isSelectionMode = true;
@@ -423,7 +422,6 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                         setState(() {
                           if (_selectedIds.length == totalItems) {
                             _selectedIds.clear();
-                            _isSelectionMode = false;
                           } else {
                             for (var f in _folders) { _selectedIds.add("folder:${f['id']}"); }
                             for (var f in _files) { _selectedIds.add("file:${f['id']}"); }
