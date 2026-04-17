@@ -821,15 +821,15 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           children: [
             if (isSelected) const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24)),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isUploads ? const Color(0xFFE8F5E9) : _getIconColor(name, type).withOpacity(0.1), 
-                borderRadius: BorderRadius.circular(12)
+                shape: BoxShape.circle,
               ),
               child: Icon(
                 isUploads ? Icons.folder_shared_rounded : _getIcon(name, type), 
                 color: isUploads ? Colors.green : _getIconColor(name, type), 
-                size: 26
+                size: 24
               ),
             ),
             const SizedBox(width: 16),
@@ -859,20 +859,31 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
   IconData _getIcon(String name, String type) {
     if (type == 'folder') return Icons.folder_rounded;
-    String ext = name.split('.').last.toLowerCase();
-    if (ext == 'pdf') return Icons.picture_as_pdf_rounded;
-    if (ext == 'mp4') return Icons.video_library_rounded;
-    if (ext == 'jpg' || ext == 'png') return Icons.image_rounded;
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
+    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
     return Icons.insert_drive_file_rounded;
   }
 
   Color _getIconColor(String name, String type) {
     if (type == 'folder') return const Color(0xFF09AEF5);
-    String ext = name.split('.').last.toLowerCase();
-    if (ext == 'pdf') return Colors.red;
-    if (ext == 'mp4') return Colors.orange;
-    if (ext == 'jpg' || ext == 'png') return Colors.green;
-    return const Color(0xFF05398F);
+    String ext = name.toLowerCase().split('.').last;
+    if (ext.contains('pdf')) return Colors.red.shade600;
+    if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
+    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
+    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
+
+    return Colors.blueGrey;
   }
 
   String _formatDate(String dateStr) {
