@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/api_service.dart';
 import 'instructor_materials_screen.dart';
 import 'instructor_courses_screen.dart';
@@ -198,6 +199,116 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     );
   }
 
+  Future<void> _handleDirectUpload() async {
+    if (_courses.isEmpty && !_isLoadingCourses) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("No courses found. Please ensure you are assigned to at least one course.")));
+      return;
+    }
+
+    try {
+      FilePickerResult? result = await FilePicker.pickFiles();
+      if (result != null) {
+        if (!mounted) return;
+        _showCourseSelectionForUpload(result.files.first);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text("Error picking file: $e")));
+    }
+  }
+
+  void _showCourseSelectionForUpload(PlatformFile selectedFile) {
+    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            bool isUploading = false;
+
+            return Container(
+              padding: EdgeInsets.only(
+                top: 20, left: 20, right: 20, 
+                bottom: MediaQuery.of(context).viewInsets.bottom + 30
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2)))),
+                  const Text("Finalize Upload", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  const SizedBox(height: 10),
+                  Text("File: ${selectedFile.name}", style: const TextStyle(color: Colors.black54)),
+                  const SizedBox(height: 25),
+                  
+                  // Course Dropdown
+                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCourseId,
+                        items: _courses.map((course) {
+                          return DropdownMenuItem<String>(
+                            value: course['id'],
+                            child: Text(course['title'] ?? course['course_code']),
+                          );
+                        }).toList(),
+                        onChanged: (val) => setSheetState(() => selectedCourseId = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Upload Button
+                  isUploading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF09AEF5),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                          ),
+                          onPressed: () async {
+                            if (selectedCourseId == null) return;
+                            
+                            setSheetState(() => isUploading = true);
+                            try {
+                              await _apiService.uploadMaterial(selectedCourseId!, selectedFile.name, selectedFile.path!);
+                              if (!mounted) return;
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploaded Successfully", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+                            } catch (e) {
+                              if (mounted) {
+                                setSheetState(() => isUploading = false);
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString())));
+                              }
+                            }
+                          },
+                          child: const Text("Upload Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                ],
+              ),
+            );
+          }
+        );
+      }
+    );
+  }
+
+
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 35),
@@ -300,12 +411,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
 
           // Action Card for materials
           GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const InstructorFilesScreen()),
-              );
-            },
+            onTap: _handleDirectUpload,
             child: _buildBaseCard(
               width: cardWidth,
               gradient: const LinearGradient(
@@ -374,9 +480,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         _buildIconBtn(Icons.folder_shared_rounded, "Materials", const Color(0xFFFFF3E0), Colors.orange, () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorMaterialsScreen()));
         }),
-        _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorFilesScreen()));
-        }),
+        _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue, _handleDirectUpload),
         _buildIconBtn(Icons.book_rounded, "Courses", const Color(0xFFE8F5E9), Colors.green, () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
         }),

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'account_settings_screen.dart';
+import 'recycle_bin_screen.dart';
 import '../services/api_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
@@ -33,7 +35,11 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   String get _currentFolderName => _navigationStack.last['name']!;
 
   // Clipboard/Move State
-  Map<String, dynamic>? _clipboard; // {id, type, mode: 'cut'|'copy'}
+  List<Map<String, dynamic>>? _clipboard; // List of {id, type, mode: 'cut'|'copy'}
+  
+  // Selection State
+  bool _isSelectionMode = false;
+  final Set<String> _selectedIds = {}; // Format: "type:id"
 
   // Download State
   List<FileSystemEntity> _downloadedFiles = [];
@@ -89,6 +95,92 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       _navigationStack.add({'id': id, 'name': name});
     });
     _fetchStorage();
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+        if (_selectedIds.isEmpty) _isSelectionMode = false;
+      } else {
+        _selectedIds.add(id);
+        _isSelectionMode = true;
+      }
+    });
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _isSelectionMode = false;
+      _selectedIds.clear();
+    });
+  }
+
+  void _handleMultiCut() {
+    final List<Map<String, dynamic>> items = [];
+    for (var selectionId in _selectedIds) {
+      final parts = selectionId.split(':');
+      final type = parts[0];
+      final id = parts[1];
+      items.add({'id': id, 'type': type, 'mode': 'cut'});
+    }
+    setState(() {
+      _clipboard = items;
+      _exitSelectionMode();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${items.length} items cut to clipboard")));
+  }
+
+  void _handleMultiCopy() {
+    final List<Map<String, dynamic>> items = [];
+    for (var selectionId in _selectedIds) {
+      final parts = selectionId.split(':');
+      final type = parts[0];
+      final id = parts[1];
+      items.add({'id': id, 'type': type, 'mode': 'copy'});
+    }
+    setState(() {
+      _clipboard = items; // Copy logic (soon)
+      _exitSelectionMode();
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${items.length} items copied to clipboard")));
+  }
+
+  Future<void> _deleteSelected() async {
+    final int count = _selectedIds.length;
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Selected"),
+        content: Text("Are you sure you want to move $count items to the recycle bin?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), 
+            child: const Text("Delete", style: TextStyle(color: Colors.red))
+          ),
+        ],
+      )
+    );
+
+    if (confirm != true) return;
+
+    setState(() => _isLoading = true);
+    try {
+      for (final selectionId in _selectedIds) {
+        final parts = selectionId.split(':');
+        final type = parts[0];
+        final id = parts[1];
+        
+        await _apiService.softDeleteEntry(id, type);
+      }
+      _exitSelectionMode();
+      _fetchStorage();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$count items moved to recycle bin")));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Delete failed: $e")));
+      _fetchStorage();
+    }
   }
 
   void _navigateBack() {
@@ -180,10 +272,14 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               }),
               _buildOptionTile(Icons.content_cut_rounded, "Cut", Colors.blue, () {
                 Navigator.pop(context);
-                setState(() => _clipboard = {'id': item['id'], 'type': type, 'mode': 'cut'});
+                setState(() => _clipboard = [{'id': item['id'], 'type': type, 'mode': 'cut'}]);
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item cut to clipboard")));
               }),
-              _buildOptionTile(Icons.content_copy_rounded, "Copy (Soon)", Colors.blueGrey, () {}),
+              _buildOptionTile(Icons.content_copy_rounded, "Copy", Colors.blue, () {
+                Navigator.pop(context);
+                setState(() => _clipboard = [{'id': item['id'], 'type': type, 'mode': 'copy'}]);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item copied to clipboard")));
+              }),
             ],
             if (type == 'file') 
               _buildOptionTile(Icons.share_rounded, "Share", Colors.green, () {
@@ -290,15 +386,71 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           : CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  backgroundColor: const Color(0xFFF4F7FC),
+                  backgroundColor: _isSelectionMode ? const Color(0xFF05398F) : const Color(0xFFF4F7FC),
                   elevation: 0,
                   pinned: true,
-                  title: const Text(
-                    "My Files", 
-                    style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+                  leading: _isSelectionMode 
+                    ? IconButton(icon: const Icon(Icons.close_rounded, color: Colors.white), onPressed: _exitSelectionMode)
+                    : null,
+                  title: Text(
+                    _isSelectionMode ? "${_selectedIds.length} Selected" : "My Files", 
+                    style: TextStyle(
+                      color: _isSelectionMode ? Colors.white : const Color(0xFF05398F), 
+                      fontSize: 20, 
+                      fontWeight: FontWeight.bold
+                    )
                   ),
-                  actions: [
-                     IconButton(icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), onPressed: _fetchStorage)
+                  actions: _isSelectionMode ? [
+                    IconButton(
+                      icon: const Icon(Icons.content_cut_rounded, color: Colors.white),
+                      onPressed: _handleMultiCut,
+                      tooltip: "Cut",
+                    ),
+                    IconButton(
+                        icon: const Icon(Icons.content_copy_rounded, color: Colors.white),
+                        onPressed: _handleMultiCopy,
+                        tooltip: "Copy",
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+                      onPressed: _deleteSelected,
+                      tooltip: "Delete",
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.select_all_rounded, color: Colors.white),
+                      onPressed: () {
+                        final totalItems = _folders.length + _files.length;
+                        setState(() {
+                          if (_selectedIds.length == totalItems) {
+                            _selectedIds.clear();
+                            _isSelectionMode = false;
+                          } else {
+                            for (var f in _folders) { _selectedIds.add("folder:${f['id']}"); }
+                            for (var f in _files) { _selectedIds.add("file:${f['id']}"); }
+                          }
+                        });
+                      },
+                    ),
+                  ] : [
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      onSelected: (val) async {
+                        if (val == 'recycle') {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RecycleBinScreen()),
+                          );
+                          if (result == true) _fetchStorage();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'recycle',
+                          child: Row(children: [Icon(Icons.delete_outline_rounded, size: 20), SizedBox(width: 10), Text("Recycle Bin")])
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 SliverToBoxAdapter(
@@ -636,17 +788,29 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   onPressed: _pasteItem,
                 ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_horiz_rounded, color: Colors.black54),
+                icon: const Icon(Icons.sort_rounded, color: Color(0xFF05398F)),
                 onSelected: (val) {
-                  if (val == 'recycle') {
-                    _showRecycleBin();
-                  } else if (val == 'sort') {
-                    _showSortOptions();
+                  if (val == 'name_asc') {
+                    setState(() {
+                      _folders.sort((a, b) => a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase()));
+                      _files.sort((a, b) => a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase()));
+                    });
+                  } else if (val == 'date_desc') {
+                    setState(() {
+                      _folders.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
+                      _files.sort((a, b) => b['created_at'].toString().compareTo(a['created_at'].toString()));
+                    });
                   }
                 },
                 itemBuilder: (context) => [
-                  const PopupMenuItem(value: 'sort', child: Text("Sort by...")),
-                  const PopupMenuItem(value: 'recycle', child: Text("Recycle Bin")),
+                  const PopupMenuItem(
+                    value: 'name_asc', 
+                    child: Row(children: [Icon(Icons.sort_by_alpha_rounded, size: 20), SizedBox(width: 10), Text("Name (A-Z)")])
+                  ),
+                  const PopupMenuItem(
+                    value: 'date_desc', 
+                    child: Row(children: [Icon(Icons.calendar_today_rounded, size: 20), SizedBox(width: 10), Text("Date (Newest)")])
+                  ),
                 ],
               ),
             ],
@@ -666,25 +830,45 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                 ),
               ..._folders.map((folder) {
                 final bool isUploads = folder['name'] == 'Uploads' && _currentFolderId == null;
+                final String selectionId = "folder:${folder['id']}";
+                final bool isSelected = _selectedIds.contains(selectionId);
+
                 return GestureDetector(
-                  onTap: () => _navigateToFolder(folder['id'].toString(), folder['name']),
-                  onLongPress: () => _showEntryOptions(folder, 'folder'),
+                  onLongPress: () {
+                    _toggleSelection(selectionId);
+                  },
                   child: _buildImageFolderTile(
                     folder['name'], 
                     _formatDate(folder['created_at']), 
                     "0 items",
                     isSystemFolder: isUploads,
+                    isSelected: isSelected,
+                    onOptions: () => _showEntryOptions(folder, 'folder'),
                   ),
                 );
               }),
-              ..._files.map((file) => GestureDetector(
-                onLongPress: () => _showEntryOptions(file, 'file'),
-                child: _buildImageFileTile(
-                  file['name'], 
-                  _formatDate(file['created_at']), 
-                  _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0)
-                ),
-              )),
+              ..._files.map((file) {
+                final String selectionId = "file:${file['id']}";
+                final bool isSelected = _selectedIds.contains(selectionId);
+
+                return GestureDetector(
+                  onTap: () {
+                    if (_isSelectionMode) {
+                      _toggleSelection(selectionId);
+                    }
+                  },
+                  onLongPress: () {
+                    _toggleSelection(selectionId);
+                  },
+                  child: _buildImageFileTile(
+                    file['name'], 
+                    _formatDate(file['created_at']), 
+                    _formatBytes(int.tryParse(file['file_size_bytes'].toString()) ?? 0),
+                    isSelected: isSelected,
+                    onOptions: () => _showEntryOptions(file, 'file'),
+                  ),
+                );
+              }),
             ],
           ),
         ),
@@ -700,18 +884,20 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Future<void> _pasteItem() async {
-    if (_clipboard == null) return;
+    if (_clipboard == null || _clipboard!.isEmpty) return;
     
     setState(() => _isLoading = true);
     try {
-      await _apiService.moveEntry(
-        _clipboard!['id'].toString(), 
-        _clipboard!['type'], 
-        _currentFolderId
-      );
+      for (var item in _clipboard!) {
+        await _apiService.moveEntry(
+          item['id'].toString(), 
+          item['type'], 
+          _currentFolderId
+        );
+      }
       setState(() => _clipboard = null);
       _fetchStorage();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Item moved successfully")));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Items moved successfully")));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Move failed: $e")));
       setState(() => _isLoading = false);
@@ -751,75 +937,15 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     );
   }
 
-  void _showRecycleBin() async {
-    setState(() => _isLoading = true);
-    try {
-      final items = await _apiService.getRecycleBin();
-      setState(() => _isLoading = false);
-      
-      if (!mounted) return;
-      
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (context) => Container(
-          height: MediaQuery.of(context).size.height * 0.7,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24))
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 40, height: 4,
-                margin: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(2)),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: 8),
-                child: Text("Recycle Bin", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-              const Divider(),
-              Expanded(
-                child: items.isEmpty 
-                  ? const Center(child: Text("Recycle bin is empty"))
-                  : ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (context, i) {
-                        final item = items[i];
-                        return ListTile(
-                          leading: Icon(item['type'] == 'folder' ? Icons.folder_rounded : Icons.insert_drive_file_rounded, color: Colors.grey),
-                          title: Text(item['name']),
-                          subtitle: Text("Deleted: ${_formatDate(item['deleted_at'])}"),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.restore_rounded, color: Colors.blue),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              // Restore logic could go here
-                            },
-                          ),
-                        );
-                      },
-                    ),
-              ),
-            ],
-          ),
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to load recycle bin: $e")));
-      setState(() => _isLoading = false);
-    }
-  }
 
-  Widget _buildImageFolderTile(String name, String date, String itemCount, {bool isSystemFolder = false}) {
+  Widget _buildImageFolderTile(String name, String date, String itemCount, {bool isSystemFolder = false, bool isSelected = false, VoidCallback? onOptions}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isSelected ? Border.all(color: const Color(0xFF09AEF5), width: 2) : Border.all(color: Colors.transparent, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -830,6 +956,8 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       ),
       child: Row(
         children: [
+          if (isSelected) 
+            const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24)),
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -861,19 +989,26 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               ],
             ),
           ),
-          Text(itemCount, style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.bold)),
+          if (onOptions != null && !isSelected)
+            IconButton(
+              icon: const Icon(Icons.more_vert_rounded, color: Colors.black38),
+              onPressed: onOptions,
+            )
+          else
+            Text(itemCount, style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  Widget _buildImageFileTile(String name, String date, String size) {
+  Widget _buildImageFileTile(String name, String date, String size, {bool isSelected = false, VoidCallback? onOptions}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: isSelected ? Border.all(color: const Color(0xFF09AEF5), width: 2) : Border.all(color: Colors.transparent, width: 2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
@@ -884,6 +1019,8 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       ),
       child: Row(
         children: [
+          if (isSelected) 
+            const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24)),
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -903,7 +1040,13 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               ],
             ),
           ),
-          Text(size, style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.bold)),
+          if (onOptions != null && !isSelected)
+            IconButton(
+              icon: const Icon(Icons.more_vert_rounded, color: Colors.black38),
+              onPressed: onOptions,
+            )
+          else
+            Text(size, style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.bold)),
         ],
       ),
     );
