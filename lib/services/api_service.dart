@@ -225,7 +225,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> shareMaterials(List<String> materialIds, String departmentId, String? section) async {
+  Future<Map<String, dynamic>> shareMaterials(List<String> materialIds, String? courseId, String? departmentId, String? section) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -233,6 +233,7 @@ class ApiService {
 
       final body = {
         "material_ids": materialIds,
+        "course_id": courseId,
         "department_id": departmentId,
       };
       if (section != null) body["section"] = section;

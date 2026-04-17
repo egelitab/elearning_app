@@ -338,18 +338,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   }
 
   void _showShareBottomSheet() {
-    String selectedCourseTitle = "Selected Course";
-    if (_selectedMaterials.isNotEmpty) {
-      try {
-        var firstMatId = _selectedMaterials.first;
-        var firstMat = _materials.firstWhere((m) => m['id'].toString() == firstMatId);
-        var courseMatch = _courses.firstWhere((c) => c['id'].toString() == firstMat['course_id'].toString(), orElse: () => <String, dynamic>{});
-        if (courseMatch.isNotEmpty) {
-           selectedCourseTitle = courseMatch['title'] ?? courseMatch['course_code'] ?? "Course";
-        }
-      } catch (e) {}
-    }
-
+    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
     String? selectedDeptId = _targets.isNotEmpty ? _targets.first['id'].toString() : null;
     
     // Helper to get sections for a dept
@@ -404,7 +393,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
                   const SizedBox(height: 20),
                   
-                  const Text("Select Courses", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
                   Container(
                     width: double.infinity,
@@ -413,18 +402,13 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
-                        value: _courses.any((c) => c['title'] == selectedCourseTitle || c['course_code'] == selectedCourseTitle) 
-                          ? _courses.firstWhere((c) => c['title'] == selectedCourseTitle || c['course_code'] == selectedCourseTitle)['id']
-                          : (_courses.isNotEmpty ? _courses.first['id'] : null),
+                        value: selectedCourseId,
                         items: _courses.map((c) => DropdownMenuItem<String>(
                           value: c['id'],
                           child: Text(c['title'] ?? c['course_code']),
                         )).toList(),
                         onChanged: (val) {
-                          setSheetState(() {
-                            var match = _courses.firstWhere((c) => c['id'] == val);
-                            selectedCourseTitle = match['title'] ?? match['course_code'];
-                          });
+                          setSheetState(() => selectedCourseId = val);
                         },
                       ),
                     ),
@@ -474,8 +458,8 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     height: 55,
                     child: ElevatedButton(
                        onPressed: () async {
-                          if (selectedDeptId == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select a department.")));
+                          if (selectedDeptId == null || selectedCourseId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select both course and department.")));
                             return;
                           }
                           
@@ -487,6 +471,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
 
                             await _apiService.shareMaterials(
                               _selectedMaterials.toList(), 
+                              selectedCourseId,
                               selectedDeptId!, 
                               finalSection
                             );

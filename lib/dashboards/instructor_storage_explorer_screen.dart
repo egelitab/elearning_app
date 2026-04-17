@@ -42,15 +42,39 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
 
+  // For Sharing
+  List<dynamic> _courses = [];
+  List<dynamic> _targets = [];
   @override
   void initState() {
     super.initState();
     _navigationStack = [{'id': widget.initialFolderId, 'name': widget.initialFolderName}];
-    if (widget.initialFolders != null && widget.initialFiles != null) {
-      _folders = widget.initialFolders!;
-      _files = widget.initialFiles!;
-    } else {
-      _fetchContent();
+    _fetchInitialData();
+  }
+
+  Future<void> _fetchInitialData() async {
+    setState(() => _isLoading = true);
+    try {
+      final results = await Future.wait([
+        if (widget.initialFolders == null) _apiService.getInstructorStorage(folderId: _currentFolderId),
+        _apiService.getInstructorCourses(),
+        _apiService.getInstructorTargets(),
+      ]);
+
+      if (widget.initialFolders == null) {
+        final storageData = results[0] as Map<String, dynamic>;
+        _folders = storageData['folders'] ?? [];
+        _files = storageData['files'] ?? [];
+      } else {
+        _folders = widget.initialFolders!;
+        _files = widget.initialFiles!;
+      }
+      _courses = results[1] as List<dynamic>;
+      _targets = results[2] as List<dynamic>;
+    } catch (e) {
+      debugPrint("Init error: $e");
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -107,6 +131,39 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         _isSelectionMode = true;
       }
     });
+  }
+
+  void _showSortOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Sort By", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            const SizedBox(height: 10),
+            ListTile(
+              leading: const Icon(Icons.text_format_rounded, color: Color(0xFF09AEF5)),
+              title: const Text("Name"),
+              onTap: () {
+                _applySort('name_asc');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.calendar_today_rounded, color: Color(0xFF09AEF5)),
+              title: const Text("Date Modified"),
+              onTap: () {
+                _applySort('date_desc');
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _exitSelectionMode() {
@@ -475,6 +532,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         actions: _isSelectionMode ? [
           if (_selectedIds.length == 1)
             IconButton(icon: const Icon(Icons.edit_rounded, color: Colors.white), onPressed: _showRenameDialog, tooltip: "Rename"),
+          IconButton(icon: const Icon(Icons.share_rounded, color: Colors.white), onPressed: _showShareBottomSheet, tooltip: "Share"),
           IconButton(icon: const Icon(Icons.content_cut_rounded, color: Colors.white), onPressed: _handleMultiCut, tooltip: "Cut"),
           IconButton(icon: const Icon(Icons.content_copy_rounded, color: Colors.white), onPressed: _handleMultiCopy, tooltip: "Copy"),
           IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Colors.white), onPressed: _deleteSelected, tooltip: "Delete"),
@@ -498,12 +556,50 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
             tooltip: "Select All",
           ),
         ] : [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort_rounded, color: Color(0xFF05398F)),
-            onSelected: _applySort,
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'name_asc', child: Text("Sort by Name")),
-              const PopupMenuItem(value: 'date_desc', child: Text("Sort by Date")),
+          MenuAnchor(
+            builder: (context, controller, child) {
+              return IconButton(
+                icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
+                onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                tooltip: "More actions",
+              );
+            },
+            menuChildren: [
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.cloud_upload_rounded, size: 20, color: Color(0xFF09AEF5)),
+                onPressed: _pickAndUploadFile,
+                child: const Text("Upload File"),
+              ),
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.create_new_folder_rounded, size: 20, color: Color(0xFF09AEF5)),
+                onPressed: _showNewFolderDialog,
+                child: const Text("New Folder"),
+              ),
+              MenuItemButton(
+                leadingIcon: const Icon(Icons.share_rounded, size: 20, color: Color(0xFF09AEF5)),
+                onPressed: () {
+                  setState(() => _isSelectionMode = true);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select items to share")));
+                },
+                child: const Text("Share Items"),
+              ),
+              const Divider(height: 1),
+              SubmenuButton(
+                leadingIcon: const Icon(Icons.sort_rounded, size: 20, color: Color(0xFF05398F)),
+                menuChildren: [
+                  MenuItemButton(
+                    leadingIcon: const Icon(Icons.text_format_rounded, size: 20),
+                    onPressed: () => _applySort('name_asc'),
+                    child: const Text("Name"),
+                  ),
+                  MenuItemButton(
+                    leadingIcon: const Icon(Icons.calendar_today_rounded, size: 20),
+                    onPressed: () => _applySort('date_desc'),
+                    child: const Text("Date"),
+                  ),
+                ],
+                child: const Text("Sort By"),
+              ),
             ],
           ),
         ],
@@ -536,24 +632,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               ),
             ],
           ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: "exp_upload",
-            onPressed: _pickAndUploadFile,
-            backgroundColor: const Color(0xFF09AEF5),
-            child: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
-          ),
-          const SizedBox(height: 12),
-          FloatingActionButton(
-            heroTag: "exp_add",
-            onPressed: _showNewFolderDialog,
-            backgroundColor: const Color(0xFF09AEF5),
-            child: const Icon(Icons.add_rounded, color: Colors.white),
-          ),
-        ],
-      ),
+      floatingActionButton: null,
     );
   }
 
@@ -678,5 +757,152 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     const suffixes = ["B", "KB", "MB", "GB"];
     var i = (log(b) / log(1024)).floor();
     return ((b / pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
+  }
+
+  void _showShareBottomSheet() {
+    if (_selectedIds.isEmpty) return;
+    
+    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+    String? selectedDeptId = _targets.isNotEmpty ? _targets.first['id'].toString() : null;
+    
+    // Helper to get sections for a dept
+    List<String> getCleanedSections(String? deptId) {
+      if (deptId == null) return [];
+      var dept = _targets.firstWhere((t) => t['id'].toString() == deptId, orElse: () => null);
+      if (dept == null) return [];
+      
+      List<String> raw = List<String>.from(dept['sections'] ?? []);
+      Set<String> cleaned = {};
+      for (String s in raw) {
+        String c = s.trim();
+        if (c.length == 1) c = "Section $c";
+        else if (!c.toLowerCase().startsWith('section ')) c = "Section $c";
+        cleaned.add(c);
+      }
+      List<String> sorted = cleaned.toList()..sort();
+      sorted.insert(0, "All Sections");
+      return sorted;
+    }
+
+    List<String> currentSections = getCleanedSections(selectedDeptId);
+    String? selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: EdgeInsets.only(
+                top: 20, left: 20, right: 20, 
+                bottom: MediaQuery.of(context).viewInsets.bottom + 30
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Share Selected Items", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  const SizedBox(height: 8),
+                  Text("Sharing ${_selectedIds.length} items from storage.", style: const TextStyle(color: Colors.black54)),
+                  const SizedBox(height: 20),
+                  
+                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedCourseId,
+                        items: _courses.map((c) => DropdownMenuItem<String>(
+                          value: c['id'],
+                          child: Text(c['title'] ?? c['course_code']),
+                        )).toList(),
+                        onChanged: (val) => setSheetState(() => selectedCourseId = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedDeptId,
+                        items: _targets.map((d) => DropdownMenuItem<String>(value: d['id'].toString(), child: Text(d['name']))).toList(),
+                        onChanged: (val) {
+                          setSheetState(() {
+                            selectedDeptId = val;
+                            currentSections = getCleanedSections(val);
+                            selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 5),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        isExpanded: true,
+                        value: selectedSection,
+                        items: currentSections.map((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
+                        onChanged: (val) => setSheetState(() => selectedSection = val),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                       onPressed: () async {
+                          final materialIds = _selectedIds.map((id) => id.split(':')[1]).toList();
+                          Navigator.pop(context);
+                          setState(() => _isLoading = true);
+                          try {
+                            await _apiService.shareMaterials(
+                              materialIds, 
+                              selectedCourseId!,
+                              selectedDeptId!, 
+                              selectedSection == "All Sections" ? null : selectedSection
+                            );
+                            _exitSelectionMode();
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shared successfully"), backgroundColor: Colors.green));
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Share failed: $e"), backgroundColor: Colors.red));
+                          } finally {
+                            setState(() => _isLoading = false);
+                            _fetchContent();
+                          }
+                       },
+                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                       child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+        );
+      }
+    );
   }
 }
