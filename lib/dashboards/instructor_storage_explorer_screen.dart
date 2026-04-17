@@ -71,10 +71,12 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       }
       _courses = results[1] as List<dynamic>;
       _targets = results[2] as List<dynamic>;
+      
+      _applySort('name_asc'); // Pin and sort
     } catch (e) {
       debugPrint("Init error: $e");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -392,11 +394,12 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   void _applySort(String criteria) {
     setState(() {
       _folders.sort((a, b) {
-        // Always Pin Uploads to the very top in root
-        if (_currentFolderId == null) {
-          if (a['name'] == 'Uploads') return -1;
-          if (b['name'] == 'Uploads') return 1;
-        }
+        // Always Pin Uploads to the very top
+        String nameA = a['name'].toString().trim().toLowerCase();
+        String nameB = b['name'].toString().trim().toLowerCase();
+
+        if (nameA == 'uploads' && nameB != 'uploads') return -1;
+        if (nameB == 'uploads' && nameA != 'uploads') return 1;
         
         if (criteria == 'name_asc') {
           return a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase());
@@ -539,7 +542,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           IconButton(
             icon: const Icon(Icons.select_all_rounded, color: Colors.white),
             onPressed: () {
-              final selectableFolders = _folders.where((f) => f['name'] != 'Uploads' || _currentFolderId != null).toList();
+              final selectableFolders = _folders.where((f) => f['name'].toString().toLowerCase() != 'uploads' || _currentFolderId != null).toList();
               final total = selectableFolders.length + _files.length;
               
               setState(() {
@@ -614,18 +617,42 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                   padding: const EdgeInsets.all(20),
                   children: [
                     if (_folders.isEmpty && _files.isEmpty)
-                      const Center(child: Padding(padding: EdgeInsets.only(top: 50), child: Text("This folder is empty", style: TextStyle(color: Colors.black38)))),
-                    
-                    ..._folders.map((folder) {
-                      final id = "folder:${folder['id']}";
-                      final isSelected = _selectedIds.contains(id);
-                      return _buildTile(folder, 'folder', isSelected);
-                    }),
-                    ..._files.map((file) {
-                      final id = "file:${file['id']}";
-                      final isSelected = _selectedIds.contains(id);
-                      return _buildTile(file, 'file', isSelected);
-                    }),
+                      const Center(child: Padding(padding: EdgeInsets.only(top: 50), child: Text("This folder is empty", style: TextStyle(color: Colors.black38))))
+                    else ...[
+                      // Special Section for System/Pinned Folders (only in root)
+                      if (_currentFolderId == null) ...[
+                        ..._folders.where((f) => f['name'].toString().toLowerCase() == 'uploads').map((folder) {
+                          final id = "folder:${folder['id']}";
+                          final isSelected = _selectedIds.contains(id);
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildTile(folder, 'folder', isSelected),
+                              const Divider(height: 32, thickness: 1, color: Colors.black12),
+                            ],
+                          );
+                        }),
+                      ],
+
+                      // Remaining Folders
+                      ..._folders.where((f) {
+                        if (_currentFolderId == null) {
+                          return f['name'].toString().toLowerCase() != 'uploads';
+                        }
+                        return true;
+                      }).map((folder) {
+                        final id = "folder:${folder['id']}";
+                        final isSelected = _selectedIds.contains(id);
+                        return _buildTile(folder, 'folder', isSelected);
+                      }),
+
+                      // Files
+                      ..._files.map((file) {
+                        final id = "file:${file['id']}";
+                        final isSelected = _selectedIds.contains(id);
+                        return _buildTile(file, 'file', isSelected);
+                      }),
+                    ],
                     const SizedBox(height: 80),
                   ],
                 ),
@@ -668,7 +695,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     String date = _formatDate(item['created_at']);
     String info = type == 'folder' ? "Items" : _formatBytes(item['file_size_bytes'] ?? 0);
     
-    final bool isUploads = type == 'folder' && name == 'Uploads' && _currentFolderId == null;
+    final bool isUploads = type == 'folder' && name.toLowerCase() == 'uploads' && _currentFolderId == null;
     
     return GestureDetector(
       onTap: () {
