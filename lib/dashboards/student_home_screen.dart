@@ -148,17 +148,39 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 Icon(Icons.play_circle_fill_rounded, color: Colors.white70, size: 20),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text("Ch 3: Firewalls", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
             const Spacer(),
-            const Text("Computer Security", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: 0.65,
-              backgroundColor: Colors.white.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-              borderRadius: BorderRadius.circular(5),
-            )
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text("Ch 3: Firewalls", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    Text("Computer Security", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                SizedBox(
+                  height: 60,
+                  width: 60,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CircularProgressIndicator(
+                        value: 0.65,
+                        strokeWidth: 6,
+                        backgroundColor: Colors.white.withOpacity(0.3),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                      const Center(
+                        child: Text("65%", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

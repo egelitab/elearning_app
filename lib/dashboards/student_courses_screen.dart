@@ -130,7 +130,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "Quick Actions",
+                    "To View",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
                   ),
                 ),
@@ -247,9 +247,25 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  course['course_code'] ?? '',
-                  style: TextStyle(fontSize: 12, color: lightColor, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      course['course_code'] ?? '',
+                      style: TextStyle(fontSize: 12, color: lightColor, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "50%",
+                      style: TextStyle(fontSize: 12, color: darkColor, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: 0.5,
+                  backgroundColor: lightColor.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(darkColor),
+                  borderRadius: BorderRadius.circular(5),
                 ),
               ],
             ),
