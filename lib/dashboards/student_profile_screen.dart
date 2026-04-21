@@ -136,11 +136,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _buildProfileOption(Icons.library_books_rounded, "My Courses", Colors.blue),
-                  _buildProfileOption(Icons.school_rounded, "Grades & Assessment", Colors.green),
-                  _buildProfileOption(Icons.local_library_rounded, "Library Resources", Colors.orange),
-                  _buildProfileOption(Icons.settings_rounded, "Account Settings", Colors.grey.shade700),
-                  _buildProfileOption(Icons.help_outline_rounded, "Help & Support", Colors.purple),
+                  _buildProfileOption(Icons.person_rounded, "Account", Colors.blue),
+                  _buildProfileOption(Icons.download_rounded, "Downloads", Colors.green, subtitle: "Manage download memory usage limit"),
+                  _buildProfileOption(Icons.settings_rounded, "Settings", Colors.grey.shade700),
+                  _buildProfileOption(Icons.security_rounded, "Privacy and Security", Colors.red),
+                  _buildProfileOption(Icons.help_outline_rounded, "Support and Help (FAQ)", Colors.purple),
+                  _buildProfileOption(Icons.question_answer_rounded, "Ask a Question", Colors.orange),
                 ],
               ),
             ),
@@ -186,7 +187,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title, Color color) {
+  Widget _buildProfileOption(IconData icon, String title, Color color, {String? subtitle}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -219,7 +220,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 ),
                 const SizedBox(width: 20),
                 Expanded(
-                  child: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      ]
+                    ],
+                  ),
                 ),
                 const Icon(Icons.chevron_right_rounded, color: Colors.black38),
               ],
