@@ -393,7 +393,6 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
                       Text("Upcoming Class", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                      Icon(Icons.video_call_rounded, color: Colors.white70, size: 20),
                     ],
                   ),
                   const SizedBox(height: 12),

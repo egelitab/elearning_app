@@ -23,16 +23,25 @@ class HelpSupportScreen extends StatelessWidget {
           children: [
             const Text("Frequently Asked Questions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
             const SizedBox(height: 20),
-            _buildFaqItem("How do I upload course materials?", "Go to the Courses screen, select your course, and tap on 'Materials'. You can then use the upload icon to add files."),
-            _buildFaqItem("Can I grade assignments offline?", "Currently, an internet connection is required to sync grades with the server. Offline grading is in our roadmap."),
-            _buildFaqItem("How to reset my password?", "Please contact the ICT office or use the 'Forgot Password' link on the welcome screen."),
+            _buildFaqItem("How to download files?", "Go to the Courses screen, select your course materials, and tap the download icon next to the file to save it for offline use."),
+            _buildFaqItem("How to see my grades?", "Navigate to the Courses section and tap on 'Grades' within a specific course to view your assignment and assessment scores."),
+            _buildFaqItem("How to chat in groups?", "Open the Inbox or Messages tab from your dashboard, select your designated group, and you can start chatting with your peers immediately."),
+            _buildFaqItem("How to contact my instructor?", "You can message your instructor directly through the 'Ask a Question' page or by finding their profile in the Inbox section."),
+            _buildFaqItem("How to reset my password?", "Please contact the university admin or use the 'Forgot Password' link directly on the login screen."),
+            
+            const SizedBox(height: 10),
+            Center(
+              child: TextButton(
+                onPressed: () {},
+                child: const Text("See More", style: TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+            ),
             
             const SizedBox(height: 40),
-            const Text("Contact Support", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Text("Need Help?", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
             const SizedBox(height: 15),
-            _buildContactTile(Icons.support_agent_rounded, "Ticketing System", "Create a support ticket for technical issues", () {}),
-            _buildContactTile(Icons.email_outlined, "Email Support", "support@bdu.edu.et", () {}),
-            _buildContactTile(Icons.phone_in_talk_rounded, "ICT Extension", "Call 5555 from any campus phone", () {}),
+            _buildContactTile(Icons.email_outlined, "Email Admin", "admin@bdu.edu.et", () {}),
+            _buildContactTile(Icons.phone_in_talk_rounded, "Call Admin", "+251 911 234 567", () {}),
             
             const SizedBox(height: 30),
             const Center(

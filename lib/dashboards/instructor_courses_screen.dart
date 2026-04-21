@@ -57,12 +57,6 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         elevation: 0,
         centerTitle: false,
         title: const Text("My Courses", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)), 
-            onPressed: () {}
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
