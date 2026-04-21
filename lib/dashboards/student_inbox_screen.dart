@@ -12,7 +12,7 @@ class StudentInboxScreen extends StatefulWidget {
 
 class _StudentInboxScreenState extends State<StudentInboxScreen> {
   final ApiService _apiService = ApiService();
-  bool isAnnounceSelected = true; 
+  bool isChatSelected = true; 
   
   List<dynamic> _announcements = [];
   List<dynamic> _chats = [];
@@ -80,7 +80,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                 _buildToggleSwitch(),
                 const SizedBox(height: 20),
                 Expanded(
-                  child: isAnnounceSelected ? _buildAnnouncementsList() : _buildChatList(),
+                  child: isChatSelected ? _buildChatList() : _buildAnnouncementsList(),
                 ),
               ],
             ),
@@ -106,21 +106,21 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => isAnnounceSelected = true),
+              onTap: () => setState(() => isChatSelected = true),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isAnnounceSelected ? Colors.white : Colors.transparent, 
+                  color: isChatSelected ? Colors.white : Colors.transparent, 
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: isAnnounceSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
+                  boxShadow: isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
                 ),
                 child: Center(
                   child: Text(
-                    "Announcements",
+                    "Chats",
                     style: TextStyle(
-                      color: isAnnounceSelected ? const Color(0xFF05398F) : Colors.black54,
-                      fontWeight: isAnnounceSelected ? FontWeight.bold : FontWeight.w600,
+                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -129,21 +129,21 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
           ),
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => isAnnounceSelected = false),
+              onTap: () => setState(() => isChatSelected = false),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: !isAnnounceSelected ? Colors.white : Colors.transparent,
+                  color: !isChatSelected ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
-                  boxShadow: !isAnnounceSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
+                  boxShadow: !isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
                 ),
                 child: Center(
                   child: Text(
-                    "Messages",
+                    "Announcements",
                     style: TextStyle(
-                      color: !isAnnounceSelected ? const Color(0xFF05398F) : Colors.black54,
-                      fontWeight: !isAnnounceSelected ? FontWeight.bold : FontWeight.w600,
+                      color: !isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      fontWeight: !isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
                 ),
