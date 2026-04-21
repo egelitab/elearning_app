@@ -130,7 +130,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "To View",
+                    "View",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
                   ),
                 ),
