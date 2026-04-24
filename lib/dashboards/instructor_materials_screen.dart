@@ -3,7 +3,14 @@ import 'package:file_picker/file_picker.dart';
 import '../services/api_service.dart';
 
 class InstructorMaterialsScreen extends StatefulWidget {
-  const InstructorMaterialsScreen({super.key});
+  final bool selectMode;
+  final String? initialCourseId;
+
+  const InstructorMaterialsScreen({
+    super.key, 
+    this.selectMode = false,
+    this.initialCourseId,
+  });
 
   @override
   State<InstructorMaterialsScreen> createState() => _InstructorMaterialsScreenState();
@@ -14,6 +21,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   
   List<dynamic> _materials = [];
   List<dynamic> _courses = [];
+  List<dynamic> _chapters = []; // Added to store chapters for select mode
   
   bool _isLoading = true;
   String? _error;
@@ -37,6 +45,9 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.selectMode) {
+      _isSelecting = true;
+    }
     _fetchData();
   }
 
@@ -338,8 +349,11 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
   }
 
   void _showShareBottomSheet() {
-    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+    String? selectedCourseId = widget.initialCourseId ?? (_courses.isNotEmpty ? _courses.first['id'] : null);
     String? selectedDeptId = _targets.isNotEmpty ? _targets.first['id'].toString() : null;
+    String? selectedChapterId;
+    List<dynamic> chapters = [];
+    bool isLoadingChapters = false;
     
     // Helper to get sections for a dept
     List<String> getCleanedSections(String? deptId) {
@@ -370,132 +384,191 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            // Function to fetch chapters for a course
+            Future<void> fetchChapters(String courseId) async {
+              setSheetState(() => isLoadingChapters = true);
+              try {
+                final fetchedChapters = await _apiService.getCourseChapters(courseId);
+                setSheetState(() {
+                  chapters = fetchedChapters;
+                  isLoadingChapters = false;
+                });
+              } catch (e) {
+                setSheetState(() => isLoadingChapters = false);
+                print("Error fetching chapters: $e");
+              }
+            }
+
+            // Fetch chapters if a course is already selected
+            if (selectedCourseId != null && chapters.isEmpty && !isLoadingChapters) {
+              fetchChapters(selectedCourseId!);
+            }
+
             return Container(
               padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 30),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 50,
-                      height: 5,
-                      decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                  const SizedBox(height: 8),
-                  Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
-                  const SizedBox(height: 20),
-                  
-                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedCourseId,
-                        items: _courses.map((c) => DropdownMenuItem<String>(
-                          value: c['id'],
-                          child: Text(c['title'] ?? c['course_code']),
-                        )).toList(),
-                        onChanged: (val) {
-                          setSheetState(() => selectedCourseId = val);
-                        },
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 5,
+                        decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
+                    const Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                    const SizedBox(height: 8),
+                    Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                    const SizedBox(height: 20),
+                    
+                    const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedCourseId,
+                          items: _courses.map((c) => DropdownMenuItem<String>(
+                            value: c['id'],
+                            child: Text(c['title'] ?? c['course_code']),
+                          )).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setSheetState(() {
+                                selectedCourseId = val;
+                                chapters = [];
+                                selectedChapterId = null;
+                              });
+                              fetchChapters(val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
 
-                  const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedDeptId,
-                        items: _targets.map((d) => DropdownMenuItem<String>(value: d['id'].toString(), child: Text(d['name']))).toList(),
-                        onChanged: (val) {
-                          setSheetState(() {
-                            selectedDeptId = val;
-                            currentSections = getCleanedSections(val);
-                            selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
-                          });
-                        },
+                    const Text("Select Chapter (Optional)", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedChapterId,
+                          hint: Text(isLoadingChapters ? "Loading chapters..." : "No Chapter (Main screen)"),
+                          items: [
+                            const DropdownMenuItem<String>(
+                              value: null,
+                              child: Text("None (Show on Main Screen)"),
+                            ),
+                            ...chapters.map((ch) => DropdownMenuItem<String>(
+                              value: ch['id'].toString(),
+                              child: Text("Chapter ${ch['order_index'] + 1}: ${ch['title']}"),
+                            )).toList(),
+                          ],
+                          onChanged: (val) {
+                            setSheetState(() => selectedChapterId = val);
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-                  const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedSection,
-                        hint: const Text("No sections available"),
-                        items: currentSections.map((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
-                        onChanged: (val) => setSheetState(() => selectedSection = val),
+                    const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedDeptId,
+                          items: _targets.map((d) => DropdownMenuItem<String>(value: d['id'].toString(), child: Text(d['name']))).toList(),
+                          onChanged: (val) {
+                            setSheetState(() {
+                              selectedDeptId = val;
+                              currentSections = getCleanedSections(val);
+                              selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+                            });
+                          },
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                       onPressed: () async {
-                          if (selectedDeptId == null || selectedCourseId == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select both course and department.")));
-                            return;
-                          }
-                          
-                          Navigator.pop(context); // Close the sheet early
-                          try {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Sharing...")));
+                    const SizedBox(height: 20),
+
+                    const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: selectedSection,
+                          hint: const Text("No sections available"),
+                          items: currentSections.map((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
+                          onChanged: (val) => setSheetState(() => selectedSection = val),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                         onPressed: () async {
+                            if (selectedDeptId == null || selectedCourseId == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select both course and department.")));
+                              return;
+                            }
                             
-                            String? finalSection = selectedSection == "All Sections" ? null : selectedSection;
+                            Navigator.pop(context); // Close the sheet early
+                            try {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Sharing...")));
+                              
+                              String? finalSection = selectedSection == "All Sections" ? null : selectedSection;
 
-                            await _apiService.shareMaterials(
-                              _selectedMaterials.toList(), 
-                              selectedCourseId,
-                              selectedDeptId!, 
-                              finalSection
-                            );
-                            
-                            _clearSelection();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
-                            );
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
-                          }
-                       },
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: const Color(0xFF09AEF5),
-                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                       ),
-                       child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                              await _apiService.shareMaterials(
+                                _selectedMaterials.toList(), 
+                                selectedCourseId,
+                                selectedDeptId!, 
+                                finalSection,
+                                chapterId: selectedChapterId
+                              );
+                              
+                              _clearSelection();
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Materials Successfully Shared!"), backgroundColor: Colors.green)
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
+                            }
+                         },
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: const Color(0xFF09AEF5),
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                         ),
+                         child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 

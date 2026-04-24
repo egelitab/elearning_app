@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import 'instructor_materials_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> course;
@@ -16,6 +17,7 @@ class CourseDetailsScreen extends StatefulWidget {
 class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _chapters = [];
+  List<dynamic> _courseMaterials = []; // Materials not assigned to a chapter
   Map<String, List<dynamic>> _chapterMaterials = {};
   bool _isLoading = true;
   bool _isInstructor = false;
@@ -35,6 +37,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
       final chapters = await _apiService.getCourseChapters(widget.course['id'].toString());
       setState(() => _chapters = chapters);
+
+      // Fetch main materials (those not assigned to a chapter)
+      final mainMaterials = await _apiService.getMaterialsByCourse(widget.course['id'].toString());
+      setState(() => _courseMaterials = mainMaterials);
       
       // Fetch materials for each chapter
       for (var chapter in chapters) {
@@ -79,8 +85,27 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           icon: Icon(Icons.arrow_back_ios_new_rounded, color: widget.themeColor, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.course['course_code'] ?? 'Course Details', 
+        title: Text(widget.course['title'] ?? 'Course Details', 
           style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold)),
+        actions: [
+          if (_isInstructor)
+            IconButton(
+              icon: Icon(Icons.add_circle_outline_rounded, color: widget.themeColor),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InstructorMaterialsScreen(
+                      selectMode: true,
+                      initialCourseId: widget.course['id'].toString(),
+                    ),
+                  ),
+                );
+                _fetchDetails(); // Refresh after adding
+              },
+              tooltip: "Add Materials",
+            ),
+        ],
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -103,6 +128,24 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 _buildNoGuideCard(),
               
               const SizedBox(height: 30),
+              
+              // NEW: Main Course Materials (Unassigned to chapters)
+              if (_courseMaterials.isNotEmpty) ...[
+                const Text("General Materials", 
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                const SizedBox(height: 10),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: Column(
+                    children: _courseMaterials.map((m) => _buildMaterialItem(m)).toList(),
+                  ),
+                ),
+                const SizedBox(height: 30),
+              ],
               
               const Text("Chapters & Materials", 
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
