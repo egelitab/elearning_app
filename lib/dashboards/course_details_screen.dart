@@ -19,6 +19,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   List<dynamic> _chapters = [];
   List<dynamic> _courseMaterials = []; // Materials not assigned to a chapter
   Map<String, List<dynamic>> _chapterMaterials = {};
+  Set<String> _selectedIds = {}; // For multi-selection
   bool _isLoading = true;
   bool _isInstructor = false;
 
@@ -35,21 +36,39 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       final role = prefs.getString('user_role');
       setState(() => _isInstructor = role == 'instructor');
 
+      // Fetch chapters
       final chapters = await _apiService.getCourseChapters(widget.course['id'].toString());
       setState(() => _chapters = chapters);
 
-      // Fetch main materials (those not assigned to a chapter)
-      final mainMaterials = await _apiService.getMaterialsByCourse(widget.course['id'].toString());
-      setState(() => _courseMaterials = mainMaterials);
+      // Fetch ALL materials for the course in one go
+      final allMaterials = await _apiService.getMaterialsByCourse(widget.course['id'].toString());
       
-      // Fetch materials for each chapter
-      for (var chapter in chapters) {
-        final materials = await _apiService.getMaterialsByCourse(
-          widget.course['id'].toString(), 
-          chapterId: chapter['id'].toString()
-        );
-        setState(() => _chapterMaterials[chapter['id'].toString()] = materials);
-      }
+      // Filter materials: those without a chapter_id go to _courseMaterials
+      setState(() {
+        // Use a set to track IDs to avoid duplicates in General Materials
+        final Set<String> generalIds = {};
+        _courseMaterials = allMaterials.where((m) {
+          if (m['chapter_id'] != null) return false;
+          String mId = m['id'].toString();
+          if (generalIds.contains(mId)) return false;
+          generalIds.add(mId);
+          return true;
+        }).toList();
+        
+        // Initialize chapter materials map
+        _chapterMaterials = {};
+        for (var chapter in chapters) {
+          String chId = chapter['id'].toString();
+          final Set<String> chapterMatIds = {};
+          _chapterMaterials[chId] = allMaterials.where((m) {
+            if (m['chapter_id']?.toString() != chId) return false;
+            String mId = m['id'].toString();
+            if (chapterMatIds.contains(mId)) return false;
+            chapterMatIds.add(mId);
+            return true;
+          }).toList();
+        }
+      });
     } catch (e) {
       print("Error fetching details: $e");
     } finally {
@@ -81,17 +100,30 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF4F7FC),
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: widget.themeColor, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(widget.course['title'] ?? 'Course Details', 
-          style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold)),
-        actions: [
-          if (_isInstructor)
-            IconButton(
-              icon: Icon(Icons.add_circle_outline_rounded, color: widget.themeColor),
-              onPressed: () async {
+        leading: _selectedIds.isNotEmpty
+        ? IconButton(
+            icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
+            onPressed: () => setState(() => _selectedIds.clear()),
+          )
+        : IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: widget.themeColor, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+      title: Text(_selectedIds.isNotEmpty 
+        ? "${_selectedIds.length} Selected" 
+        : (widget.course['title'] ?? 'Course Details'), 
+        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold)),
+      actions: [
+        if (_selectedIds.isNotEmpty && _isInstructor)
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+            onPressed: _showRemoveConfirmation,
+            tooltip: "Remove Selected",
+          ),
+        if (_selectedIds.isEmpty && _isInstructor)
+          IconButton(
+            icon: Icon(Icons.add_circle_outline_rounded, color: widget.themeColor),
+            onPressed: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -112,10 +144,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         : ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              // Course Header
-              Text(widget.course['title'] ?? '', 
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 5),
+              // Course Info (Name removed as it is now in AppBar)
               Text(widget.course['instructor_name'] ?? '', 
                 style: const TextStyle(color: Colors.black54, fontSize: 16)),
               
@@ -281,19 +310,99 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Widget _buildMaterialItem(dynamic material) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: widget.themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-        child: Icon(Icons.description_rounded, color: widget.themeColor, size: 20),
-      ),
-      title: Text(material['title'] ?? '', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.black12),
+    String mId = material['id'].toString();
+    bool isSelected = _selectedIds.contains(mId);
+
+    return InkWell(
       onTap: () {
-        // Open material logic
+        if (_selectedIds.isNotEmpty) {
+          _toggleSelection(mId);
+        } else {
+          // Open material logic
+        }
       },
+      onLongPress: () {
+        if (_isInstructor) {
+          _toggleSelection(mId);
+        }
+      },
+      child: Container(
+        color: isSelected ? widget.themeColor.withOpacity(0.1) : null,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isSelected ? widget.themeColor : widget.themeColor.withOpacity(0.1), 
+              borderRadius: BorderRadius.circular(10)
+            ),
+            child: Icon(
+              isSelected ? Icons.check_rounded : Icons.description_rounded, 
+              color: isSelected ? Colors.white : widget.themeColor, 
+              size: 20
+            ),
+          ),
+          title: Text(material['title'] ?? '', 
+            style: TextStyle(
+              fontSize: 14, 
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? widget.themeColor : Colors.black87
+            )
+          ),
+          trailing: isSelected 
+            ? Icon(Icons.check_circle_rounded, color: widget.themeColor, size: 20)
+            : const Icon(Icons.chevron_right_rounded, color: Colors.black12),
+        ),
+      ),
     );
+  }
+
+  void _toggleSelection(String id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  void _showRemoveConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Remove Materials"),
+        content: Text("Are you sure you want to remove ${_selectedIds.length} material(s) from this course?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _removeSelectedMaterials();
+            }, 
+            child: const Text("Remove", style: TextStyle(color: Colors.red))
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeSelectedMaterials() async {
+    setState(() => _isLoading = true);
+    try {
+      await _apiService.unshareMaterials(_selectedIds.toList(), widget.course['id'].toString());
+      _selectedIds.clear();
+      await _fetchDetails();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Materials removed successfully.")));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _showShareDialog(dynamic chapter) async {

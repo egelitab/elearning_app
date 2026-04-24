@@ -295,6 +295,29 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> unshareMaterials(List<String> materialIds, String courseId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/materials/unshare'),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode({
+          "material_ids": materialIds,
+          "course_id": courseId,
+        }),
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) return data;
+      throw Exception(data['message'] ?? 'Failed to unshare materials');
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
   Future<List<dynamic>> getMaterialsByCourse(String courseId, {String? chapterId}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
