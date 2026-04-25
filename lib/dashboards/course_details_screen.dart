@@ -252,24 +252,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           _fetchDetails();
         }
       },
-      itemBuilder: (context) => _allCourses.map((c) => PopupMenuItem<dynamic>(
+      itemBuilder: (context) => _allCourses
+          .where((c) => c['id'] != _currentCourse['id'])
+          .map((c) => PopupMenuItem<dynamic>(
         value: c,
-        child: Row(
-          children: [
-            if (c['id'] == _currentCourse['id'])
-              Icon(Icons.check_circle_rounded, color: widget.themeColor, size: 16),
-            if (c['id'] == _currentCourse['id'])
-              const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                c['title'] ?? c['course_code'],
-                style: TextStyle(
-                  fontWeight: c['id'] == _currentCourse['id'] ? FontWeight.bold : FontWeight.normal,
-                  color: c['id'] == _currentCourse['id'] ? widget.themeColor : Colors.black87,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          c['title'] ?? c['course_code'],
+          style: TextStyle(fontWeight: FontWeight.w500, color: widget.themeColor, fontSize: 20),
         ),
       )).toList(),
     );
