@@ -277,6 +277,13 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header Section
+                if (courseTitle.isNotEmpty) ...[
+                  Text(
+                    courseTitle,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -337,12 +344,23 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
 
                 if (attachments.isNotEmpty) ...[
                   const SizedBox(height: 48),
-                  const Text(
-                    "Attachments",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                  Row(
+                    children: [
+                      const Icon(Icons.attach_file_rounded, color: Color(0xFF05398F), size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Attachments (${attachments.length})",
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  ...attachments.map((file) => _buildAttachmentTile(context, file)),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: attachments.length,
+                    itemBuilder: (context, index) => _buildAttachmentTile(context, attachments[index]),
+                  ),
                 ],
                 const SizedBox(height: 40),
               ],
@@ -364,22 +382,47 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          )
+        ],
+        border: Border.all(color: const Color(0xFF09AEF5).withOpacity(0.1)),
       ),
       child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF09AEF5).withOpacity(0.1),
-            shape: BoxShape.circle,
+            color: const Color(0xFF09AEF5).withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(_getIconForType(type), color: const Color(0xFF09AEF5), size: 24),
+          child: Icon(_getIconForType(type), color: const Color(0xFF09AEF5), size: 26),
         ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-        subtitle: Text(type.toUpperCase(), style: const TextStyle(fontSize: 11, color: Colors.black38)),
-        trailing: IconButton(
-          icon: const Icon(Icons.open_in_new_rounded, color: Color(0xFF05398F)),
-          onPressed: () => _launchURL(context, fileUrl),
+        title: Text(
+          name, 
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            type.toUpperCase(), 
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade400)
+          ),
+        ),
+        trailing: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF05398F).withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.download_rounded, color: Color(0xFF05398F), size: 20),
+            onPressed: () => _launchURL(context, fileUrl),
+          ),
         ),
         onTap: () => _launchURL(context, fileUrl),
       ),

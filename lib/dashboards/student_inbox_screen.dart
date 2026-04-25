@@ -170,6 +170,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         final title = a['title'] ?? '';
         final content = a['content'] ?? '';
         final course = a['course_code'] ?? 'Global';
+        final courseTitle = a['course_title'];
         final section = a['section'];
         final attachments = a['attachment_details'] ?? [];
         final time = _formatTime(a['created_at']);
@@ -182,7 +183,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
             context,
             MaterialPageRoute(builder: (context) => AnnouncementDetailScreen(announcement: a))
           ),
-          child: _buildAnnouncementTile(sender, title, content, course, time, color, section: section, attachments: attachments),
+          child: _buildAnnouncementTile(sender, title, content, course, time, color, section: section, attachments: attachments, courseTitle: courseTitle),
         );
       },
     );
@@ -296,7 +297,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     );
   }
 
-  Widget _buildAnnouncementTile(String sender, String header, String content, String course, String time, Color accentColor, {String? section, List<dynamic>? attachments}) {
+  Widget _buildAnnouncementTile(String sender, String header, String content, String course, String time, Color accentColor, {String? section, List<dynamic>? attachments, String? courseTitle}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -333,6 +334,13 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (courseTitle != null) ...[
+                        Text(
+                          courseTitle,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey.shade800),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

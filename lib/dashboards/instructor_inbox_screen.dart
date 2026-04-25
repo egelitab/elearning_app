@@ -503,6 +503,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         final description = a['content'] ?? '';
         final time = _formatTime(a['created_at']);
         final courseCode = a['course_code'] ?? '';
+        final courseTitle = a['course_title'] ?? 'Global';
         final section = a['section'];
         final attachments = a['attachment_details'] ?? [];
         
@@ -523,6 +524,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             _getAnnouncementIcon(title),
             _getAnnouncementColor(title),
             courseCode: courseCode,
+            courseTitle: courseTitle,
             section: section,
             attachments: attachments,
           ),
@@ -564,7 +566,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     return const Color(0xFF09AEF5);
   }
 
-  Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor, {String? courseCode, String? section, List<dynamic>? attachments}) {
+  Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor, {String? courseCode, String? courseTitle, String? section, List<dynamic>? attachments}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
@@ -595,6 +597,13 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (courseTitle != null) ...[
+                  Text(
+                    courseTitle,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey.shade800),
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 if (courseCode != null) ...[
                   Row(
                     children: [
