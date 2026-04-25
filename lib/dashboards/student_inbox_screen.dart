@@ -20,6 +20,10 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   bool _isLoading = true;
   String? _error;
 
+  bool _isSearching = false;
+  String _searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -33,7 +37,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     });
     try {
       final ann = await _apiService.getAnnouncements('student');
-      final inbox = await _apiService.getInbox();
+      final inbox = await _apiService.getGroupInbox();
       if (mounted) {
         setState(() {
           _announcements = ann;
@@ -59,15 +63,33 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         backgroundColor: const Color(0xFFF4F7FC),
         elevation: 0,
         centerTitle: false,
-        title: const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
+        title: _isSearching 
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: "Search...",
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.black38),
+              ),
+              style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+              onChanged: (value) => setState(() => _searchQuery = value),
+            )
+          : const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), 
-            onPressed: _fetchData
-          ),
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)), 
-            onPressed: () {}
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)), 
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = "";
+                  _searchController.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            }
           ),
         ],
       ),
@@ -85,13 +107,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                 ),
               ],
             ),
-      // 3. Floating Action Button for New Message
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF09AEF5),
-        elevation: 4,
-        child: const Icon(Icons.edit_rounded, color: Colors.white, size: 28),
-      ),
+      // 3. Floating Action Button - Removed for Students as they only join existing groups
     );
   }
 
@@ -157,15 +173,26 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   }
 
   Widget _buildAnnouncementsList() {
-    if (_announcements.isEmpty) {
-      return const Center(child: Text("No announcements", style: TextStyle(color: Colors.black54)));
+    var filtered = _announcements;
+    
+    if (_searchQuery.isNotEmpty) {
+      filtered = _announcements.where((a) {
+        final title = (a['title'] ?? '').toString().toLowerCase();
+        final content = (a['content'] ?? '').toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return title.contains(query) || content.contains(query);
+      }).toList();
+    }
+
+    if (filtered.isEmpty) {
+      return Center(child: Text(_searchQuery.isEmpty ? "No announcements yet" : "No results found", style: const TextStyle(color: Colors.black54)));
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _announcements.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final a = _announcements[index];
+        final a = filtered[index];
         final sender = "${a['instructor_first_name'] ?? ''} ${a['instructor_last_name'] ?? ''}";
         final title = a['title'] ?? '';
         final content = a['content'] ?? '';
@@ -190,24 +217,35 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   }
 
   Widget _buildChatList() {
-    if (_chats.isEmpty) {
-      return const Center(child: Text("No messages", style: TextStyle(color: Colors.black54)));
+    var filtered = _chats;
+    
+    if (_searchQuery.isNotEmpty) {
+      filtered = _chats.where((c) {
+        final name = (c['group_name'] ?? '').toString().toLowerCase();
+        final message = (c['last_message'] ?? '').toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return name.contains(query) || message.contains(query);
+      }).toList();
+    }
+
+    if (filtered.isEmpty) {
+      return Center(child: Text(_searchQuery.isEmpty ? "No group chats yet" : "No results found", style: const TextStyle(color: Colors.black54)));
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _chats.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final chat = _chats[index];
-        final name = "${chat['first_name'] ?? ''} ${chat['last_name'] ?? ''}";
-        final message = chat['content'] ?? '';
-        final time = _formatTime(chat['created_at']);
-        final isUnread = chat['is_read'] == false;
+        final chat = filtered[index];
+        final name = chat['group_name'] ?? 'Group';
+        final course = "${chat['course_title']} (${chat['course_code']})";
+        final message = chat['last_message'] ?? '';
+        final time = _formatTime(chat['last_message_at'] ?? chat['created_at']);
         
         final List<Color> colors = [Colors.blue, Colors.purple, Colors.orange, Colors.green, Colors.red];
         final color = colors[name.length % colors.length];
 
-        return _buildChatTile(name, message, isUnread ? "1" : "", time, color, chat['conversation_user_id'].toString());
+        return _buildChatTile(name, course, message, time, color, chat['group_id'].toString());
       },
     );
   }
@@ -229,7 +267,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     }
   }
 
-  Widget _buildChatTile(String name, String message, String count, String time, Color avatarColor, String userId) {
+  Widget _buildChatTile(String name, String course, String message, String time, Color avatarColor, String groupId) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -241,8 +279,9 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(userId: userId, name: name)));
+          onTap: () async {
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(groupId: groupId, name: name, isGroup: true)));
+            _fetchData();
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -261,30 +300,17 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-                          Text(time, style: TextStyle(color: count.isNotEmpty ? const Color(0xFF09AEF5) : Colors.black38, fontSize: 12, fontWeight: count.isNotEmpty ? FontWeight.bold : FontWeight.normal)),
+                          Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), overflow: TextOverflow.ellipsis)),
+                          Text(time, style: const TextStyle(color: Colors.black38, fontSize: 12)),
                         ],
                       ),
+                      Text(course, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 12, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              message, 
-                              maxLines: 1, 
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: count.isNotEmpty ? Colors.black87 : Colors.black54, fontWeight: count.isNotEmpty ? FontWeight.w600 : FontWeight.normal),
-                            ),
-                          ),
-                          if (count.isNotEmpty)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(color: Color(0xFF09AEF5), shape: BoxShape.circle),
-                              child: Text(count, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ),
-                        ],
+                      Text(
+                        message.isNotEmpty ? message : "No messages yet", 
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: message.isNotEmpty ? Colors.black54 : Colors.blueGrey.withOpacity(0.3), fontStyle: message.isNotEmpty ? FontStyle.normal : FontStyle.italic),
                       ),
                     ],
                   ),

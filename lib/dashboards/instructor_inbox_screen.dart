@@ -22,6 +22,10 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
   bool _isLoading = true;
   String? _error;
 
+  bool _isSearching = false;
+  String _searchQuery = "";
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,7 +38,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       _error = null;
     });
     try {
-      final chats = await _apiService.getInbox();
+      final chats = await _apiService.getGroupInbox();
       final announcements = await _apiService.getAnnouncements('instructor');
       
       if (mounted) {
@@ -62,15 +66,33 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         backgroundColor: const Color(0xFFF4F7FC),
         elevation: 0,
         centerTitle: false,
-        title: const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
+        title: _isSearching 
+          ? TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: "Search...",
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.black38),
+              ),
+              style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+              onChanged: (value) => setState(() => _searchQuery = value),
+            )
+          : const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), 
-            onPressed: _fetchData
-          ),
-          IconButton(
-            icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)), 
-            onPressed: () {}
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)), 
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = "";
+                  _searchController.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            }
           ),
         ],
       ),
@@ -92,7 +114,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (isChatSelected) {
-            // New Message - User Search
+            _showNewGroupChatModal();
           } else {
             _showNewAnnouncementModal();
           }
@@ -324,6 +346,161 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     );
   }
 
+  void _showNewGroupChatModal() {
+    String? filterCourse;
+    String? filterDepartment;
+    String? filterSection;
+    String? selectedBatch;
+    List<dynamic> allGroups = [];
+    bool isModalLoading = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          if (isModalLoading && allGroups.isEmpty) {
+            _apiService.getInstructorGroups().then((groups) {
+              setModalState(() {
+                allGroups = groups;
+                isModalLoading = false;
+              });
+            });
+          }
+
+          final List<dynamic> filteredGroups = allGroups.where((g) {
+            if (filterCourse != null && g['course_code'] != filterCourse) return false;
+            if (filterDepartment != null && g['department_name'] != filterDepartment) return false;
+            if (filterSection != null && g['section'] != filterSection) return false;
+            if (selectedBatch != null && g['batch_name'] != selectedBatch) return false;
+            return true;
+          }).toList();
+
+          final courses = allGroups.map((e) => e['course_code']).toSet().toList();
+          final departments = allGroups.map((e) => e['department_name']).toSet().toList();
+          final sections = allGroups.map((e) => e['section']).toSet().toList();
+          
+          final batches = allGroups
+              .where((g) {
+                if (filterCourse != null && g['course_code'] != filterCourse) return false;
+                if (filterDepartment != null && g['department_name'] != filterDepartment) return false;
+                if (filterSection != null && g['section'] != filterSection) return false;
+                return true;
+              })
+              .map((e) => e['batch_name'])
+              .where((b) => b != null)
+              .toSet()
+              .toList();
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (selectedBatch != null)
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                        onPressed: () => setModalState(() => selectedBatch = null),
+                      ),
+                    Text(
+                      selectedBatch == null ? "Select Batch" : selectedBatch!, 
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                if (isModalLoading)
+                  const Center(child: CircularProgressIndicator())
+                else ...[
+                  // Filters
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip("Course", filterCourse, courses, (val) => setModalState(() => filterCourse = val)),
+                        const SizedBox(width: 8),
+                        _buildFilterChip("Dept", filterDepartment, departments, (val) => setModalState(() => filterDepartment = val)),
+                        const SizedBox(width: 8),
+                        _buildFilterChip("Section", filterSection, sections, (val) => setModalState(() => filterSection = val)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  Expanded(
+                    child: selectedBatch == null 
+                      ? (batches.isEmpty 
+                          ? const Center(child: Text("No batches match filters"))
+                          : ListView.builder(
+                              itemCount: batches.length,
+                              itemBuilder: (context, i) {
+                                final b = batches[i];
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: const Icon(Icons.folder_shared_rounded, color: Color(0xFF09AEF5)),
+                                  title: Text(b.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                                  onTap: () => setModalState(() => selectedBatch = b.toString()),
+                                );
+                              },
+                            ))
+                      : (filteredGroups.isEmpty
+                          ? const Center(child: Text("No groups match filters"))
+                          : ListView.builder(
+                              itemCount: filteredGroups.length,
+                              itemBuilder: (context, i) {
+                                final g = filteredGroups[i];
+                                return ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(g['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  subtitle: Text("${g['course_code']} • Section ${g['section']} (${g['department_name']})"),
+                                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                                  onTap: () async {
+                                    Navigator.pop(context);
+                                    await Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(
+                                      groupId: g['id'].toString(), 
+                                      name: g['name'],
+                                      isGroup: true,
+                                    )));
+                                    _fetchData();
+                                  },
+                                );
+                              },
+                            )),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String? current, List<dynamic> options, Function(String?) onSelected) {
+    return PopupMenuButton<String?>(
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        const PopupMenuItem(value: null, child: Text("All")),
+        ...options.map((o) => PopupMenuItem(value: o.toString(), child: Text(o.toString()))),
+      ],
+      child: Chip(
+        label: Text(current ?? label, style: TextStyle(color: current != null ? Colors.white : Colors.black87, fontSize: 11)),
+        backgroundColor: current != null ? const Color(0xFF09AEF5) : Colors.grey.shade200,
+        deleteIcon: current != null ? const Icon(Icons.close, size: 14, color: Colors.white) : null,
+        onDeleted: current != null ? () => onSelected(null) : null,
+      ),
+    );
+  }
+
+
   Widget _buildToggleSwitch() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -385,7 +562,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     );
   }
 
-  Widget _buildChatTile(String name, String message, String count, String time, Color avatarColor, String userId) {
+  Widget _buildChatTile(String name, String course, String message, String time, Color avatarColor, String groupId) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -403,8 +580,9 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(userId: userId, name: name)));
+          onTap: () async {
+            await Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(groupId: groupId, name: name, isGroup: true)));
+            _fetchData();
           },
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -423,30 +601,17 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-                          Text(time, style: TextStyle(color: count.isNotEmpty ? const Color(0xFF09AEF5) : Colors.black38, fontSize: 12, fontWeight: count.isNotEmpty ? FontWeight.bold : FontWeight.normal)),
+                          Expanded(child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), overflow: TextOverflow.ellipsis)),
+                          Text(time, style: const TextStyle(color: Colors.black38, fontSize: 12)),
                         ],
                       ),
+                      Text(course, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 12, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              message, 
-                              maxLines: 1, 
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: count.isNotEmpty ? Colors.black87 : Colors.black54, fontWeight: count.isNotEmpty ? FontWeight.w600 : FontWeight.normal),
-                            ),
-                          ),
-                          if (count.isNotEmpty)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(color: Color(0xFF09AEF5), shape: BoxShape.circle),
-                              child: Text(count, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ),
-                        ],
+                      Text(
+                        message.isNotEmpty ? message : "Starts a new group chat", 
+                        maxLines: 1, 
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: message.isNotEmpty ? Colors.black54 : Colors.blueGrey.withOpacity(0.3), fontStyle: message.isNotEmpty ? FontStyle.normal : FontStyle.italic),
                       ),
                     ],
                   ),
@@ -459,46 +624,67 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     );
   }
   Widget _buildChatList() {
-    if (_chats.isEmpty) {
-      return const Center(child: Text("No chats yet", style: TextStyle(color: Colors.black54)));
+    var activeChats = _chats.where((c) => c['last_message'] != null).toList();
+    
+    if (_searchQuery.isNotEmpty) {
+      activeChats = activeChats.where((c) {
+        final name = (c['group_name'] ?? '').toString().toLowerCase();
+        final message = (c['last_message'] ?? '').toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return name.contains(query) || message.contains(query);
+      }).toList();
+    }
+
+    if (activeChats.isEmpty) {
+      return Center(child: Text(_searchQuery.isEmpty ? "No conversations yet" : "No results found", style: const TextStyle(color: Colors.black54)));
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _chats.length,
+      itemCount: activeChats.length,
       itemBuilder: (context, index) {
-        final chat = _chats[index];
-        final name = "${chat['first_name'] ?? ''} ${chat['last_name'] ?? ''}";
-        final message = chat['content'] ?? '';
-        final time = _formatTime(chat['created_at']);
-        final isUnread = chat['is_read'] == false;
+        final chat = activeChats[index];
+        final name = chat['group_name'] ?? 'Group';
+        final course = "${chat['course_title']} (${chat['course_code']})";
+        final message = chat['last_message'] ?? '';
+        final time = _formatTime(chat['last_message_at'] ?? chat['created_at']);
         
-        // Use a consistent color based on the name
         final List<Color> avatarColors = [Colors.blue, Colors.purple, Colors.orange, Colors.green, Colors.red, Colors.teal, Colors.indigo];
         final color = avatarColors[name.length % avatarColors.length];
 
         return _buildChatTile(
           name, 
+          course,
           message, 
-          isUnread ? "1" : "", // Backend currently doesn't provide unread count per chat, just a sample logic
           time, 
           color,
-          chat['conversation_user_id'].toString()
+          chat['group_id'].toString()
         );
       },
     );
   }
 
   Widget _buildAnnouncementsList() {
-    if (_announcements.isEmpty) {
-      return const Center(child: Text("No announcements yet", style: TextStyle(color: Colors.black54)));
+    var filtered = _announcements;
+    
+    if (_searchQuery.isNotEmpty) {
+      filtered = _announcements.where((a) {
+        final title = (a['title'] ?? '').toString().toLowerCase();
+        final content = (a['content'] ?? '').toString().toLowerCase();
+        final query = _searchQuery.toLowerCase();
+        return title.contains(query) || content.contains(query);
+      }).toList();
+    }
+
+    if (filtered.isEmpty) {
+      return Center(child: Text(_searchQuery.isEmpty ? "No announcements yet" : "No results found", style: const TextStyle(color: Colors.black54)));
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: _announcements.length,
+      itemCount: filtered.length,
       itemBuilder: (context, index) {
-        final a = _announcements[index];
+        final a = filtered[index];
         final title = a['title'] ?? 'No Title';
         final description = a['content'] ?? '';
         final time = _formatTime(a['created_at']);
