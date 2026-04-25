@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'chat_detail_screen.dart';
+import 'instructor_storage_explorer_screen.dart';
 
 class InstructorInboxScreen extends StatefulWidget {
   const InstructorInboxScreen({super.key});
@@ -13,7 +14,7 @@ class InstructorInboxScreen extends StatefulWidget {
 
 class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
   final ApiService _apiService = ApiService();
-  bool isChatSelected = true; 
+  bool isChatSelected = false; 
   
   List<dynamic> _chats = [];
   List<dynamic> _announcements = [];
@@ -109,93 +110,215 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
   void _showNewAnnouncementModal() {
     final titleController = TextEditingController();
     final contentController = TextEditingController();
-    String? selectedCard;
-    
-    // We need courses to select from
-    // For now let's assume we can fetch them or use a placeholder
-    // I'll add a simple course selector if I have course data
+    String? selectedCourseId;
+    String? selectedSection;
+    List<dynamic> courses = [];
+    List<dynamic> sections = [];
+    bool isModalLoading = true;
+    List<dynamic> selectedAttachments = [];
     
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 30, left: 24, right: 24
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-              const SizedBox(height: 25),
-              TextField(
-                controller: titleController,
-                decoration: InputDecoration(
-                  labelText: "Title",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          if (isModalLoading && courses.isEmpty) {
+            _apiService.getInstructorCourses().then((value) async {
+              if (value.isNotEmpty) {
+                final firstCourseId = value[0]['id'].toString();
+                try {
+                  final stats = await _apiService.getCourseEnrollmentStats(firstCourseId);
+                  setModalState(() {
+                    courses = value;
+                    selectedCourseId = firstCourseId;
+                    sections = stats;
+                    isModalLoading = false;
+                  });
+                } catch (e) {
+                  setModalState(() {
+                    courses = value;
+                    selectedCourseId = firstCourseId;
+                    isModalLoading = false;
+                  });
+                }
+              } else {
+                setModalState(() {
+                  courses = value;
+                  isModalLoading = false;
+                });
+              }
+            });
+          }
+
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              top: 30, left: 24, right: 24
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  const SizedBox(height: 25),
+                  if (isModalLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else ...[
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: "Select Course",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                      ),
+                      value: selectedCourseId,
+                      items: courses.map<DropdownMenuItem<String>>((course) {
+                        return DropdownMenuItem<String>(
+                          value: course['id'].toString(),
+                          child: Text(course['title'] ?? 'No Title'),
+                        );
+                      }).toList(),
+                      onChanged: (value) async {
+                        setModalState(() {
+                          selectedCourseId = value;
+                          selectedSection = null;
+                          sections = [];
+                          isModalLoading = true;
+                        });
+                        try {
+                          final stats = await _apiService.getCourseEnrollmentStats(value!);
+                          setModalState(() {
+                            sections = stats;
+                            isModalLoading = false;
+                          });
+                        } catch (e) {
+                          setModalState(() => isModalLoading = false);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    if (selectedCourseId != null)
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: "Select Section (Optional)",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                        ),
+                        value: selectedSection,
+                        items: [
+                          const DropdownMenuItem<String>(value: null, child: Text("All Sections")),
+                          ...sections.map<DropdownMenuItem<String>>((s) {
+                            return DropdownMenuItem<String>(
+                              value: s['section'],
+                              child: Text("Section ${s['section']} (${s['department_name']})"),
+                            );
+                          }).toList(),
+                        ],
+                        onChanged: (value) => setModalState(() => selectedSection = value),
+                      ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        labelText: "Title",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    TextField(
+                      controller: contentController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        labelText: "Content",
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    
+                    // Attach Files Section
+                    const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                    const SizedBox(height: 8),
+                    if (selectedAttachments.isNotEmpty)
+                      Wrap(
+                        spacing: 8,
+                        children: selectedAttachments.map((item) => Chip(
+                          label: Text(item['name'], style: const TextStyle(fontSize: 12)),
+                          onDeleted: () => setModalState(() => selectedAttachments.remove(item)),
+                        )).toList(),
+                      ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => InstructorStorageExplorerScreen(isPicker: true))
+                        );
+                        if (result != null && result is List) {
+                          setModalState(() {
+                            // Only allow files for now if folders are mixed in
+                            for (var item in result) {
+                              if (item['type'] == 'file' && !selectedAttachments.any((a) => a['id'] == item['id'])) {
+                                selectedAttachments.add(item);
+                              }
+                            }
+                          });
+                        }
+                      }, 
+                      icon: const Icon(Icons.attach_file_rounded), 
+                      label: const Text("Attach from Storage")
+                    ),
+
+                    const SizedBox(height: 25),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (selectedCourseId != null && titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                             try {
+                               final attachmentIds = selectedAttachments.map((a) => a['id'].toString()).toList();
+                               await _apiService.createAnnouncement(
+                                 selectedCourseId!, 
+                                 titleController.text, 
+                                 contentController.text,
+                                 section: selectedSection,
+                                 attachments: attachmentIds,
+                               );
+                               
+                               if (mounted) {
+                                 Navigator.pop(context);
+                                 _fetchData();
+                                 ScaffoldMessenger.of(context).showSnackBar(
+                                   const SnackBar(content: Text("Announcement posted!"), backgroundColor: Colors.green)
+                                 );
+                               }
+                             } catch (e) {
+                               ScaffoldMessenger.of(context).showSnackBar(
+                                 SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
+                               );
+                             }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Please fill all fields and select a course"), backgroundColor: Colors.orange)
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF09AEF5),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                        ),
+                        child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 30),
+                ],
               ),
-              const SizedBox(height: 15),
-              TextField(
-                controller: contentController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: "Content",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                ),
-              ),
-              const SizedBox(height: 25),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
-                       // We need a course ID. For now I'll just use a 'Global' or the first course found.
-                       // In a real app, we'd have a dropdown here.
-                       try {
-                         // Fetch instructor courses first if not available
-                         final courses = await _apiService.getInstructorCourses();
-                         if (courses.isEmpty) throw Exception("No courses to announce to");
-                         
-                         await _apiService.createAnnouncement(
-                           courses[0]['id'].toString(), 
-                           titleController.text, 
-                           contentController.text
-                         );
-                         
-                         if (mounted) {
-                           Navigator.pop(context);
-                           _fetchData();
-                           ScaffoldMessenger.of(context).showSnackBar(
-                             const SnackBar(content: Text("Announcement posted!"), backgroundColor: Colors.green)
-                           );
-                         }
-                       } catch (e) {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
-                         );
-                       }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF09AEF5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
-                  ),
-                  child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
+            ),
+          );
+        }
       )
     );
   }
@@ -210,29 +333,6 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isChatSelected = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isChatSelected ? Colors.white : Colors.transparent, 
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
-                ),
-                child: Center(
-                  child: Text(
-                    "Chats",
-                    style: TextStyle(
-                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
-                      fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => isChatSelected = false),
@@ -250,6 +350,29 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                     style: TextStyle(
                       color: !isChatSelected ? const Color(0xFF05398F) : Colors.black54,
                       fontWeight: !isChatSelected ? FontWeight.bold : FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => isChatSelected = true),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isChatSelected ? Colors.white : Colors.transparent, 
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
+                ),
+                child: Center(
+                  child: Text(
+                    "Chats",
+                    style: TextStyle(
+                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -379,13 +502,18 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         final description = a['content'] ?? '';
         final time = _formatTime(a['created_at']);
         final courseCode = a['course_code'] ?? '';
+        final section = a['section'];
+        final attachments = a['attachment_details'] ?? [];
         
         return _buildAnnouncementTile(
           title, 
           description, 
           time, 
           _getAnnouncementIcon(title),
-          _getAnnouncementColor(title)
+          _getAnnouncementColor(title),
+          courseCode: courseCode,
+          section: section,
+          attachments: attachments,
         );
       },
     );
@@ -424,7 +552,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     return const Color(0xFF09AEF5);
   }
 
-  Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor) {
+  Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor, {String? courseCode, String? section, List<dynamic>? attachments}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
@@ -455,6 +583,21 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (courseCode != null) ...[
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6)),
+                        child: Text(
+                          section != null ? "$courseCode • Sec $section" : courseCode, 
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.grey.shade700)
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -475,6 +618,38 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+                if (attachments != null && attachments.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 30,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: attachments.length,
+                      itemBuilder: (context, i) {
+                        final file = attachments[i];
+                        return Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF09AEF5).withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF09AEF5).withOpacity(0.1)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.description_rounded, size: 14, color: Color(0xFF09AEF5)),
+                              const SizedBox(width: 6),
+                              Text(
+                                file['name'] ?? 'File', 
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF05398F))
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

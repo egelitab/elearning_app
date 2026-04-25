@@ -12,7 +12,7 @@ class StudentInboxScreen extends StatefulWidget {
 
 class _StudentInboxScreenState extends State<StudentInboxScreen> {
   final ApiService _apiService = ApiService();
-  bool isChatSelected = true; 
+  bool isChatSelected = false; 
   
   List<dynamic> _announcements = [];
   List<dynamic> _chats = [];
@@ -106,29 +106,6 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         children: [
           Expanded(
             child: GestureDetector(
-              onTap: () => setState(() => isChatSelected = true),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isChatSelected ? Colors.white : Colors.transparent, 
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
-                ),
-                child: Center(
-                  child: Text(
-                    "Chats",
-                    style: TextStyle(
-                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
-                      fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Expanded(
-            child: GestureDetector(
               onTap: () => setState(() => isChatSelected = false),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -144,6 +121,29 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                     style: TextStyle(
                       color: !isChatSelected ? const Color(0xFF05398F) : Colors.black54,
                       fontWeight: !isChatSelected ? FontWeight.bold : FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => isChatSelected = true),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isChatSelected ? Colors.white : Colors.transparent, 
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: isChatSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
+                ),
+                child: Center(
+                  child: Text(
+                    "Chats",
+                    style: TextStyle(
+                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
                 ),
@@ -167,13 +167,16 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         final a = _announcements[index];
         final sender = "${a['instructor_first_name'] ?? ''} ${a['instructor_last_name'] ?? ''}";
         final title = a['title'] ?? '';
+        final content = a['content'] ?? '';
         final course = a['course_code'] ?? 'Global';
+        final section = a['section'];
+        final attachments = a['attachment_details'] ?? [];
         final time = _formatTime(a['created_at']);
         
         final List<Color> colors = [Colors.purple, Colors.orange, Colors.blue, Colors.red, Colors.green];
         final color = colors[index % colors.length];
 
-        return _buildAnnouncementTile(sender, title, course, time, color);
+        return _buildAnnouncementTile(sender, title, content, course, time, color, section: section, attachments: attachments);
       },
     );
   }
@@ -286,7 +289,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     );
   }
 
-  Widget _buildAnnouncementTile(String sender, String header, String course, String time, Color accentColor) {
+  Widget _buildAnnouncementTile(String sender, String header, String content, String course, String time, Color accentColor, {String? section, List<dynamic>? attachments}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -329,15 +332,57 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(6)),
-                            child: Text(course, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.grey.shade700)),
+                            child: Text(
+                              section != null ? "$course • Sec $section" : course, 
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.grey.shade700)
+                            ),
                           ),
                           Text(time, style: const TextStyle(color: Colors.black38, fontSize: 11)),
                         ],
                       ),
                       const SizedBox(height: 8),
-                      Text(header, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87), maxLines: 2, overflow: TextOverflow.ellipsis),
+                      Text(header, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 4),
-                      Text("Posted by $sender", style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
+                      Text(
+                        content, 
+                        style: const TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (attachments != null && attachments.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 30,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: attachments.length,
+                            itemBuilder: (context, i) {
+                              final file = attachments[i];
+                              return Container(
+                                margin: const EdgeInsets.only(right: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: accentColor.withOpacity(0.1)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.insert_drive_file_rounded, size: 14, color: accentColor),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      file['name'] ?? 'File', 
+                                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: accentColor.withOpacity(0.8))
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 8),
+                      Text("Posted by $sender", style: const TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),

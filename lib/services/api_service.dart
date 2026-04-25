@@ -695,11 +695,19 @@ class ApiService {
     }
   }
 
-  Future<void> createAnnouncement(String courseId, String title, String content) async {
+  Future<void> createAnnouncement(String courseId, String title, String content, {String? section, List<String>? attachments}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
+
+      final Map<String, dynamic> body = {
+        "course_id": courseId,
+        "title": title,
+        "content": content
+      };
+      if (section != null) body["section"] = section;
+      if (attachments != null) body["attachments"] = attachments;
 
       final response = await http.post(
         Uri.parse('$baseUrl/announcements'),
@@ -707,11 +715,7 @@ class ApiService {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: jsonEncode({
-          "course_id": courseId,
-          "title": title,
-          "content": content
-        }),
+        body: jsonEncode(body),
       ).timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
