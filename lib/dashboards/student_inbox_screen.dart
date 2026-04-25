@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'chat_detail_screen.dart';
+import 'announcement_detail_screen.dart';
 
 class StudentInboxScreen extends StatefulWidget {
   const StudentInboxScreen({super.key});
@@ -176,7 +177,13 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
         final List<Color> colors = [Colors.purple, Colors.orange, Colors.blue, Colors.red, Colors.green];
         final color = colors[index % colors.length];
 
-        return _buildAnnouncementTile(sender, title, content, course, time, color, section: section, attachments: attachments);
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AnnouncementDetailScreen(announcement: a))
+          ),
+          child: _buildAnnouncementTile(sender, title, content, course, time, color, section: section, attachments: attachments),
+        );
       },
     );
   }

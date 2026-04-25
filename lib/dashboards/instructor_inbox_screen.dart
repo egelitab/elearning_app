@@ -3,6 +3,7 @@ import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'chat_detail_screen.dart';
 import 'instructor_storage_explorer_screen.dart';
+import 'announcement_detail_screen.dart';
 
 class InstructorInboxScreen extends StatefulWidget {
   const InstructorInboxScreen({super.key});
@@ -505,15 +506,26 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         final section = a['section'];
         final attachments = a['attachment_details'] ?? [];
         
-        return _buildAnnouncementTile(
-          title, 
-          description, 
-          time, 
-          _getAnnouncementIcon(title),
-          _getAnnouncementColor(title),
-          courseCode: courseCode,
-          section: section,
-          attachments: attachments,
+        return GestureDetector(
+          onTap: () async {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AnnouncementDetailScreen(announcement: a, canEdit: true))
+            );
+            if (result == true) {
+              _fetchData();
+            }
+          },
+          child: _buildAnnouncementTile(
+            title, 
+            description, 
+            time, 
+            _getAnnouncementIcon(title),
+            _getAnnouncementColor(title),
+            courseCode: courseCode,
+            section: section,
+            attachments: attachments,
+          ),
         );
       },
     );

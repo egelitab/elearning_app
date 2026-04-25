@@ -727,6 +727,60 @@ class ApiService {
     }
   }
 
+  Future<void> updateAnnouncement(String id, String title, String content, {String? section, List<String>? attachments}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final Map<String, dynamic> body = {
+        "title": title,
+        "content": content
+      };
+      if (section != null) body["section"] = section;
+      if (attachments != null) body["attachments"] = attachments;
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/announcements/$id'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to update announcement');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> deleteAnnouncement(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/announcements/$id'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to delete announcement');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
   // === Instructor Files Methods ===
 
   Future<Map<String, dynamic>> getInstructorStorage({String? folderId}) async {
