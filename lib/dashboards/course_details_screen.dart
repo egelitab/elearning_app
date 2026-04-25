@@ -6,9 +6,15 @@ import 'instructor_materials_screen.dart';
 
 class CourseDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> course;
+  final List<dynamic>? allCourses;
   final Color themeColor;
 
-  const CourseDetailsScreen({super.key, required this.course, this.themeColor = Colors.blue});
+  const CourseDetailsScreen({
+    super.key, 
+    required this.course, 
+    this.allCourses,
+    this.themeColor = Colors.blue
+  });
 
   @override
   State<CourseDetailsScreen> createState() => _CourseDetailsScreenState();
@@ -16,6 +22,8 @@ class CourseDetailsScreen extends StatefulWidget {
 
 class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   final ApiService _apiService = ApiService();
+  late Map<String, dynamic> _currentCourse;
+  List<dynamic> _allCourses = [];
   List<dynamic> _chapters = [];
   List<dynamic> _courseMaterials = []; // Materials not assigned to a chapter
   Map<String, List<dynamic>> _chapterMaterials = {};
@@ -26,7 +34,30 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   @override
   void initState() {
     super.initState();
+    _currentCourse = widget.course;
+    _allCourses = widget.allCourses ?? [];
     _fetchDetails();
+    if (_allCourses.isEmpty) {
+      _fetchAllAvailableCourses();
+    }
+  }
+
+  Future<void> _fetchAllAvailableCourses() async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString('user_role');
+      List<dynamic> courses = [];
+      if (role == 'instructor') {
+        courses = await _apiService.getInstructorCourses();
+      } else {
+        courses = await _apiService.getStudentCourses();
+      }
+      if (mounted) {
+        setState(() => _allCourses = courses);
+      }
+    } catch (e) {
+      print("Error fetching all courses: $e");
+    }
   }
 
   Future<void> _fetchDetails() async {
@@ -37,11 +68,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       setState(() => _isInstructor = role == 'instructor');
 
       // Fetch chapters
-      final chapters = await _apiService.getCourseChapters(widget.course['id'].toString());
+      final chapters = await _apiService.getCourseChapters(_currentCourse['id'].toString());
       setState(() => _chapters = chapters);
 
       // Fetch ALL materials for the course in one go
-      final allMaterials = await _apiService.getMaterialsByCourse(widget.course['id'].toString());
+      final allMaterials = await _apiService.getMaterialsByCourse(_currentCourse['id'].toString());
       
       // Filter materials: those without a chapter_id go to _courseMaterials
       setState(() {
@@ -77,7 +108,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   }
 
   Future<void> _openGuide() async {
-    final urlStr = widget.course['course_guide_url'];
+    final urlStr = _currentCourse['course_guide_url'];
     if (urlStr == null) return;
     
     // Normalize URL
@@ -109,10 +140,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             icon: Icon(Icons.arrow_back_ios_new_rounded, color: widget.themeColor, size: 20),
             onPressed: () => Navigator.pop(context),
           ),
-      title: Text(_selectedIds.isNotEmpty 
-        ? "${_selectedIds.length} Selected" 
-        : (widget.course['title'] ?? 'Course Details'), 
-        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold)),
+      title: _selectedIds.isNotEmpty 
+        ? Text("${_selectedIds.length} Selected", style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold))
+        : _buildCourseSwitcher(),
       actions: [
         if (_selectedIds.isNotEmpty && _isInstructor)
           IconButton(
@@ -129,7 +159,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   MaterialPageRoute(
                     builder: (context) => InstructorMaterialsScreen(
                       selectMode: true,
-                      initialCourseId: widget.course['id'].toString(),
+                      initialCourseId: _currentCourse['id'].toString(),
                     ),
                   ),
                 );
@@ -145,13 +175,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               // Course Info (Name removed as it is now in AppBar)
-              Text(widget.course['instructor_name'] ?? '', 
-                style: const TextStyle(color: Colors.black54, fontSize: 16)),
+              Text(_currentCourse['instructor_name'] ?? '', 
+                style: const TextStyle(color: Colors.black54, fontSize: 18)),
               
               const SizedBox(height: 25),
               
               // Course Guide Card
-              if (widget.course['course_guide_url'] != null)
+              if (_currentCourse['course_guide_url'] != null)
                 _buildGuideCard()
               else
                 _buildNoGuideCard(),
@@ -161,7 +191,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               // NEW: Main Course Materials (Unassigned to chapters)
               if (_courseMaterials.isNotEmpty) ...[
                 const Text("General Materials", 
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
                 const SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
@@ -177,7 +207,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               ],
               
               const Text("Chapters & Materials", 
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
               const SizedBox(height: 15),
               
               if (_chapters.isEmpty)
@@ -189,6 +219,59 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 ..._chapters.map((ch) => _buildChapterTile(ch)).toList(),
             ],
           ),
+    );
+  }
+
+  Widget _buildCourseSwitcher() {
+    if (_allCourses.length <= 1) {
+      return Text(_currentCourse['title'] ?? 'Course Details', 
+        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold));
+    }
+
+    return PopupMenuButton<dynamic>(
+      offset: const Offset(0, 40),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: Text(
+              _currentCourse['title'] ?? 'Course Details',
+              style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 20),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Icon(Icons.keyboard_arrow_down_rounded, color: widget.themeColor),
+        ],
+      ),
+      onSelected: (course) {
+        if (course['id'] != _currentCourse['id']) {
+          setState(() {
+            _currentCourse = course;
+            _selectedIds.clear();
+          });
+          _fetchDetails();
+        }
+      },
+      itemBuilder: (context) => _allCourses.map((c) => PopupMenuItem<dynamic>(
+        value: c,
+        child: Row(
+          children: [
+            if (c['id'] == _currentCourse['id'])
+              Icon(Icons.check_circle_rounded, color: widget.themeColor, size: 16),
+            if (c['id'] == _currentCourse['id'])
+              const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                c['title'] ?? c['course_code'],
+                style: TextStyle(
+                  fontWeight: c['id'] == _currentCourse['id'] ? FontWeight.bold : FontWeight.normal,
+                  color: c['id'] == _currentCourse['id'] ? widget.themeColor : Colors.black87,
+                ),
+              ),
+            ),
+          ],
+        ),
+      )).toList(),
     );
   }
 
@@ -212,9 +295,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Course Guide", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text("Course Guide", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 4),
-                Text("Official PDF syllabus and guidelines", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 13)),
+                Text("Official PDF syllabus and guidelines", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 15)),
               ],
             ),
           ),
@@ -275,10 +358,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text("Chapter ${chapter['order_index'] + 1}", 
-                        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1)),
+                        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 1)),
                       const SizedBox(height: 4),
                       Text(chapter['title'] ?? '', 
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
                     ],
                   ),
                 ),
@@ -295,7 +378,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           if (materials.isEmpty)
             const Padding(
               padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-              child: Text("No materials shared for this chapter.", style: TextStyle(color: Colors.black38, fontSize: 13, fontStyle: FontStyle.italic)),
+              child: Text("No materials shared for this chapter.", style: TextStyle(color: Colors.black38, fontSize: 15, fontStyle: FontStyle.italic)),
             )
           else
             Container(
@@ -344,7 +427,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
           title: Text(material['title'] ?? '', 
             style: TextStyle(
-              fontSize: 14, 
+              fontSize: 16, 
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               color: isSelected ? widget.themeColor : Colors.black87
             )
@@ -390,7 +473,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _removeSelectedMaterials() async {
     setState(() => _isLoading = true);
     try {
-      await _apiService.unshareMaterials(_selectedIds.toList(), widget.course['id'].toString());
+      await _apiService.unshareMaterials(_selectedIds.toList(), _currentCourse['id'].toString());
       _selectedIds.clear();
       await _fetchDetails();
       if (mounted) {
@@ -436,7 +519,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Share to ${chapter['title']}", 
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
                   const SizedBox(height: 10),
                   const Text("Select materials from your storage to assign to this chapter.", 
                     style: TextStyle(color: Colors.black54)),
@@ -477,8 +560,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         try {
                           await _apiService.shareMaterials(
                             selectedIds.toList(), 
-                            widget.course['id'].toString(), 
-                            widget.course['department_id'].toString(), 
+                            _currentCourse['id'].toString(), 
+                            _currentCourse['department_id'].toString(), 
                             null, // section
                             chapterId: chapter['id'].toString()
                           );
