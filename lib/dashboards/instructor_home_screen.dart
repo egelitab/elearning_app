@@ -13,6 +13,8 @@ import 'account_settings_screen.dart';
 import 'course_details_screen.dart';
 import 'instructor_storage_explorer_screen.dart';
 import 'instructor_menu_screen.dart';
+import 'system_messages_screen.dart';
+
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -563,7 +565,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           ),
           GestureDetector(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Notifications coming soon!")));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SystemMessagesScreen()));
             },
             child: Container(
               padding: const EdgeInsets.all(2),
@@ -578,6 +580,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               ),
             ),
           ),
+
         ],
       ),
     );
