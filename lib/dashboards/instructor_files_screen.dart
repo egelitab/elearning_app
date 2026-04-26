@@ -8,7 +8,14 @@ import 'package:path_provider/path_provider.dart';
 import 'instructor_storage_explorer_screen.dart';
 
 class InstructorFilesScreen extends StatefulWidget {
-  const InstructorFilesScreen({super.key});
+  final bool showToggle;
+  final bool startInDownloads;
+
+  const InstructorFilesScreen({
+    super.key, 
+    this.showToggle = true,
+    this.startInDownloads = false,
+  });
 
   @override
   State<InstructorFilesScreen> createState() => _InstructorFilesScreenState();
@@ -34,6 +41,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   @override
   void initState() {
     super.initState();
+    isLocalSelected = widget.startInDownloads == false; // Reversed logic: if startInDownloads is true, isLocalSelected should be false
     _fetchStorage();
     _loadDownloadedFiles();
   }
@@ -99,9 +107,9 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   backgroundColor: const Color(0xFFF4F7FC),
                   elevation: 0,
                   pinned: true,
-                  title: const Text(
-                    "My Files", 
-                    style: TextStyle(
+                  title: Text(
+                    (widget.showToggle == false && widget.startInDownloads == true) ? "Downloads" : "My Files", 
+                    style: const TextStyle(
                       color: Color(0xFF05398F), 
                       fontSize: 22, 
                       fontWeight: FontWeight.bold
@@ -133,7 +141,8 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   child: Column(
                     children: [
                       _buildSearchBar(),
-                      _buildStorageToggle(),
+                      if (widget.showToggle == true)
+                        _buildStorageToggle(),
                       
                       if (isLocalSelected) ...[
                         const SizedBox(height: 10),
