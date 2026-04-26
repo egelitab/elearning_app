@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'system_messages_screen.dart';
+
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -108,18 +110,24 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-               color: Colors.white24,
-               shape: BoxShape.circle,
-            ),
-            child: const CircleAvatar(
-              backgroundColor: Colors.white, 
-              radius: 22,
-              child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SystemMessagesScreen()));
+            },
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                 color: Colors.white24,
+                 shape: BoxShape.circle,
+              ),
+              child: const CircleAvatar(
+                backgroundColor: Colors.white, 
+                radius: 22,
+                child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+              ),
             ),
           ),
+
         ],
       ),
     );

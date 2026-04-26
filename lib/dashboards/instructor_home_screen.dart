@@ -11,6 +11,10 @@ import 'instructor_files_screen.dart';
 import 'help_support_screen.dart';
 import 'account_settings_screen.dart';
 import 'course_details_screen.dart';
+import 'instructor_storage_explorer_screen.dart';
+import 'instructor_menu_screen.dart';
+import 'system_messages_screen.dart';
+
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -25,12 +29,120 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   String _firstName = '';
   List<dynamic> _courses = [];
   bool _isLoadingCourses = false;
+  List<dynamic> _schedules = [];
+  bool _isLoadingSchedules = false;
+  Map<String, dynamic>? _upcomingClass;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-    _fetchCourses();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    await _fetchCourses();
+    await _fetchSchedules();
+  }
+
+  Future<void> _fetchSchedules() async {
+    setState(() => _isLoadingSchedules = true);
+    try {
+      final schedules = await _apiService.getMySchedules();
+      setState(() {
+        _schedules = schedules;
+        _calculateUpcomingClass();
+      });
+    } catch (e) {
+      print("Error fetching schedules: $e");
+    } finally {
+      if (mounted) setState(() => _isLoadingSchedules = false);
+    }
+  }
+
+  void _calculateUpcomingClass() {
+    if (_courses.isEmpty && _schedules.isEmpty) return;
+
+    final now = DateTime.now();
+    int currentDayIdx = now.weekday - 1; // 0 = Mon, 6 = Sun
+
+    // Filter for digital schedules
+    final digitalSchedules = _schedules.where((s) => s['file_path'] == 'DIGITAL_ENTRY').toList();
+    
+    // Find matching slots for instructor's courses
+    final Set<String> myCourseTitles = _courses.map((c) => (c['title'] as String).toLowerCase()).toSet();
+    myCourseTitles.addAll(_courses.map((c) => (c['course_code'] as String).toLowerCase()));
+
+    List<Map<String, dynamic>> slots = [];
+    
+    for (var schedule in digitalSchedules) {
+      if (schedule['content'] == null) continue;
+      final content = schedule['content'] as Map<String, dynamic>;
+      content.forEach((key, value) {
+        if (myCourseTitles.contains(value.toString().toLowerCase())) {
+          final parts = key.split('-');
+          if (parts.length == 2) {
+            int slotIdx = int.parse(parts[0]);
+            int dayIdx = int.parse(parts[1]);
+            slots.add({
+              'dayIdx': dayIdx,
+              'slotIdx': slotIdx,
+              'course': value,
+              'schedule': schedule
+            });
+          }
+        }
+      });
+    }
+
+    if (slots.isEmpty) {
+      // Check for uploaded files
+      final fileSchedules = _schedules.where((s) => s['file_path'] != 'DIGITAL_ENTRY').toList();
+      if (fileSchedules.isNotEmpty) {
+        setState(() {
+          _upcomingClass = {
+            'type': 'file',
+            'title': fileSchedules.first['title'] ?? 'Class Schedule',
+            'fileName': fileSchedules.first['file_path'].split('\\').last.split('/').last,
+          };
+        });
+      } else {
+        setState(() {
+          _upcomingClass = null;
+        });
+      }
+      return;
+    }
+
+    // Sort slots by day and time
+    slots.sort((a, b) {
+      if (a['dayIdx'] != b['dayIdx']) return a['dayIdx'].compareTo(b['dayIdx']);
+      return a['slotIdx'].compareTo(b['slotIdx']);
+    });
+
+    // Find next slot starting from today
+    Map<String, dynamic>? nextSlot;
+    for (var slot in slots) {
+      if (slot['dayIdx'] >= currentDayIdx) {
+        nextSlot = slot;
+        break;
+      }
+    }
+    
+    // If none found for the rest of the week, pick first one next week
+    nextSlot ??= slots.first;
+
+    final dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    final slotTimes = ["8:30 AM", "10:45 AM", "1:35 PM", "3:25 PM"]; 
+
+    setState(() {
+      _upcomingClass = {
+        'type': 'digital',
+        'day': dayNames[nextSlot!['dayIdx']],
+        'time': slotTimes[nextSlot['slotIdx'] % slotTimes.length],
+        'course': nextSlot['course'],
+      };
+    });
   }
 
   Future<void> _fetchCourses() async {
@@ -90,8 +202,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                           _showPostAnnouncementDialog(context);
                         }),
                         _buildQuickAction(Icons.download_rounded, "Downloads", "Access offline materials", () {
-                          // Could nav to Download screen if applicable for instructors
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloads coming soon!")));
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorFilesScreen(showToggle: false, startInDownloads: true)));
                         }),
                       ],
                     ),
@@ -114,89 +225,201 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     final titleController = TextEditingController();
     final contentController = TextEditingController();
     String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+    String? selectedSection;
+    List<dynamic> sections = [];
+    bool isModalLoading = false;
+    List<dynamic> selectedAttachments = [];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          bool isPosting = false;
+        builder: (context, setModalState) {
+          // If we have courses but haven't loaded sections for the first one yet
+          if (selectedCourseId != null && sections.isEmpty && !isModalLoading) {
+            isModalLoading = true;
+            _apiService.getCourseEnrollmentStats(selectedCourseId!).then((stats) {
+              setModalState(() {
+                sections = stats;
+                isModalLoading = false;
+              });
+            }).catchError((e) {
+              setModalState(() => isModalLoading = false);
+            });
+          }
 
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text("Post Announcement", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-            content: SingleChildScrollView(
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              top: 30, left: 24, right: 24
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+            ),
+            child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(color: const Color(0xFFF4F7FC), borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedCourseId,
-                        items: _courses.map((c) => DropdownMenuItem<String>(value: c['id'], child: Text(c['title'] ?? c['course_code'], overflow: TextOverflow.ellipsis))).toList(),
-                        onChanged: (val) => setDialogState(() => selectedCourseId = val),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  const Text("Title", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: titleController,
-                    decoration: InputDecoration(
-                      hintText: "Announcement Title",
-                      filled: true,
-                      fillColor: const Color(0xFFF4F7FC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  const Text("Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black54)),
-                  const SizedBox(height: 5),
-                  TextField(
-                    controller: contentController,
-                    maxLines: 4,
-                    decoration: InputDecoration(
-                      hintText: "Type your message here...",
-                      filled: true,
-                      fillColor: const Color(0xFFF4F7FC),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                    ),
-                  ),
+                   const Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                   const SizedBox(height: 25),
+                   
+                   DropdownButtonFormField<String>(
+                     decoration: InputDecoration(
+                       labelText: "Select Course",
+                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                     ),
+                     value: selectedCourseId,
+                     items: _courses.map<DropdownMenuItem<String>>((course) {
+                       return DropdownMenuItem<String>(
+                         value: course['id'].toString(),
+                         child: Text(course['title'] ?? 'No Title'),
+                       );
+                     }).toList(),
+                     onChanged: (value) async {
+                       setModalState(() {
+                         selectedCourseId = value;
+                         selectedSection = null;
+                         sections = [];
+                         isModalLoading = true;
+                       });
+                       try {
+                         final stats = await _apiService.getCourseEnrollmentStats(value!);
+                         setModalState(() {
+                           sections = stats;
+                           isModalLoading = false;
+                         });
+                       } catch (e) {
+                         setModalState(() => isModalLoading = false);
+                       }
+                     },
+                   ),
+                   const SizedBox(height: 15),
+                   
+                   if (selectedCourseId != null)
+                     DropdownButtonFormField<String>(
+                       decoration: InputDecoration(
+                         labelText: "Select Section (Optional)",
+                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                       ),
+                       value: selectedSection,
+                       items: [
+                         const DropdownMenuItem<String>(value: null, child: Text("All Sections")),
+                         ...sections.map<DropdownMenuItem<String>>((s) {
+                           return DropdownMenuItem<String>(
+                             value: s['section'],
+                             child: Text("Section ${s['section']} (${s['department_name']})"),
+                           );
+                         }).toList(),
+                       ],
+                       onChanged: (value) => setModalState(() => selectedSection = value),
+                     ),
+                   const SizedBox(height: 15),
+                   
+                   TextField(
+                     controller: titleController,
+                     decoration: InputDecoration(
+                       labelText: "Title",
+                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                     ),
+                   ),
+                   const SizedBox(height: 15),
+                   
+                   TextField(
+                     controller: contentController,
+                     maxLines: 4,
+                     decoration: InputDecoration(
+                       labelText: "Content",
+                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
+                     ),
+                   ),
+                   const SizedBox(height: 15),
+                   
+                   // Attach Files Section
+                   const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                   const SizedBox(height: 8),
+                   if (selectedAttachments.isNotEmpty)
+                     Wrap(
+                       spacing: 8,
+                       children: selectedAttachments.map((item) => Chip(
+                         label: Text(item['name'], style: const TextStyle(fontSize: 12)),
+                         onDeleted: () => setModalState(() => selectedAttachments.remove(item)),
+                       )).toList(),
+                     ),
+                   TextButton.icon(
+                     onPressed: () async {
+                       final result = await Navigator.push(
+                         context, 
+                         MaterialPageRoute(builder: (context) => InstructorStorageExplorerScreen(isPicker: true))
+                       );
+                       if (result != null && result is List) {
+                         setModalState(() {
+                           for (var item in result) {
+                             if (item['type'] == 'file' && !selectedAttachments.any((a) => a['id'] == item['id'])) {
+                               selectedAttachments.add(item);
+                             }
+                           }
+                         });
+                       }
+                     }, 
+                     icon: const Icon(Icons.attach_file_rounded), 
+                     label: const Text("Attach from Storage")
+                   ),
+
+                   const SizedBox(height: 25),
+                   
+                   if (isModalLoading)
+                     const Center(child: CircularProgressIndicator())
+                   else
+                     SizedBox(
+                       width: double.infinity,
+                       height: 55,
+                       child: ElevatedButton(
+                         onPressed: () async {
+                           if (selectedCourseId != null && titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
+                              try {
+                                final attachmentIds = selectedAttachments.map((a) => a['id'].toString()).toList();
+                                await _apiService.createAnnouncement(
+                                  selectedCourseId!, 
+                                  titleController.text, 
+                                  contentController.text,
+                                  section: selectedSection,
+                                  attachments: attachmentIds,
+                                );
+                                
+                                if (mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Announcement published successfully!"), backgroundColor: Colors.green)
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
+                                );
+                              }
+                           } else {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               const SnackBar(content: Text("Please fill all fields and select a course"), backgroundColor: Colors.orange)
+                             );
+                           }
+                         },
+                         style: ElevatedButton.styleFrom(
+                           backgroundColor: const Color(0xFF09AEF5),
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                         ),
+                         child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                       ),
+                     ),
+                   const SizedBox(height: 30),
                 ],
               ),
             ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-              ElevatedButton(
-                onPressed: isPosting ? null : () async {
-                  if (selectedCourseId == null || titleController.text.isEmpty || contentController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
-                    return;
-                  }
-
-                  setDialogState(() => isPosting = true);
-                  try {
-                    await _apiService.createAnnouncement(selectedCourseId!, titleController.text, contentController.text);
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Announcement published successfully!"), backgroundColor: Colors.green));
-                  } catch (e) {
-                    setDialogState(() => isPosting = false);
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
-                  }
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                child: isPosting ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text("Post"),
-              ),
-            ],
           );
         },
-      ),
+      )
     );
   }
 
@@ -342,7 +565,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           ),
           GestureDetector(
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Notifications coming soon!")));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SystemMessagesScreen()));
             },
             child: Container(
               padding: const EdgeInsets.all(2),
@@ -357,6 +580,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               ),
             ),
           ),
+
         ],
       ),
     );
@@ -397,9 +621,24 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text("Mon 8:30 AM", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  const Text("Computer Science 101", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  if (_isLoadingSchedules)
+                    const SizedBox(height: 30, width: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  else if (_upcomingClass != null) ...[
+                    if (_upcomingClass!['type'] == 'digital')
+                      Text("${_upcomingClass!['day']} ${_upcomingClass!['time']}", style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))
+                    else
+                      const Text("Upload Available", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    
+                    const Spacer(),
+                    Text(_upcomingClass!['type'] == 'digital' ? _upcomingClass!['course'] : _upcomingClass!['title'], 
+                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ] else ...[
+                    const Text("Not Available", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    const Text("Schedule is not available", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ],
                   const SizedBox(height: 2),
                   const Text("Tap to view details ›", style: TextStyle(color: Colors.white60, fontSize: 12)),
                 ],
@@ -505,7 +744,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calendar coming soon!")));
         }),
         _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700, () {
-          _showMoreOptions(context);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorMenuScreen(courses: _courses)));
         }),
       ],
     );

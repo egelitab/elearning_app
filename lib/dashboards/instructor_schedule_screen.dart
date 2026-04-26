@@ -1,7 +1,95 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 
-class InstructorScheduleScreen extends StatelessWidget {
+class InstructorScheduleScreen extends StatefulWidget {
   const InstructorScheduleScreen({super.key});
+
+  @override
+  State<InstructorScheduleScreen> createState() => _InstructorScheduleScreenState();
+}
+
+class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
+  final ApiService _apiService = ApiService();
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _weeklyClasses = [];
+  List<dynamic> _fileSchedules = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
+    try {
+      final courses = await _apiService.getInstructorCourses();
+      final schedules = await _apiService.getMySchedules();
+
+      _processSchedules(courses, schedules);
+    } catch (e) {
+      print("Error fetching schedule data: $e");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _processSchedules(List<dynamic> courses, List<dynamic> schedules) {
+    final Set<String> myCourseTitles = courses.map((c) => (c['title'] as String).toLowerCase()).toSet();
+    myCourseTitles.addAll(courses.map((c) => (c['course_code'] as String).toLowerCase()));
+
+    List<Map<String, dynamic>> extractedClasses = [];
+    List<dynamic> files = [];
+
+    final dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    final slotTimes = [
+      "08:00 AM - 09:45 AM",
+      "09:50 AM - 12:20 PM",
+      "01:35 PM - 03:20 PM",
+      "03:25 PM - 06:05 PM"
+    ];
+    final List<Color> colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red, Colors.teal];
+
+    for (var schedule in schedules) {
+      if (schedule['file_path'] == 'DIGITAL_ENTRY') {
+        final content = schedule['content'] as Map<String, dynamic>?;
+        if (content != null) {
+          content.forEach((key, value) {
+            if (myCourseTitles.contains(value.toString().toLowerCase())) {
+              final parts = key.split('-');
+              if (parts.length == 2) {
+                int slotIdx = int.parse(parts[0]);
+                int dayIdx = int.parse(parts[1]);
+                
+                extractedClasses.add({
+                  'day': dayNames[dayIdx],
+                  'dayIdx': dayIdx,
+                  'slotIdx': slotIdx,
+                  'course': value,
+                  'time': slotTimes[slotIdx % slotTimes.length],
+                  'location': "See Digital Schedule", // Location not explicitly in slot yet
+                  'color': colors[extractedClasses.length % colors.length]
+                });
+              }
+            }
+          });
+        }
+      } else {
+        files.add(schedule);
+      }
+    }
+
+    // Sort by day then by time
+    extractedClasses.sort((a, b) {
+      if (a['dayIdx'] != b['dayIdx']) return a['dayIdx'].compareTo(b['dayIdx']);
+      return a['slotIdx'].compareTo(b['slotIdx']);
+    });
+
+    setState(() {
+      _weeklyClasses = extractedClasses;
+      _fileSchedules = files;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,40 +104,76 @@ class InstructorScheduleScreen extends StatelessWidget {
         ),
         title: const Text("Schedule & Office Hours", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader("Weekly Class Schedule"),
-            const SizedBox(height: 15),
-            _buildScheduleItem("Monday", "Computer Science 101", "08:30 AM - 10:30 AM", "Block 4, Room 202", Colors.blue),
-            _buildScheduleItem("Wednesday", "Database Systems", "10:45 AM - 12:45 PM", "Lab 2", Colors.green),
-            _buildScheduleItem("Thursday", "Software Engineering", "02:00 PM - 04:00 PM", "Block 1, Seminar Room", Colors.orange),
-            
-            const SizedBox(height: 35),
-            _buildSectionHeader("Office Hours"),
-            const SizedBox(height: 15),
-            _buildOfficeHourItem("Tuesdays & Thursdays", "10:00 AM - 12:00 PM", "Block 4, Office 412"),
-            
-            const SizedBox(height: 40),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Editing schedule will be available in the next update.")));
-                },
-                icon: const Icon(Icons.edit_calendar_rounded),
-                label: const Text("Request Schedule Change"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF05398F),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : RefreshIndicator(
+            onRefresh: _fetchData,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader("Weekly Class Schedule"),
+                  const SizedBox(height: 15),
+                  
+                  if (_weeklyClasses.isEmpty && _fileSchedules.isEmpty)
+                    _buildEmptyState("No classes scheduled yet.")
+                  else ...[
+                    ..._weeklyClasses.map((c) => _buildScheduleItem(
+                      c['day'], c['course'], c['time'], c['location'], c['color']
+                    )),
+                    
+                    if (_fileSchedules.isNotEmpty) ...[
+                      const SizedBox(height: 25),
+                      _buildSectionHeader("Uploaded Schedule Files"),
+                      const SizedBox(height: 15),
+                      ..._fileSchedules.map((fs) => _buildFileItem(fs)),
+                    ],
+                  ],
+                  
+                  const SizedBox(height: 35),
+                  _buildSectionHeader("Office Hours"),
+                  const SizedBox(height: 15),
+                  _buildOfficeHourItem("Tuesdays & Thursdays", "10:00 AM - 12:00 PM", "Block 4, Office 412"),
+                  
+                  const SizedBox(height: 40),
+                  Center(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Editing schedule will be available in the next update.")));
+                      },
+                      icon: const Icon(Icons.edit_calendar_rounded),
+                      label: const Text("Request Schedule Change"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF05398F),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    return Container(
+      padding: const EdgeInsets.all(30),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.calendar_today_outlined, size: 50, color: Colors.grey.shade300),
+          const SizedBox(height: 15),
+          Text(message, style: const TextStyle(color: Colors.grey)),
+        ],
       ),
     );
   }
@@ -86,6 +210,43 @@ class InstructorScheduleScreen extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileItem(dynamic fileSchedule) {
+    final String title = fileSchedule['title'] ?? "Class Schedule";
+    final String path = fileSchedule['file_path'];
+    final String fileName = path.split('\\').last.split('/').last;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.withOpacity(0.1)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent, size: 32),
+          const SizedBox(width: 15),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                Text(fileName, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading schedule file...")));
+            },
+            child: const Text("Open"),
+          )
         ],
       ),
     );
