@@ -684,76 +684,81 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
   Widget _buildGroupSetTile(Map<String, dynamic> batch) {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
-                child: const Icon(Icons.auto_awesome_motion_rounded, color: Color(0xFF09AEF5)),
-              ),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (c) => GroupDetailScreen(batch: batch)));
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(batch["batch_name"] ?? "General Groups", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                    const SizedBox(height: 4),
-                    Text(batch["course_title"] ?? "Course", style: const TextStyle(fontSize: 13, color: Colors.black45)),
-                  ],
-                ),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded, color: Colors.black38),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                onSelected: (value) {
-                  if (value == 'delete') _confirmDeleteBatch(batch);
-                },
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                        SizedBox(width: 10),
-                        Text("Remove", style: TextStyle(color: Colors.redAccent)),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
+                      child: const Icon(Icons.auto_awesome_motion_rounded, color: Color(0xFF09AEF5)),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(batch["batch_name"] ?? "General Groups", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                          const SizedBox(height: 4),
+                          Text(batch["course_title"] ?? "Course", style: const TextStyle(fontSize: 13, color: Colors.black45)),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert_rounded, color: Colors.black38),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                      onSelected: (value) {
+                        if (value == 'delete') _confirmDeleteBatch(batch);
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                              SizedBox(width: 10),
+                              Text("Remove", style: TextStyle(color: Colors.redAccent)),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Text("${(batch["groups"] as List).length} Groups formed", style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600, fontSize: 13)),
-              const Spacer(),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (c) => GroupDetailScreen(batch: batch)));
-                },
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("More Detail", style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(width: 5),
-                    Icon(Icons.arrow_forward_rounded, size: 16),
                   ],
                 ),
-                style: TextButton.styleFrom(foregroundColor: const Color(0xFF09AEF5), padding: const EdgeInsets.symmetric(horizontal: 12)),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Text("${(batch["groups"] as List).length} Groups formed", style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600, fontSize: 13)),
+                    const Spacer(),
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text("More Detail", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF09AEF5))),
+                        SizedBox(width: 5),
+                        Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF09AEF5)),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

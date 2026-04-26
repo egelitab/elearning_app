@@ -10,13 +10,15 @@ class InstructorStorageExplorerScreen extends StatefulWidget {
   final List<dynamic>? initialFiles;
   final String? initialFolderId;
   final String initialFolderName;
+  final bool isPicker;
 
   const InstructorStorageExplorerScreen({
     super.key, 
     this.initialFolders, 
     this.initialFiles,
     this.initialFolderId,
-    this.initialFolderName = 'Main Storage'
+    this.initialFolderName = 'Main Storage',
+    this.isPicker = false,
   });
 
   @override
@@ -689,7 +691,34 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           child: SizedBox(
             width: double.infinity,
             height: 55,
-            child: ElevatedButton.icon(
+            child: widget.isPicker ? ElevatedButton.icon(
+              onPressed: () {
+                if (_selectedIds.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select at least one item.")));
+                } else {
+                  // Return a list of selected items (only files usually for attachments)
+                  final List<Map<String, dynamic>> selectedItems = [];
+                  for (final selectionId in _selectedIds) {
+                    final parts = selectionId.split(':');
+                    final type = parts[0];
+                    final id = parts[1];
+                    try {
+                      final item = type == 'folder' 
+                        ? _folders.firstWhere((f) => f['id'].toString() == id)
+                        : _files.firstWhere((f) => f['id'].toString() == id);
+                      selectedItems.add({...item, 'type': type});
+                    } catch (_) {}
+                  }
+                  Navigator.pop(context, selectedItems);
+                }
+              },
+              icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+              label: const Text("Select Item(s)", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF05398F),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ) : ElevatedButton.icon(
               onPressed: () {
                 if (_selectedIds.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select at least one item.")));

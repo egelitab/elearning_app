@@ -224,6 +224,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
               MaterialPageRoute(
                 builder: (context) => CourseDetailsScreen(
                   course: course,
+                  allCourses: _courses,
                   themeColor: avatarColor,
                 ),
               ),

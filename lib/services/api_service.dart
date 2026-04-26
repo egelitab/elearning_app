@@ -295,6 +295,29 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> unshareMaterials(List<String> materialIds, String courseId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/materials/unshare'),
+        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        body: jsonEncode({
+          "material_ids": materialIds,
+          "course_id": courseId,
+        }),
+      );
+      
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) return data;
+      throw Exception(data['message'] ?? 'Failed to unshare materials');
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
   Future<List<dynamic>> getMaterialsByCourse(String courseId, {String? chapterId}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -644,6 +667,110 @@ class ApiService {
     }
   }
 
+  // --- Group Chat Methods ---
+
+  Future<List<dynamic>> getGroupInbox() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/messages/group/inbox'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'] ?? [];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load group inbox');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<List<dynamic>> getGroupChatHistory(String groupId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/messages/group/history/$groupId'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'] ?? [];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load group chat history');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> sendGroupMessage(String groupId, String content) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/messages/group'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "group_id": groupId,
+          "content": content,
+        }),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 201 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to send group message');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<List<dynamic>> getInstructorGroups() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.get(
+        Uri.parse('$baseUrl/messages/instructor/groups'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'] ?? [];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load instructor groups');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
   // === Announcement Methods ===
 
   Future<List<dynamic>> getAnnouncements(String role) async {
@@ -672,11 +799,19 @@ class ApiService {
     }
   }
 
-  Future<void> createAnnouncement(String courseId, String title, String content) async {
+  Future<void> createAnnouncement(String courseId, String title, String content, {String? section, List<String>? attachments}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
+
+      final Map<String, dynamic> body = {
+        "course_id": courseId,
+        "title": title,
+        "content": content
+      };
+      if (section != null) body["section"] = section;
+      if (attachments != null) body["attachments"] = attachments;
 
       final response = await http.post(
         Uri.parse('$baseUrl/announcements'),
@@ -684,16 +819,66 @@ class ApiService {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: jsonEncode({
-          "course_id": courseId,
-          "title": title,
-          "content": content
-        }),
+        body: jsonEncode(body),
       ).timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 201 || data['success'] != true) {
         throw Exception(data['message'] ?? 'Failed to create announcement');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> updateAnnouncement(String id, String title, String content, {String? section, List<String>? attachments}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final Map<String, dynamic> body = {
+        "title": title,
+        "content": content
+      };
+      if (section != null) body["section"] = section;
+      if (attachments != null) body["attachments"] = attachments;
+
+      final response = await http.put(
+        Uri.parse('$baseUrl/announcements/$id'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to update announcement');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
+
+  Future<void> deleteAnnouncement(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception("You are not logged in");
+
+      final response = await http.delete(
+        Uri.parse('$baseUrl/announcements/$id'),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      ).timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode != 200 || data['success'] != true) {
+        throw Exception(data['message'] ?? 'Failed to delete announcement');
       }
     } catch (e) {
       throw Exception('Server Error: $e');

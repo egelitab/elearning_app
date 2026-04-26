@@ -219,7 +219,11 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CourseDetailsScreen(course: course, themeColor: darkColor)),
+              MaterialPageRoute(builder: (context) => CourseDetailsScreen(
+                course: course, 
+                allCourses: _courses,
+                themeColor: darkColor
+              )),
             );
           },
           child: Padding(

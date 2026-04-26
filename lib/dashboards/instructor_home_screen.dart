@@ -10,6 +10,7 @@ import 'instructor_groups_screen.dart';
 import 'instructor_files_screen.dart';
 import 'help_support_screen.dart';
 import 'account_settings_screen.dart';
+import 'course_details_screen.dart';
 
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
@@ -481,7 +482,15 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         }),
         _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue, _handleDirectUpload),
         _buildIconBtn(Icons.book_rounded, "Courses", const Color(0xFFE8F5E9), Colors.green, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
+          if (_courses.isNotEmpty) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CourseDetailsScreen(
+              course: _courses.first,
+              allCourses: _courses,
+              themeColor: Colors.blue,
+            )));
+          } else {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
+          }
         }),
         _buildIconBtn(Icons.schedule_rounded, "Schedule", const Color(0xFFF3E5F5), Colors.purple, () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()));

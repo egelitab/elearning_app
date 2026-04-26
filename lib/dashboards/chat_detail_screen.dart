@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatDetailScreen extends StatefulWidget {
-  final String userId;
+  final String? userId; // For legacy/future 1-to-1
+  final String? groupId; // For Group Chat
   final String name;
+  final bool isGroup;
 
-  const ChatDetailScreen({super.key, required this.userId, required this.name});
+  const ChatDetailScreen({
+    super.key, 
+    this.userId, 
+    this.groupId, 
+    required this.name, 
+    this.isGroup = false
+  });
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
@@ -19,16 +28,31 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   
   List<dynamic> _messages = [];
   bool _isLoading = true;
+  String? _myId;
 
   @override
   void initState() {
     super.initState();
+    _loadMyId();
     _fetchHistory();
+  }
+
+  Future<void> _loadMyId() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _myId = prefs.getString('user_id');
+    });
   }
 
   Future<void> _fetchHistory() async {
     try {
-      final history = await _apiService.getChatHistory(widget.userId);
+      List<dynamic> history;
+      if (widget.isGroup) {
+        history = await _apiService.getGroupChatHistory(widget.groupId!);
+      } else {
+        history = await _apiService.getChatHistory(widget.userId!);
+      }
+      
       if (mounted) {
         setState(() {
           _messages = history;
@@ -62,10 +86,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _messageController.clear();
 
     try {
-      await _apiService.sendMessage(widget.userId, content);
+      if (widget.isGroup) {
+        await _apiService.sendGroupMessage(widget.groupId!, content);
+      } else {
+        await _apiService.sendMessage(widget.userId!, content);
+      }
       _fetchHistory();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
     }
   }
 
@@ -88,7 +118,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Text(widget.name[0], style: const TextStyle(color: Color(0xFF09AEF5), fontSize: 14, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 12),
-            Text(widget.name, style: const TextStyle(color: Color(0xFF05398F), fontSize: 18, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                widget.name, 
+                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18, fontWeight: FontWeight.bold),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -103,9 +139,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final msg = _messages[index];
-                    final isMe = msg['sender_id'].toString() != widget.userId; // If sender is NOT the specific user I'm talking to, it's ME
                     
-                    return _buildMessageBubble(msg['content'], isMe, msg['created_at']);
+                    bool isMe;
+                    if (widget.isGroup) {
+                      isMe = msg['sender_id'].toString() == _myId;
+                    } else {
+                      isMe = msg['sender_id'].toString() != widget.userId;
+                    }
+                    
+                    return _buildMessageBubble(
+                      msg['content'], 
+                      isMe, 
+                      msg['created_at'],
+                      senderName: widget.isGroup && !isMe ? "${msg['first_name']} ${msg['last_name']}" : null
+                    );
                   },
                 ),
           ),
@@ -115,41 +162,51 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildMessageBubble(String text, bool isMe, String timeStr) {
+  Widget _buildMessageBubble(String text, bool isMe, String timeStr, {String? senderName}) {
     final time = DateFormat('HH:mm').format(DateTime.parse(timeStr).toLocal());
     
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF09AEF5) : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          if (senderName != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 4),
+              child: Text(senderName, style: const TextStyle(fontSize: 10, color: Colors.black45, fontWeight: FontWeight.bold)),
+            ),
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isMe ? const Color(0xFF09AEF5) : Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: const Radius.circular(16),
+                topRight: const Radius.circular(16),
+                bottomLeft: Radius.circular(isMe ? 16 : 0),
+                bottomRight: Radius.circular(isMe ? 0 : 16),
+              ),
+              boxShadow: [
+                if (!isMe) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
+              ]
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  text, 
+                  style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15)
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  time, 
+                  style: TextStyle(color: isMe ? Colors.white70 : Colors.black38, fontSize: 10)
+                ),
+              ],
+            ),
           ),
-          boxShadow: [
-            if (!isMe) BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
-          ]
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              text, 
-              style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15)
-            ),
-            const SizedBox(height: 4),
-            Text(
-              time, 
-              style: TextStyle(color: isMe ? Colors.white70 : Colors.black38, fontSize: 10)
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
