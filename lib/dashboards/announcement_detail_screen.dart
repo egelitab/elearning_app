@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import 'instructor_storage_explorer_screen.dart';
 
@@ -374,8 +373,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     final String path = file['file_path'] ?? '';
     final String type = file['file_type'] ?? '';
     
-    final String cleanBaseUrl = ApiService.baseUrl.replaceFirst('/api', '');
-    final String fileUrl = "$cleanBaseUrl/uploads/$path";
+    final String fileUrl = "/uploads/$path";
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -439,21 +437,15 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
   }
 
   Future<void> _launchURL(BuildContext context, String url) async {
-    final uri = Uri.parse(url);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening file...")));
+    }
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Could not open file")),
-          );
-        }
-      }
+      await _apiService.downloadAndOpenFile(url);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
+          SnackBar(content: Text(e.toString())),
         );
       }
     }

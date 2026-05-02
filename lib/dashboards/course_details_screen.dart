@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'instructor_materials_screen.dart';
@@ -111,15 +110,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     final urlStr = _currentCourse['course_guide_url'];
     if (urlStr == null) return;
     
-    // Normalize URL
-    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-    final uri = Uri.parse('$baseUrl$urlStr');
-    
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening guide...")));
+    try {
+      await _apiService.downloadAndOpenFile(urlStr);
+    } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open guide.")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -436,15 +432,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       return;
     }
     
-    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-    final uri = Uri.parse('$baseUrl$urlStr');
-    
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open material.")));
-      }
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening material...")));
+    try {
+      await _apiService.downloadAndOpenFile(urlStr);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 

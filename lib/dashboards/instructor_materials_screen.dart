@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 
 class InstructorMaterialsScreen extends StatefulWidget {
@@ -320,15 +319,11 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
       return;
     }
     
-    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-    final uri = Uri.parse('$baseUrl$urlStr');
-    
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open material.")));
-      }
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening material...")));
+    try {
+      await _apiService.downloadAndOpenFile(urlStr);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 

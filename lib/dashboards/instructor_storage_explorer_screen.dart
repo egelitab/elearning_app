@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class InstructorStorageExplorerScreen extends StatefulWidget {
   final List<dynamic>? initialFolders;
@@ -896,15 +895,11 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       return;
     }
     
-    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
-    final uri = Uri.parse('$baseUrl$urlStr');
-    
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open file.")));
-      }
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening file...")));
+    try {
+      await _apiService.downloadAndOpenFile(urlStr);
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 

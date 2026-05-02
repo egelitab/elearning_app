@@ -13,6 +13,8 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _items = [];
   bool _isLoading = true;
+  bool _isSelectionMode = false;
+  Set<String> _selectedItemKeys = {};
 
   @override
   void initState() {
@@ -44,6 +46,88 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to restore: $e"), behavior: SnackBarBehavior.floating));
     }
+  }
+
+  Future<void> _deleteSingleItem(String id, String type) async {
+    bool confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Permanently"),
+        content: const Text("Are you sure you want to permanently delete this item? This action cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), 
+            child: const Text("Delete", style: TextStyle(color: Colors.red))
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (!confirm) return;
+
+    try {
+      await _apiService.permanentlyDeleteEntry(id, type);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Item permanently deleted"), backgroundColor: Colors.black87, behavior: SnackBarBehavior.floating),
+      );
+      _fetchRecycleBin();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to delete: $e"), behavior: SnackBarBehavior.floating));
+    }
+  }
+
+  Future<void> _restoreSelected() async {
+    setState(() => _isLoading = true);
+    int count = 0;
+    for (final item in _items) {
+      final key = "${item['type']}_${item['id']}";
+      if (_selectedItemKeys.contains(key)) {
+        try {
+          await _apiService.restoreEntry(item['id'].toString(), item['type']);
+          count++;
+        } catch(e) {}
+      }
+    }
+    _selectedItemKeys.clear();
+    _isSelectionMode = false;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$count items restored"), behavior: SnackBarBehavior.floating));
+    _fetchRecycleBin();
+  }
+
+  Future<void> _deleteSelected() async {
+    bool confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Delete Permanently"),
+        content: Text("Are you sure you want to permanently delete these ${_selectedItemKeys.length} items? This action cannot be undone."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true), 
+            child: const Text("Delete", style: TextStyle(color: Colors.red))
+          ),
+        ],
+      ),
+    ) ?? false;
+
+    if (!confirm) return;
+
+    setState(() => _isLoading = true);
+    int count = 0;
+    for (final item in _items) {
+      final key = "${item['type']}_${item['id']}";
+      if (_selectedItemKeys.contains(key)) {
+        try {
+          await _apiService.permanentlyDeleteEntry(item['id'].toString(), item['type']);
+          count++;
+        } catch(e) {}
+      }
+    }
+    _selectedItemKeys.clear();
+    _isSelectionMode = false;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$count items permanently deleted"), behavior: SnackBarBehavior.floating));
+    _fetchRecycleBin();
   }
 
   Map<String, List<dynamic>> _categorizeItems() {
@@ -82,15 +166,63 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FC),
-      appBar: AppBar(
-        title: const Text("Recycle Bin", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
-          onPressed: () => Navigator.pop(context, true),
-        ),
-      ),
+      appBar: _isSelectionMode
+        ? AppBar(
+            backgroundColor: const Color(0xFF05398F),
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => setState(() {
+                _isSelectionMode = false;
+                _selectedItemKeys.clear();
+              }),
+            ),
+            title: Text("${_selectedItemKeys.length} Selected", style: const TextStyle(color: Colors.white, fontSize: 18)),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _selectedItemKeys.length == _items.length ? Icons.deselect_rounded : Icons.select_all_rounded,
+                  color: Colors.white,
+                ),
+                tooltip: _selectedItemKeys.length == _items.length ? "Deselect All" : "Select All",
+                onPressed: () {
+                  setState(() {
+                    if (_selectedItemKeys.length == _items.length) {
+                      _selectedItemKeys.clear();
+                    } else {
+                      _selectedItemKeys.clear();
+                      for (var item in _items) {
+                        _selectedItemKeys.add("${item['type']}_${item['id']}");
+                      }
+                    }
+                  });
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.restore_rounded, color: Colors.white),
+                onPressed: _selectedItemKeys.isEmpty ? null : _restoreSelected,
+              ),
+              IconButton(
+                icon: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
+                onPressed: _selectedItemKeys.isEmpty ? null : _deleteSelected,
+              ),
+            ],
+          )
+        : AppBar(
+            title: const Text("Recycle Bin", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+            actions: [
+              if (_items.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.checklist_rounded, color: Color(0xFF05398F)),
+                  onPressed: () => setState(() => _isSelectionMode = true),
+                ),
+            ],
+          ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
         : _items.isEmpty 
@@ -137,50 +269,85 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
     final String name = item['name'] ?? 'Unnamed';
     final String date = DateFormat('MMM d, h:mm a').format(DateTime.parse(item['deleted_at']).toLocal());
     final Color itemColor = isFolder ? const Color(0xFF09AEF5) : _getColorForFile(name);
+    final String key = "${item['type']}_${item['id']}";
+    final bool isSelected = _selectedItemKeys.contains(key);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))
-        ]
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: itemColor.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(
-              isFolder ? Icons.folder_rounded : _getIconForFile(name), 
-              color: itemColor, 
-              size: 24
+    return GestureDetector(
+      onLongPress: () {
+        if (!_isSelectionMode) {
+          setState(() {
+            _isSelectionMode = true;
+            _selectedItemKeys.add(key);
+          });
+        }
+      },
+      onTap: () {
+        if (_isSelectionMode) {
+          setState(() {
+            if (isSelected) {
+              _selectedItemKeys.remove(key);
+              if (_selectedItemKeys.isEmpty) _isSelectionMode = false;
+            } else {
+              _selectedItemKeys.add(key);
+            }
+          });
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.blue.withOpacity(0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: Colors.blue, width: 1.5) : Border.all(color: Colors.transparent, width: 1.5),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))
+          ]
+        ),
+        child: Row(
+          children: [
+            if (_isSelectionMode)
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Icon(
+                  isSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+                  color: isSelected ? Colors.blue : Colors.grey.shade400,
+                ),
+              ),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: itemColor.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(
+                isFolder ? Icons.folder_rounded : _getIconForFile(name), 
+                color: itemColor, 
+                size: 24
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text("Deleted: $date", style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500)),
-              ],
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 4),
+                  Text("Deleted: $date", style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500)),
+                ],
+              ),
             ),
-          ),
-          TextButton.icon(
-            onPressed: () => _restoreItem(item['id'].toString(), item['type']),
-            icon: const Icon(Icons.restore_rounded, size: 18),
-            label: const Text("Restore", style: TextStyle(fontSize: 12)),
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF05398F),
-              backgroundColor: const Color(0xFFE3F2FD),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
-            ),
-          )
-        ],
+            if (!_isSelectionMode) ...[
+              IconButton(
+                onPressed: () => _restoreItem(item['id'].toString(), item['type']),
+                icon: const Icon(Icons.restore_rounded, color: Color(0xFF05398F)),
+                tooltip: "Restore",
+              ),
+              IconButton(
+                onPressed: () => _deleteSingleItem(item['id'].toString(), item['type']),
+                icon: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
+                tooltip: "Permanently Delete",
+              ),
+            ]
+          ],
+        ),
       ),
     );
   }
