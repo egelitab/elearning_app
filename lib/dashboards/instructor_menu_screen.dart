@@ -162,97 +162,24 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
   }
 
   Future<void> _handleDirectUpload() async {
-    if (widget.courses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No courses assigned.")));
-      return;
-    }
-
     try {
       FilePickerResult? result = await FilePicker.pickFiles();
       if (result != null) {
         if (!mounted) return;
-        _showCourseSelectionForUpload(result.files.first);
+        PlatformFile selectedFile = result.files.first;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploading...")));
+        try {
+          await _apiService.uploadMaterial(null, selectedFile.name, selectedFile.path!);
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploaded Successfully", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString()), backgroundColor: Colors.red));
+          }
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error picking file: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text("Error picking file: $e")));
     }
-  }
-
-  void _showCourseSelectionForUpload(PlatformFile selectedFile) {
-    String? selectedCourseId = widget.courses.first['id'];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            bool isUploading = false;
-
-            return Container(
-              padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: MediaQuery.of(context).viewInsets.bottom + 30),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Finalize Upload", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                  const SizedBox(height: 10),
-                  Text("File: ${selectedFile.name}", style: const TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 25),
-                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        isExpanded: true,
-                        value: selectedCourseId,
-                        items: widget.courses.map((course) {
-                          return DropdownMenuItem<String>(
-                            value: course['id'],
-                            child: Text(course['title'] ?? course['course_code']),
-                          );
-                        }).toList(),
-                        onChanged: (val) => setSheetState(() => selectedCourseId = val),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                  isUploading 
-                    ? const Center(child: CircularProgressIndicator())
-                    : SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                          onPressed: () async {
-                            if (selectedCourseId == null) return;
-                            setSheetState(() => isUploading = true);
-                            try {
-                              await _apiService.uploadMaterial(selectedCourseId!, selectedFile.name, selectedFile.path!);
-                              if (!mounted) return;
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploaded Successfully"), backgroundColor: Colors.green));
-                            } catch (e) {
-                              setSheetState(() => isUploading = false);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                            }
-                          },
-                          child: const Text("Upload Now", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        ),
-                      )
-                ],
-              ),
-            );
-          }
-        );
-      }
-    );
   }
 }

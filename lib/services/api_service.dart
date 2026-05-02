@@ -134,7 +134,7 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> uploadMaterial(String courseId, String title, String filePath) async {
+  Future<Map<String, dynamic>> uploadMaterial(String? courseId, String title, String filePath) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -143,7 +143,9 @@ class ApiService {
 
       var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/materials'));
       request.headers['Authorization'] = 'Bearer $token';
-      request.fields['course_id'] = courseId;
+      if (courseId != null) {
+        request.fields['course_id'] = courseId;
+      }
       request.fields['title'] = title;
 
       request.files.add(await http.MultipartFile.fromPath('file', filePath));
