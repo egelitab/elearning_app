@@ -78,6 +78,18 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
                 _buildMenuIcon(Icons.download_rounded, "Downloads", const Color(0xFFE1F5FE), Colors.lightBlue, () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorFilesScreen(showToggle: false, startInDownloads: true)));
                 }),
+                _buildMenuIcon(Icons.picture_as_pdf_rounded, "To PDF", const Color(0xFFFBE9E7), Colors.deepOrange, () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Document conversion coming soon!")));
+                }),
+                _buildMenuIcon(Icons.analytics_rounded, "Analytics", const Color(0xFFE8EAF6), Colors.indigo, () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Analytics coming soon!")));
+                }),
+                _buildMenuIcon(Icons.how_to_reg_rounded, "Attendance", const Color(0xFFE0F2F1), Colors.teal, () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Attendance coming soon!")));
+                }),
+                _buildMenuIcon(Icons.quiz_rounded, "Quizzes", const Color(0xFFFCE4EC), Colors.pink, () {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Quizzes coming soon!")));
+                }),
               ],
             ),
             

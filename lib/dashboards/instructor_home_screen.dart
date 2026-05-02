@@ -809,6 +809,18 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         _buildIconBtn(Icons.calendar_month_rounded, "Calendar", const Color(0xFFFFFDE7), Colors.amber, () {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calendar coming soon!")));
         }),
+        _buildIconBtn(Icons.picture_as_pdf_rounded, "To PDF", const Color(0xFFFBE9E7), Colors.deepOrange, () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Document conversion coming soon!")));
+        }),
+        _buildIconBtn(Icons.analytics_rounded, "Analytics", const Color(0xFFE8EAF6), Colors.indigo, () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Analytics coming soon!")));
+        }),
+        _buildIconBtn(Icons.how_to_reg_rounded, "Attendance", const Color(0xFFE0F2F1), Colors.teal, () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Attendance coming soon!")));
+        }),
+        _buildIconBtn(Icons.quiz_rounded, "Quizzes", const Color(0xFFFCE4EC), Colors.pink, () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Quizzes coming soon!")));
+        }),
         _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700, () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorMenuScreen(courses: _courses)));
         }),
