@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'instructor_storage_explorer_screen.dart';
+import 'instructor_recent_files_screen.dart';
 
 class InstructorFilesScreen extends StatefulWidget {
   final bool showToggle;
@@ -252,7 +253,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               const Text("Recent Files", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorStorageExplorerScreen(initialFolders: _folders, initialFiles: _files)));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRecentFilesScreen(recentFiles: _recentFiles.take(100).toList())));
                 },
                 child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black45), 
               ),
@@ -264,11 +265,38 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(left: 20, bottom: 20),
           child: Row(
-            children: _recentFiles.map((file) => _buildRecentFileItem(
-              file['name'], 
-              _getRelativeTime(file['created_at']), 
-              itemWidth
-            )).toList(),
+            children: [
+              ..._recentFiles.take(8).map((file) => _buildRecentFileItem(
+                file['name'], 
+                _getRelativeTime(file['created_at']), 
+                itemWidth
+              )),
+              if (_recentFiles.length > 8)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRecentFilesScreen(recentFiles: _recentFiles.take(100).toList())));
+                  },
+                  child: Container(
+                    width: itemWidth * 0.5,
+                    margin: const EdgeInsets.only(right: 15),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF05398F)),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],
@@ -326,6 +354,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     final date = DateTime.parse(dateStr);
     final now = DateTime.now();
     final diff = now.difference(date);
+    if (diff.inMinutes < 1) return "Just now";
     if (diff.inMinutes < 60) return "${diff.inMinutes} mins ago";
     if (diff.inHours < 24) return "${diff.inHours} hrs ago";
     if (diff.inDays == 1) return "Yesterday";
