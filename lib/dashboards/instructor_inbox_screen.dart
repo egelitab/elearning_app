@@ -624,7 +624,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     );
   }
   Widget _buildChatList() {
-    var activeChats = _chats.where((c) => c['last_message'] != null).toList();
+    var activeChats = _chats;
     
     if (_searchQuery.isNotEmpty) {
       activeChats = activeChats.where((c) {
