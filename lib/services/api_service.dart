@@ -1224,7 +1224,16 @@ class ApiService {
       ).timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
-        final dir = await getTemporaryDirectory();
+        Directory dir;
+        if (Platform.isAndroid) {
+          dir = Directory('/storage/emulated/0/Download/ELMS');
+        } else {
+          dir = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+        }
+        
+        if (!await dir.exists()) {
+          await dir.create(recursive: true);
+        }
         
         String fileName = filePath.split('/').last;
         if (fileName.isEmpty || !fileName.contains('.')) {

@@ -72,12 +72,24 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
 
   Future<void> _loadDownloadedFiles() async {
     try {
-      final directory = await getExternalStorageDirectory();
-      if (directory != null) {
+      Directory directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download/ELMS');
+      } else {
+        directory = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+      }
+
+      if (await directory.exists()) {
         final List<FileSystemEntity> files = directory.listSync();
         if (mounted) {
           setState(() {
             _downloadedFiles = files.where((f) => f is File).toList();
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _downloadedFiles = [];
           });
         }
       }
