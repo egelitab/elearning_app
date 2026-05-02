@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 
 class InstructorMaterialsScreen extends StatefulWidget {
@@ -310,6 +311,25 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _openMaterial(dynamic material) async {
+    final urlStr = material['file_path'];
+    if (urlStr == null) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      return;
+    }
+    
+    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+    final uri = Uri.parse('$baseUrl$urlStr');
+    
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open material.")));
+      }
+    }
   }
 
   // Define helper UI builders ...
@@ -630,7 +650,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         if (isSelectionMode) {
           _toggleSelection(mId);
         } else {
-          // Open material...
+          _openMaterial(material);
         }
       },
       onLongPress: () => _toggleSelection(mId),

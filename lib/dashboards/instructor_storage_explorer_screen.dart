@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class InstructorStorageExplorerScreen extends StatefulWidget {
   final List<dynamic>? initialFolders;
@@ -834,6 +835,8 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           _toggleSelection("${type}:${item['id']}", isSystem: isUploads);
         } else if (type == 'folder') {
           _navigateToFolder(item['id'].toString(), name);
+        } else if (type == 'file') {
+          _openFile(item);
         }
       },
       onLongPress: () => _toggleSelection("${type}:${item['id']}", isSystem: isUploads),
@@ -884,6 +887,25 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         ),
       ),
     );
+  }
+
+  Future<void> _openFile(dynamic fileItem) async {
+    final urlStr = fileItem['file_path'] ?? fileItem['url'];
+    if (urlStr == null) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      return;
+    }
+    
+    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+    final uri = Uri.parse('$baseUrl$urlStr');
+    
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open file.")));
+      }
+    }
   }
 
   IconData _getIcon(String name, String type) {

@@ -390,7 +390,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         if (_selectedIds.isNotEmpty) {
           _toggleSelection(mId);
         } else {
-          // Open material logic
+          _openMaterial(material);
         }
       },
       onLongPress: () {
@@ -427,6 +427,25 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _openMaterial(dynamic material) async {
+    final urlStr = material['file_path'];
+    if (urlStr == null) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      return;
+    }
+    
+    String baseUrl = ApiService.baseUrl.replaceAll('/api', '');
+    final uri = Uri.parse('$baseUrl$urlStr');
+    
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Could not open material.")));
+      }
+    }
   }
 
   void _toggleSelection(String id) {
