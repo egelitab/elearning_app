@@ -93,7 +93,11 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("All courses are displayed in the list below.")),
+                          );
+                        },
                         child: const Text("See All", style: TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold)),
                       ),
                     ],
@@ -164,6 +168,12 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
     );
   }
 
+  String _getSemester() {
+    final month = DateTime.now().month;
+    final year = DateTime.now().year;
+    return (month >= 1 && month <= 6) ? "Spring $year" : "Fall $year";
+  }
+
   Widget _buildOverviewCard() {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -187,12 +197,12 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
-                  child: const Text("Spring 2026", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
+                  child: Text(_getSemester(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)),
                 ),
                 const SizedBox(height: 16),
                 const Text("Welcome Back!", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
-                Text("Check your courses for new materials.", style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 14)),
+                Text("You are enrolled in ${_courses.length} courses.", style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 14)),
               ],
             ),
           ),
@@ -301,7 +311,11 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () {},
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("$label feature coming soon.")),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
