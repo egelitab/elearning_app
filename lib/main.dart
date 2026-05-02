@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:ui';
 import 'auth/welcome_screen.dart';
 import 'dashboards/instructor_dashboard.dart';
 import 'dashboards/student_dashboard.dart';
@@ -18,6 +19,9 @@ class ELearningApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
+      ),
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
       ),
       // Set the AuthWrapper as the home to handle persistent login
       home: const AuthWrapper(),
