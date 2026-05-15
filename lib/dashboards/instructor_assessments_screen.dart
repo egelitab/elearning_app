@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'instructor_storage_explorer_screen.dart';
+import 'instructor_assessment_details_screen.dart';
 import 'package:intl/intl.dart';
 
 class InstructorAssessmentsScreen extends StatefulWidget {
@@ -1266,7 +1267,14 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
               const SizedBox(),
               
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => InstructorAssessmentDetailsScreen(assessment: item),
+                    ),
+                  ).then((_) => _fetchData());
+                },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   minimumSize: Size.zero,

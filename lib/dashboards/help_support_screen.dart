@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'student_profile_ask_question_screen.dart';
 
-class HelpSupportScreen extends StatelessWidget {
+class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
+
+  @override
+  State<HelpSupportScreen> createState() => _HelpSupportScreenState();
+}
+
+class _HelpSupportScreenState extends State<HelpSupportScreen> {
+  bool _showMoreFaqs = false;
 
   @override
   Widget build(BuildContext context) {
@@ -30,11 +37,25 @@ class HelpSupportScreen extends StatelessWidget {
             _buildFaqItem("How to contact my instructor?", "You can message your instructor directly through the 'Ask a Question' page or by finding their profile in the Inbox section."),
             _buildFaqItem("How to reset my password?", "Please contact the university admin or use the 'Forgot Password' link directly on the login screen."),
             
+            if (_showMoreFaqs) ...[
+              _buildFaqItem("Can I use ELMS offline?", "Yes, once you download materials, you can view them without an internet connection in the 'Downloads' section."),
+              _buildFaqItem("How to join a live session?", "If your instructor schedules a live lecture, a link will appear in your 'Schedule' or 'Notifications' tab. Tap the link to join via the integrated meeting tool."),
+              _buildFaqItem("Where can I find the academic calendar?", "The academic calendar is available in the 'Menu' tab under the 'Calendar' section, showing important semester dates."),
+              _buildFaqItem("How to report a technical bug?", "Use the 'Ask a Question' or 'Send Feedback' options below to reach our technical support team directly."),
+            ],
+
             const SizedBox(height: 10),
             Center(
               child: TextButton(
-                onPressed: () {},
-                child: const Text("See More", style: TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold, fontSize: 16)),
+                onPressed: () {
+                  setState(() {
+                    _showMoreFaqs = !_showMoreFaqs;
+                  });
+                },
+                child: Text(
+                  _showMoreFaqs ? "Show Less" : "See More", 
+                  style: const TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold, fontSize: 16)
+                ),
               ),
             ),
             

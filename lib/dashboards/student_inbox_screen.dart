@@ -58,70 +58,44 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      backgroundColor: const Color(0xFFF4F7FC), 
       appBar: AppBar(
         backgroundColor: const Color(0xFFF4F7FC),
         elevation: 0,
         centerTitle: false,
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: "Search...",
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.black38),
-                ),
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
-                onChanged: (value) => setState(() => _searchQuery = value),
-              )
-            : const Text(
-                "Inbox",
-                style: TextStyle(
-                  color: Color(0xFF05398F),
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+        title: const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(
-              _isSearching ? Icons.close_rounded : Icons.search_rounded,
-              color: const Color(0xFF05398F),
-            ),
-            onPressed: () {
-              setState(() {
-                if (_isSearching) {
-                  _isSearching = false;
-                  _searchQuery = "";
-                  _searchController.clear();
-                } else {
-                  _isSearching = true;
-                }
-              });
-            },
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF05398F)), 
+            onPressed: _fetchData
+          ),
+          IconButton(
+            icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)), 
+            onPressed: () {}
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? Center(
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
-            )
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : _error != null
+          ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
           : Column(
               children: [
                 const SizedBox(height: 10),
                 _buildToggleSwitch(),
                 const SizedBox(height: 20),
                 Expanded(
-                  child: isChatSelected
-                      ? _buildChatList()
-                      : _buildAnnouncementsList(),
+                  child: isAnnounceSelected ? _buildAnnouncementsList() : _buildChatList(),
                 ),
               ],
             ),
-      // 3. Floating Action Button - Removed for Students as they only join existing groups
+      // 3. Floating Action Button for New Message
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: const Color(0xFF09AEF5),
+        elevation: 4,
+        child: const Icon(Icons.edit_rounded, color: Colors.white, size: 28),
+      ),
     );
   }
 

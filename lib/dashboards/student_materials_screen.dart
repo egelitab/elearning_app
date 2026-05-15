@@ -240,9 +240,18 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                 final courseId = _courses.firstWhere((c) => c['title'] == courseTitle, orElse: () => {'id': ''})['id'].toString();
                 if (courseId.isNotEmpty) {
                   _apiService.logReadingDuration(courseId, material['id']?.toString() ?? 'unknown', 3600);
+                  
+                  // Save as recently opened
+                  final Map<String, dynamic> recentMaterial = Map<String, dynamic>.from(material);
+                  recentMaterial['course_title'] = courseTitle; // Include course title for display
+                  recentMaterial['course_id'] = courseId; // Include course ID for navigation
+                  _apiService.saveRecentlyOpenedMaterial(recentMaterial);
+
                 }
-                if (onTap != null) onTap();
+                onTap();
               },
+
+
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(

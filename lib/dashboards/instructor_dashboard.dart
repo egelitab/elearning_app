@@ -25,12 +25,12 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
 
   Timer? _pollTimer;
 
-  final List<Widget> _screens = [
+  late final List<Widget> _screens = [
     const InstructorHomeScreen(),
     const InstructorCoursesScreen(),
     const InstructorInboxScreen(),
     const InstructorFilesScreen(),
-    const InstructorProfileScreen(),
+    InstructorProfileScreen(onBack: () => setState(() => _index = 0)),
   ];
 
   @override

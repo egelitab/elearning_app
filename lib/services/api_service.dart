@@ -2281,4 +2281,27 @@ class ApiService {
     }
     return 0;
   }
+
+  Future<void> saveRecentlyOpenedMaterial(Map<String, dynamic> material) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('recently_opened_material', jsonEncode(material));
+    } catch (e) {
+      debugPrint("Error saving recently opened material: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>?> getRecentlyOpenedMaterial() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final data = prefs.getString('recently_opened_material');
+      if (data != null) {
+        return jsonDecode(data) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("Error getting recently opened material: $e");
+    }
+    return null;
+  }
 }
+

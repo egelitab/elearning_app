@@ -83,14 +83,25 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
             else if (_courses.isEmpty)
               const Center(child: Text("No courses assigned yet."))
             else
-              ..._courses.map((course) {
+              ..._courses.asMap().entries.map((entry) {
+                int index = entry.key;
+                var course = entry.value;
                 // Get initials
                 String title = course['title'] ?? 'Unknown Course';
                 String initials = title.split(' ').map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').take(2).join();
+                
+                final List<Color> standardColors = [
+                  const Color(0xFF05398F),
+                  const Color(0xFF6A1B9A),
+                  const Color(0xFFFF8F00),
+                  const Color(0xFF2E7D32),
+                ];
+                final avatarColor = standardColors[index % standardColors.length];
+
                 return _buildCourseItem(
                   course,
                   initials,
-                  Colors.blue, // Dynamic color could be implemented here
+                  avatarColor,
                 );
               }).toList(),
             
@@ -113,8 +124,8 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         _buildCategoryTile(
           "Materials", 
           Icons.layers_rounded, 
-          const Color(0xFF09AEF5), 
-          const Color(0xFF05398F),
+          const Color(0xFFAB47BC), 
+          const Color(0xFF6A1B9A),
           () {
             Navigator.push(
               context,
@@ -134,7 +145,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
             MaterialPageRoute(builder: (context) => const InstructorGradesScreen()),
           );
         }),
-        _buildCategoryTile("Groups", Icons.groups_rounded, const Color(0xFFAB47BC), const Color(0xFF6A1B9A), () {
+        _buildCategoryTile("Groups", Icons.groups_rounded, const Color(0xFF09AEF5), const Color(0xFF05398F), () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const InstructorGroupsScreen()),

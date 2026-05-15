@@ -60,7 +60,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      backgroundColor: const Color(0xFFF4F7FC), // Match home screen background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -74,165 +74,230 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
             letterSpacing: -0.5,
           ),
         ),
-      ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Enrolled Courses",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF05398F),
-                        ),
-                      ),
-                      if (_courses.length > 3)
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      StudentAllCoursesScreen(courses: _courses, myGoals: _myGoals)),
-                            );
-                          },
-                          child: const Text("See All",
-                              style: TextStyle(
-                                  color: Color(0xFF09AEF5),
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                    ],
-                  ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF05398F).withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
-                const SizedBox(height: 10),
-                
-                if (_courses.isEmpty)
-                  const Center(child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Text("You are not enrolled in any courses yet.", style: TextStyle(color: Colors.black38)),
-                  ))
-                else
-                  SizedBox(
-                    height: 230,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      itemCount: _courses.length > 3 ? 3 : _courses.length,
-                      itemBuilder: (context, index) {
-                        final course = _courses[index];
-                        final colorIndex = index % _cardColors.length;
-                        return _buildCourseCard(
-                          course,
-                          _cardColors[colorIndex],
-                          _lightColors[colorIndex],
-                        );
-                      },
-                    ),
-                  ),
-                const SizedBox(height: 35),
-                
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    "View",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildActionChip(
-                              "Assessments", 
-                              Icons.assignment_turned_in_rounded, 
-                              const Color(0xFF2E7D32), 
-                              const Color(0xFF66BB6A),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAssignmentsScreen())),
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: _buildActionChip(
-                              "Grades", 
-                              Icons.military_tech_rounded, 
-                              const Color(0xFFFF8F00), 
-                              const Color(0xFFFFCA28),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentGradesScreen())),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildActionChip(
-                              "Schedule", 
-                              Icons.calendar_month_rounded, 
-                              const Color(0xFF05398F), 
-                              const Color(0xFF09AEF5),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentScheduleScreen())),
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          Expanded(
-                            child: _buildActionChip(
-                              "Materials", 
-                              Icons.folder_shared_rounded, 
-                              const Color(0xFF6A1B9A), 
-                              const Color(0xFFAB47BC),
-                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentMaterialsScreen())),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
               ],
             ),
+            child: IconButton(
+              icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)),
+              onPressed: () {},
+            ),
           ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            // Header Overview Card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _buildOverviewCard(),
+            ),
+            const SizedBox(height: 35),
+            
+            // Horizontal Courses List
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Active Courses",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF05398F),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      "See All", 
+                      style: TextStyle(
+                        color: Color(0xFF09AEF5), 
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            
+            SizedBox(
+              height: 230,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                children: [
+                  _buildCourseCard("Computer Security", "4 Tasks Pending", 0.65, const Color(0xFF05398F), const Color(0xFF09AEF5), Icons.security),
+                  _buildCourseCard("Compiler Design", "1 Task Pending", 0.40, const Color(0xFF6A1B9A), const Color(0xFFAB47BC), Icons.code),
+                  _buildCourseCard("Complexity Theory", "Up to date", 0.82, const Color(0xFFFF8F00), const Color(0xFFFFCA28), Icons.psychology),
+                  _buildCourseCard("Research Methods", "Reading Assigned", 0.15, const Color(0xFF2E7D32), const Color(0xFF66BB6A), Icons.biotech),
+                ],
+              ),
+            ),
+            const SizedBox(height: 35),
+            
+            // Quick Actions section
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                "Quick Actions",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF05398F),
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _buildActionChip("Assignments", Icons.assignment_turned_in_rounded, const Color(0xFF2E7D32), const Color(0xFF66BB6A))),
+                      const SizedBox(width: 15),
+                      Expanded(child: _buildActionChip("Grades", Icons.military_tech_rounded, const Color(0xFFFF8F00), const Color(0xFFFFCA28))),
+                    ],
+                  ),
+                  const SizedBox(height: 15),
+                  Row(
+                    children: [
+                      Expanded(child: _buildActionChip("Schedule", Icons.calendar_month_rounded, const Color(0xFF05398F), const Color(0xFF09AEF5))),
+                      const SizedBox(width: 15),
+                      Expanded(child: _buildActionChip("Discussions", Icons.forum_rounded, const Color(0xFF6A1B9A), const Color(0xFFAB47BC))),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildCourseCard(dynamic course, Color darkColor, Color lightColor) {
-    final courseGoals = _myGoals.where((g) => g['course_id'].toString() == course['id'].toString() && g['target_hours'] != null).toList();
-    double progress = 0.0;
-    if (courseGoals.isNotEmpty) {
-      double totalTarget = 0.0;
-      double totalProgress = 0.0;
-      for (var g in courseGoals) {
-        totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-        totalProgress += double.tryParse(g['progress_hours']?.toString() ?? '0.0') ?? 0.0;
-      }
-      if (totalTarget > 0) progress = totalProgress / totalTarget;
-      if (progress > 1.0) progress = 1.0;
-    }
-    
+  Widget _buildOverviewCard() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF09AEF5).withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    "Spring 2026",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  "Great work!",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "You have completed 60% of your weekly goals.",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 20),
+          // Circular Progress 
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 80,
+                height: 80,
+                child: CircularProgressIndicator(
+                  value: 0.6,
+                  strokeWidth: 8,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  strokeCap: StrokeCap.round,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const Text(
+                "60%",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCourseCard(String title, String subtitle, double progress, Color darkColor, Color lightColor, IconData icon) {
     return Container(
       width: 170,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -317,7 +382,13 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,

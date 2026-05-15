@@ -104,7 +104,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
               children: [
                 const SizedBox(height: 10),
                 _buildToggleSwitch(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 Expanded(
                   child: isChatSelected ? _buildChatList() : _buildAnnouncementsList(),
                 ),
@@ -113,16 +113,12 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       // 3. Floating Action Button for New Message
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if (isChatSelected) {
-            _showNewGroupChatModal();
-          } else {
-            _showNewAnnouncementModal();
-          }
+          _showNewAnnouncementModal();
         },
         backgroundColor: const Color(0xFF09AEF5),
         elevation: 4,
-        child: Icon(
-          isChatSelected ? Icons.maps_ugc_rounded : Icons.campaign_rounded, 
+        child: const Icon(
+          Icons.campaign_rounded, 
           color: Colors.white, 
           size: 28
         ),
@@ -608,10 +604,10 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       Text(course, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 12, fontWeight: FontWeight.w500)),
                       const SizedBox(height: 6),
                       Text(
-                        message.isNotEmpty ? message : "Starts a new group chat", 
+                        "Open to post announcements", 
                         maxLines: 1, 
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: message.isNotEmpty ? Colors.black54 : Colors.blueGrey.withOpacity(0.3), fontStyle: message.isNotEmpty ? FontStyle.normal : FontStyle.italic),
+                        style: TextStyle(color: Colors.blueGrey.withOpacity(0.5), fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
@@ -631,7 +627,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         final name = (c['group_name'] ?? '').toString().toLowerCase();
         final message = (c['last_message'] ?? '').toString().toLowerCase();
         final query = _searchQuery.toLowerCase();
-        return name.contains(query) || message.contains(query);
+        return name.contains(query);
       }).toList();
     }
 

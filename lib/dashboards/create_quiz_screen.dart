@@ -344,6 +344,8 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                   child: ElevatedButton(
                     onPressed: _saveQuiz,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF09AEF5),
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),

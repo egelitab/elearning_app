@@ -29,18 +29,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   List<dynamic> _messages = [];
   bool _isLoading = true;
   String? _myId;
+  String? _role;
 
   @override
   void initState() {
     super.initState();
-    _loadMyId();
+    _loadUserInfo();
     _fetchHistory();
   }
 
-  Future<void> _loadMyId() async {
+  Future<void> _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _myId = prefs.getString('user_id');
+      _role = prefs.getString('role');
     });
   }
 
@@ -101,6 +103,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isInstructor = _role == 'instructor';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
@@ -130,34 +134,89 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
       body: Column(
         children: [
+          if (isInstructor)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              color: const Color(0xFF09AEF5).withOpacity(0.08),
+              child: Row(
+                children: [
+                  const Icon(Icons.campaign_rounded, color: Color(0xFF09AEF5), size: 20),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      "Announcements Mode: Only your messages are visible to you.",
+                      style: TextStyle(color: Color(0xFF05398F), fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Expanded(
             child: _isLoading 
               ? const Center(child: CircularProgressIndicator())
               : ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = _messages[index];
-                    
-                    bool isMe;
-                    if (widget.isGroup) {
-                      isMe = msg['sender_id'].toString() == _myId;
-                    } else {
-                      isMe = msg['sender_id'].toString() != widget.userId;
-                    }
-                    
-                    return _buildMessageBubble(
-                      msg['content'], 
-                      isMe, 
-                      msg['created_at'],
-                      senderName: widget.isGroup && !isMe ? "${msg['first_name']} ${msg['last_name']}" : null
-                    );
-                  },
-                ),
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(20),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      
+                      bool isMe;
+                      if (widget.isGroup) {
+                        isMe = msg['sender_id'].toString() == _myId;
+                      } else {
+                        isMe = msg['sender_id'].toString() != widget.userId;
+                      }
+
+                      // If instructor, only show their own messages
+                      if (isInstructor && !isMe) {
+                        return const SizedBox.shrink();
+                      }
+                      
+                      return _buildMessageBubble(
+                        msg['content'], 
+                        isMe, 
+                        msg['created_at'],
+                        senderName: widget.isGroup && !isMe ? "${msg['first_name']} ${msg['last_name']}" : null
+                      );
+                    },
+                  ),
           ),
-          _buildMessageInput(),
+          _buildMessageInput(isInstructor),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRestrictedView() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF09AEF5).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.campaign_rounded, size: 60, color: Color(0xFF09AEF5)),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Announcements Only",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "As an instructor, you can send announcements and messages to this group, but the conversation history remains private to students.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54, height: 1.5),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -211,7 +270,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildMessageInput() {
+  Widget _buildMessageInput(bool isInstructor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: const BoxDecoration(
@@ -230,10 +289,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 child: TextField(
                   controller: _messageController,
-                  decoration: const InputDecoration(
-                    hintText: "Type a message...",
+                  decoration: InputDecoration(
+                    hintText: isInstructor ? "Type an announcement..." : "Type a message...",
                     border: InputBorder.none,
-                    hintStyle: TextStyle(color: Colors.black38),
+                    hintStyle: const TextStyle(color: Colors.black38),
                   ),
                 ),
               ),
@@ -244,7 +303,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: const BoxDecoration(color: Color(0xFF09AEF5), shape: BoxShape.circle),
-                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                child: Icon(isInstructor ? Icons.campaign_rounded : Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),
           ],
