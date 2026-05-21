@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:math';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class StudentDownloadsScreen extends StatefulWidget {
   const StudentDownloadsScreen({super.key});
@@ -79,10 +81,12 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
   Widget build(BuildContext context) {
     bool isSelectionMode = _selectedFilePaths.isNotEmpty;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+      backgroundColor: AppColors.scaffold,
       appBar: AppBar(
-        backgroundColor: isSelectionMode ? const Color(0xFF05398F) : const Color(0xFFF4F7FC),
+        backgroundColor: isSelectionMode ? const Color(0xFF05398F) : AppColors.appBar,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: isSelectionMode 
@@ -92,7 +96,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
             )
           : _isSearching
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+                icon: Icon(Icons.arrow_back_rounded, color: AppColors.appBarForeground),
                 onPressed: () => setState(() {
                   _isSearching = false;
                   _searchQuery = '';
@@ -107,16 +111,16 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                 controller: _searchController,
                 autofocus: true,
                 onChanged: (val) => setState(() => _searchQuery = val),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: "Search files...",
                   border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.black38),
+                  hintStyle: TextStyle(color: AppColors.secondaryText),
                 ),
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(color: AppColors.primaryText, fontSize: 18, fontWeight: FontWeight.w600),
               )
-            : const Text(
+            : Text(
                 "Downloads",
-                style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+                style: TextStyle(color: AppColors.appBarForeground, fontSize: 24, fontWeight: FontWeight.bold)
               ),
         actions: [
           if (isSelectionMode)
@@ -134,7 +138,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
             )
           else
             IconButton(
-              icon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)),
+              icon: Icon(Icons.search_rounded, color: AppColors.appBarForeground),
               onPressed: () => setState(() => _isSearching = true),
             ),
         ],
@@ -164,7 +168,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                       margin: const EdgeInsets.only(right: 12),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF09AEF5) : Colors.white,
+                        color: isSelected ? const Color(0xFF09AEF5) : AppColors.card,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -177,7 +181,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                       child: Text(
                         filter,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black54,
+                          color: isSelected ? Colors.white : AppColors.secondaryText,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
                           fontSize: 14,
                         ),
@@ -201,8 +205,9 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _deleteSelectedFiles() async {
     final count = _selectedFilePaths.length;
@@ -252,7 +257,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
     }).toList();
 
     if (filteredFiles.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(40), child: Text("No downloaded files found", style: TextStyle(color: Colors.black38))));
+      return Center(child: Padding(padding: const EdgeInsets.all(40), child: Text("No downloaded files found", style: TextStyle(color: AppColors.secondaryText))));
     }
 
     return ListView.builder(
@@ -278,10 +283,10 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
       padding: const EdgeInsets.only(bottom: 12.0, top: 10.0),
       child: Text(
         date, 
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 15, 
           fontWeight: FontWeight.bold, 
-          color: Colors.black87
+          color: AppColors.primaryText
         )
       ),
     );
@@ -355,16 +360,16 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis),
+                    Text(name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primaryText), overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text(size, style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(size, style: TextStyle(color: AppColors.secondaryText, fontSize: 12, fontWeight: FontWeight.bold)),
                         const SizedBox(width: 8),
-                        const Text("•", style: TextStyle(color: Colors.black38, fontSize: 12)),
+                        Text("•", style: TextStyle(color: AppColors.secondaryText, fontSize: 12)),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(author, style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
+                          child: Text(author, style: TextStyle(color: AppColors.secondaryText, fontSize: 12, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis),
                         ),
                       ],
                     ),

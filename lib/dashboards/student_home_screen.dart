@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'system_notifications_screen.dart';
 import 'student_menu_screen.dart';
@@ -10,7 +11,10 @@ import 'student_materials_screen.dart';
 import 'student_schedule_screen.dart';
 import '../services/api_service.dart';
 import '../utils/date_helper.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 import 'package:file_picker/file_picker.dart';
+import 'course_details_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -19,7 +23,7 @@ class StudentHomeScreen extends StatefulWidget {
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _StudentHomeScreenState extends State<StudentHomeScreen> {
+class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindingObserver {
   String _title = '';
   String _firstName = '';
   bool _isUserDataLoading = true;
@@ -32,6 +36,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   List<dynamic> _courses = [];
   bool _isLoadingCourses = true;
   int _systemUnread = 0;
+  String _recentMaterialTitle = '';
+  String _recentMaterialUrl = '';
+  String _recentCourseTitle = '';
+  Map<String, dynamic>? _recentCourseData;
+  bool _hasInitialized = false;
 
   @override
   void initState() {
@@ -45,6 +54,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         DateHelper.calendarFormat.addListener(_handlePreferenceChange);
       }
     });
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadUserData();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasInitialized) {
+      // Refresh recent material each time this screen is shown (e.g., after back navigation)
+      _loadUserData();
+    } else {
+      _hasInitialized = true;
+    }
   }
 
   void _handlePreferenceChange() {
@@ -57,6 +85,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     DateHelper.calendarFormat.removeListener(_handlePreferenceChange);
     super.dispose();
   }
@@ -70,12 +99,21 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic>? courseData;
+    final courseJson = prefs.getString('recent_course_json');
+    if (courseJson != null && courseJson.isNotEmpty) {
+      try { courseData = jsonDecode(courseJson) as Map<String, dynamic>; } catch (_) {}
+    }
     if (mounted) {
       setState(() {
         _title = prefs.getString('title') ?? '';
         if (_title == 'None') _title = '';
         _firstName = prefs.getString('first_name') ?? '';
         _isUserDataLoading = false;
+        _recentMaterialTitle = prefs.getString('recent_material_title') ?? '';
+        _recentMaterialUrl = prefs.getString('recent_material_url') ?? '';
+        _recentCourseTitle = prefs.getString('recent_course_title') ?? '';
+        _recentCourseData = courseData;
       });
     }
   }
@@ -223,8 +261,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Professional light grayish blue background
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+      backgroundColor: AppColors.scaffold,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -245,12 +285,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Grid Menu
-                        const Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                        Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
                         const SizedBox(height: 15),
                         _buildMenuGrid(),
                         
                         const SizedBox(height: 30),
-                        const Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                        Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
                         const SizedBox(height: 15),
                         if (_isScheduleLoading)
                           const Center(
@@ -265,7 +305,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                           ..._todaySchedule.map((s) => _buildScheduleTask(s['course'], s['time'], s['color'])),
 
                         const SizedBox(height: 30),
-                        const Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                        Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
                         const SizedBox(height: 15),
                         if (_isTasksLoading)
                           const Center(
@@ -279,7 +319,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.card,
                               borderRadius: BorderRadius.circular(16)
                             ),
                             child: const Center(child: Text("No pending assignments or goals", style: TextStyle(color: Colors.grey))),
@@ -299,8 +339,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
 
   Widget _buildHeader() {
@@ -439,69 +480,103 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       }
     }
 
+    // Determine which course to show & navigate to
+    // Priority: last opened course → first enrolled course
+    final Map<String, dynamic>? targetCourse = _recentCourseData ?? 
+        (_courses.isNotEmpty ? Map<String, dynamic>.from(_courses.first) : null);
+
+    if (targetCourse != null) {
+      displayTitle = targetCourse['title']?.toString() ?? displayTitle;
+      displaySubtitle = _recentMaterialTitle.isNotEmpty && _recentCourseData != null
+          ? _recentMaterialTitle
+          : (targetCourse['course_code']?.toString() ?? 'Tap to open course');
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: _buildBaseCard(
-        width: cardWidth,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(_courses.isNotEmpty ? "Continue Learning" : "Join a Course", style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                const SizedBox.shrink(),
-              ],
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(displayTitle, 
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(displaySubtitle, 
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+      child: GestureDetector(
+        onTap: targetCourse != null
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CourseDetailsScreen(
+                      course: targetCourse,
+                      allCourses: _courses,
+                      themeColor: const Color(0xFF05398F),
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 60,
-                  width: 60,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 6,
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                      Center(
-                        child: Text("${(progress * 100).toInt()}%", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                      ),
-                    ],
+                );
+              }
+            : null,
+        child: _buildBaseCard(
+          width: cardWidth,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    targetCourse != null
+                        ? (_recentCourseData != null ? 'Continue Learning' : 'My Courses')
+                        : 'Join a Course',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  if (targetCourse != null)
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 14),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(displayTitle,
+                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(displaySubtitle,
+                          style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 60,
+                    width: 60,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.white.withOpacity(0.3),
+                          valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                        Center(
+                          child: Text("${(progress * 100).toInt()}%", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -514,6 +589,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: gradient,
+        color: gradient == null ? AppColors.card : null,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -561,7 +637,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             height: 55,
             width: 55,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -584,8 +660,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            label, 
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+            label,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.labelText),
             overflow: TextOverflow.ellipsis,
           ),
         ],

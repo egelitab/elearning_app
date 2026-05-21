@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -92,54 +94,57 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
-          onPressed: () => Navigator.pop(context),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        appBar: AppBar(
+          backgroundColor: AppColors.appBar,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.appBarForeground),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text("Account Settings", style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold)),
         ),
-        title: const Text("Account Settings", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-      ),
-      body: _isInit ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Personal Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-              const SizedBox(height: 20),
-              
-              if (_userRole == 'instructor') _buildTitleDropdown(),
-              if (_userRole != 'instructor' && _userRole != 'student') _buildTextField("Title", _titleController, Icons.title_rounded, "e.g. Dr., Prof."),
-              
-              _buildTextField("First Name", _firstNameController, Icons.person_outline_rounded, "Required", required: true),
-              _buildTextField("Middle Name", _middleNameController, Icons.person_outline_rounded, ""),
-              _buildTextField("Last Name", _lastNameController, Icons.person_outline_rounded, "Required", required: true),
-              _buildTextField("Email Address", _emailController, Icons.email_outlined, "Required", required: true, isEmail: true),
-              
-              const SizedBox(height: 40),
-              
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF05398F),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
+        body: _isInit ? Center(child: CircularProgressIndicator(color: AppColors.primary)) : SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Personal Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryText)),
+                const SizedBox(height: 20),
+                
+                if (_userRole == 'instructor') _buildTitleDropdown(),
+                if (_userRole != 'instructor' && _userRole != 'student') _buildTextField("Title", _titleController, Icons.title_rounded, "e.g. Dr., Prof."),
+                
+                _buildTextField("First Name", _firstNameController, Icons.person_outline_rounded, "Required", required: true),
+                _buildTextField("Middle Name", _middleNameController, Icons.person_outline_rounded, ""),
+                _buildTextField("Last Name", _lastNameController, Icons.person_outline_rounded, "Required", required: true),
+                _buildTextField("Email Address", _emailController, Icons.email_outlined, "Required", required: true, isEmail: true),
+                
+                const SizedBox(height: 40),
+                
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveProfile,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 5,
+                    ),
+                    child: _isLoading 
+                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text("Request Admin Approval", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
-                  child: _isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text("Request Admin Approval", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -159,14 +164,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54)),
+          Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.secondaryText)),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedTitle,
             items: titles.map((title) {
               return DropdownMenuItem(
                 value: title,
-                child: Text(title),
+                child: Text(title, style: TextStyle(color: AppColors.primaryText)),
               );
             }).toList(),
             onChanged: (value) {
@@ -176,9 +181,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             },
             decoration: InputDecoration(
               hintText: "Select Title",
+              hintStyle: TextStyle(color: AppColors.secondaryText.withOpacity(0.5)),
               prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF09AEF5), size: 22),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),
@@ -202,15 +208,17 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54)),
+          Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.secondaryText)),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
+            style: TextStyle(color: AppColors.primaryText),
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: AppColors.secondaryText.withOpacity(0.5)),
               prefixIcon: Icon(icon, color: const Color(0xFF09AEF5), size: 22),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),

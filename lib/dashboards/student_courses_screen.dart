@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../services/api_service.dart';
 import 'course_details_screen.dart';
 import 'student_all_courses_screen.dart';
@@ -6,6 +8,8 @@ import 'student_assignments_screen.dart';
 import 'student_grades_screen.dart';
 import 'student_schedule_screen.dart';
 import 'student_materials_screen.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class StudentCoursesScreen extends StatefulWidget {
   const StudentCoursesScreen({super.key});
@@ -59,16 +63,18 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+      backgroundColor: AppColors.scaffold,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
+        title: Text(
           "My Learning",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: AppColors.appBarForeground,
             fontSize: 26,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.5,
@@ -89,12 +95,12 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "Enrolled Courses",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF05398F),
+                          color: AppColors.isDark ? Colors.white : const Color(0xFF05398F),
                         ),
                       ),
                       if (_courses.length > 3)
@@ -118,9 +124,9 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 const SizedBox(height: 10),
                 
                 if (_courses.isEmpty)
-                  const Center(child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: Text("You are not enrolled in any courses yet.", style: TextStyle(color: Colors.black38)),
+                  Center(child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    child: Text("You are not enrolled in any courses yet.", style: TextStyle(color: AppColors.secondaryText)),
                   ))
                 else
                   SizedBox(
@@ -143,14 +149,17 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                   ),
                 const SizedBox(height: 35),
                 
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "View",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                    "Quick Actions",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.isDark ? Colors.white : const Color(0xFF05398F),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 15),
+                ),const SizedBox(height: 15),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
@@ -209,6 +218,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               ],
             ),
           ),
+      ),
     );
   }
 
@@ -230,7 +240,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
       width: 170,
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 5))],
       ),
@@ -238,7 +248,12 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () {
+          onTap: () async {
+            // Save last opened course
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('recent_course_json', jsonEncode(course));
+            await prefs.setString('recent_course_title', course['title']?.toString() ?? '');
+            if (!context.mounted) return;
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => CourseDetailsScreen(
@@ -314,9 +329,9 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   Widget _buildActionChip(String label, IconData icon, Color darkColor, Color lightColor, {VoidCallback? onTap}) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: AppColors.border),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))],
       ),
       child: Material(

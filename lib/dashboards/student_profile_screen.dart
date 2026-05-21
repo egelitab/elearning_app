@@ -6,7 +6,12 @@ import 'package:path_provider/path_provider.dart';
 import '../auth/welcome_screen.dart';
 import 'student_profile_settings_screen.dart';
 import 'help_support_screen.dart';
+import 'privacy_security_screen.dart';
+import 'send_feedback_screen.dart';
+import 'about_lms_screen.dart';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 
 class StudentProfileScreen extends StatefulWidget {
@@ -89,15 +94,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+      backgroundColor: AppColors.scaffold,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        backgroundColor: AppColors.appBar,
         elevation: 0,
         centerTitle: false,
-        title: const Text(
+        title: Text(
           "Profile",
-          style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+          style: TextStyle(color: AppColors.appBarForeground, fontSize: 24, fontWeight: FontWeight.bold)
         ),
         actions: [
           Padding(
@@ -148,7 +155,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     ),
                     child: CircleAvatar(
                       radius: 65,
-                      backgroundColor: Colors.white,
+                      backgroundColor: isDark ? const Color(0xFF2C2C2C) : Colors.white,
                       child: CircleAvatar(
                         radius: 60,
                         backgroundColor: const Color(0xFFE3F2FD), // Profile placeholder
@@ -169,7 +176,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         decoration: BoxDecoration(
                           color: const Color(0xFF4CAF50), // Vibrant online green
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
+                          border: Border.all(color: isDark ? const Color(0xFF121212) : Colors.white, width: 3),
                           boxShadow: [
                             BoxShadow(
                               color: const Color(0xFF4CAF50).withOpacity(0.4),
@@ -195,7 +202,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
+                            border: Border.all(color: isDark ? const Color(0xFF121212) : Colors.white, width: 3),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.15),
@@ -225,7 +232,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                  ),
                )
             else
-              Text("${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName".replaceAll(RegExp(r'\s+'), ' ').trim(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.black87)),
+              Text("${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName".replaceAll(RegExp(r'\s+'), ' ').trim(), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.primaryText)),
             
             const SizedBox(height: 4),
             
@@ -255,7 +262,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               if (_institutionalId.isNotEmpty && _institutionalId != 'N/A')
                 Text(
                   "ID: $_institutionalId",
-                  style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500, fontSize: 13)
+                  style: TextStyle(color: AppColors.secondaryText, fontWeight: FontWeight.w500, fontSize: 13)
                 ),
             ],
 
@@ -269,12 +276,18 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   _buildProfileOption(Icons.settings_rounded, "Settings", Colors.grey.shade700, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentProfileSettingsScreen()));
                   }),
-                  _buildProfileOption(Icons.security_rounded, "Privacy and Security", Colors.red, onTap: () {}),
+                  _buildProfileOption(Icons.security_rounded, "Privacy and Security", Colors.red, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacySecurityScreen()));
+                  }),
                   _buildProfileOption(Icons.help_outline_rounded, "Help Center", Colors.purple, onTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
                   }),
-                  _buildProfileOption(Icons.feedback_outlined, "Send Feedback", Colors.teal, onTap: () {}),
-                  _buildProfileOption(Icons.info_outline_rounded, "About ELMS", Colors.blueGrey, onTap: () {}),
+                  _buildProfileOption(Icons.feedback_outlined, "Send Feedback", Colors.teal, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SendFeedbackScreen()));
+                  }),
+                  _buildProfileOption(Icons.info_outline_rounded, "About ELMS", Colors.blueGrey, onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutLmsScreen()));
+                  }),
 
                 ],
               ),
@@ -287,9 +300,14 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 30),
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  // PERSISTENCE: Clear all locally stored data
+                  // PERSISTENCE: Clear locally stored data except notification states
                   final SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.clear();
+                  final keys = prefs.getKeys();
+                  for (final key in keys) {
+                    if (!key.startsWith('system_notifications_opened_ids_')) {
+                      await prefs.remove(key);
+                    }
+                  }
 
                   // Ensure the context is still valid before navigating
                   if (context.mounted) {
@@ -318,6 +336,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -325,7 +344,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -358,15 +377,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+                      Text(title, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: AppColors.labelText)),
                       if (subtitle != null) ...[
                         const SizedBox(height: 4),
-                        Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                      ]
+                        Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.secondaryText)),
+                      ],
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Colors.black38),
+                Icon(Icons.chevron_right_rounded, color: AppColors.navUnselected),
               ],
             ),
           ),

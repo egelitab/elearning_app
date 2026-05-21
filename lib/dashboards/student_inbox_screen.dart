@@ -3,6 +3,8 @@ import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'chat_detail_screen.dart';
 import 'announcement_detail_screen.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class StudentInboxScreen extends StatefulWidget {
   const StudentInboxScreen({super.key});
@@ -57,28 +59,30 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+      backgroundColor: AppColors.scaffold,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        backgroundColor: AppColors.appBar,
         elevation: 0,
         centerTitle: false,
         title: _isSearching
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: "Search...",
                   border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.black38),
+                  hintStyle: TextStyle(color: AppColors.secondaryText),
                 ),
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+                style: TextStyle(color: AppColors.primaryText, fontSize: 18),
                 onChanged: (value) => setState(() => _searchQuery = value),
               )
-            : const Text(
+            : Text(
                 "Inbox",
                 style: TextStyle(
-                  color: Color(0xFF05398F),
+                  color: AppColors.appBarForeground,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -87,7 +91,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
           IconButton(
             icon: Icon(
               _isSearching ? Icons.close_rounded : Icons.search_rounded,
-              color: const Color(0xFF05398F),
+              color: AppColors.appBarForeground,
             ),
             onPressed: () {
               setState(() {
@@ -121,8 +125,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                 ),
               ],
             ),
-      // 3. Floating Action Button - Removed for Students as they only join existing groups
-    );
+        ),
+      );
   }
 
   Widget _buildToggleSwitch() {
@@ -130,7 +134,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.04),
+        color: AppColors.divider,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -142,7 +146,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: !isChatSelected ? Colors.white : Colors.transparent,
+                  color: !isChatSelected ? AppColors.card : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: !isChatSelected
                       ? [
@@ -159,8 +163,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                     "Announcements",
                     style: TextStyle(
                       color: !isChatSelected
-                          ? const Color(0xFF05398F)
-                          : Colors.black54,
+                          ? AppColors.primary
+                          : AppColors.secondaryText,
                       fontWeight: !isChatSelected
                           ? FontWeight.bold
                           : FontWeight.w600,
@@ -177,7 +181,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isChatSelected ? Colors.white : Colors.transparent,
+                  color: isChatSelected ? AppColors.card : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: isChatSelected
                       ? [
@@ -194,8 +198,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                     "Chats",
                     style: TextStyle(
                       color: isChatSelected
-                          ? const Color(0xFF05398F)
-                          : Colors.black54,
+                          ? AppColors.primary
+                          : AppColors.secondaryText,
                       fontWeight: isChatSelected
                           ? FontWeight.bold
                           : FontWeight.w600,
@@ -226,7 +230,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
       return Center(
         child: Text(
           _searchQuery.isEmpty ? "No announcements yet" : "No results found",
-          style: const TextStyle(color: Colors.black54),
+          style: TextStyle(color: AppColors.secondaryText),
         ),
       );
     }
@@ -299,7 +303,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
       return Center(
         child: Text(
           _searchQuery.isEmpty ? "No group chats yet" : "No results found",
-          style: const TextStyle(color: Colors.black54),
+          style: TextStyle(color: AppColors.secondaryText),
         ),
       );
     }
@@ -365,7 +369,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -419,18 +423,18 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                           Expanded(
                             child: Text(
                               name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
-                                color: Colors.black87,
+                                color: AppColors.primaryText,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
                             time,
-                            style: const TextStyle(
-                              color: Colors.black38,
+                            style: TextStyle(
+                              color: AppColors.secondaryText,
                               fontSize: 12,
                             ),
                           ),
@@ -484,7 +488,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -542,7 +546,7 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
+                                color: AppColors.divider,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
@@ -562,8 +566,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                           const SizedBox(width: 8),
                           Text(
                             time,
-                            style: const TextStyle(
-                              color: Colors.black38,
+                            style: TextStyle(
+                              color: AppColors.secondaryText,
                               fontSize: 11,
                             ),
                           ),
@@ -572,10 +576,10 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       const SizedBox(height: 8),
                       Text(
                         header,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
-                          color: Colors.black87,
+                          color: AppColors.primaryText,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -583,8 +587,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       const SizedBox(height: 4),
                       Text(
                         content,
-                        style: const TextStyle(
-                          color: Colors.black54,
+                        style: TextStyle(
+                          color: AppColors.secondaryText,
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -639,8 +643,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       const SizedBox(height: 8),
                       Text(
                         "Posted by $sender",
-                        style: const TextStyle(
-                          color: Colors.black45,
+                        style: TextStyle(
+                          color: AppColors.secondaryText,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
