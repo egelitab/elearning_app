@@ -490,6 +490,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       return;
     }
     
+    // Save as recently opened BEFORE opening (so dashboard always reflects intent)
+    if (!_isInstructor) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('recent_material_title', material['title']?.toString() ?? '');
+      await prefs.setString('recent_material_url', urlStr.toString());
+      await prefs.setString('recent_course_title', _currentCourse['title']?.toString() ?? '');
+    }
+
     if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening material...")));
     try {
       if (!_isInstructor) await _apiService.logReadingDuration(_currentCourse['id'].toString(), material['id'].toString(), 3600); // Mock 1h progression

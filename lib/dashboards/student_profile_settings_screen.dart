@@ -3,6 +3,12 @@ import 'account_settings_screen.dart';
 import 'notification_settings_screen.dart';
 import 'app_preferences_screen.dart';
 import 'student_profile_downloads_screen.dart';
+import 'privacy_security_screen.dart';
+import 'help_support_screen.dart';
+import 'send_feedback_screen.dart';
+import 'about_lms_screen.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class StudentProfileSettingsScreen extends StatefulWidget {
   const StudentProfileSettingsScreen({super.key});
@@ -14,82 +20,143 @@ class StudentProfileSettingsScreen extends StatefulWidget {
 class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
-      appBar: AppBar(
-        title: const Text(
-          'Settings',
-          style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 22),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        appBar: AppBar(
+          title: Text(
+            'Settings',
+            style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold, fontSize: 22),
+          ),
+          backgroundColor: AppColors.appBar,
+          elevation: 0,
+          centerTitle: false,
+          iconTheme: IconThemeData(color: AppColors.appBarForeground),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: false,
-        iconTheme: const IconThemeData(color: Color(0xFF05398F)),
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 10),
-            
-            // Primary Categories
-            _buildSettingsGroup([
-              _buildSettingsTile(
-                icon: Icons.person_rounded,
-                iconColor: Colors.blue,
-                title: "Account",
-                subtitle: "Profile, Security, Email",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
-                  );
-                },
-              ),
-              _buildSettingsTile(
-                icon: Icons.notifications_rounded,
-                iconColor: Colors.redAccent,
-                title: "Notifications",
-                subtitle: "Manage alerts and system updates",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
-                  );
-                },
-              ),
-              _buildSettingsTile(
-                icon: Icons.tune_rounded,
-                iconColor: Colors.teal,
-                title: "App Preferences",
-                subtitle: "Theme, Font Size, Date/Time",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AppPreferencesScreen()),
-                  );
-                },
-              ),
-              _buildSettingsTile(
-                icon: Icons.download_for_offline_rounded,
-                iconColor: Colors.amber,
-                title: "Offline Media",
-                subtitle: "Manage offline storage & limits",
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const StudentProfileDownloadsScreen()),
-                  );
-                },
-              ),
-            ]),
+        body: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10),
+              
+              // Primary Categories
+              _buildSettingsGroup([
+                _buildSettingsTile(
+                  icon: Icons.person_rounded,
+                  iconColor: Colors.blue,
+                  title: "Account",
+                  subtitle: "Profile, Security, Email",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.notifications_rounded,
+                  iconColor: Colors.redAccent,
+                  title: "Notifications",
+                  subtitle: "Manage alerts and system updates",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.tune_rounded,
+                  iconColor: Colors.teal,
+                  title: "App Preferences",
+                  subtitle: "Theme, Font Size, Date/Time",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AppPreferencesScreen()),
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.download_for_offline_rounded,
+                  iconColor: Colors.amber,
+                  title: "Offline Media",
+                  subtitle: "Manage offline storage & limits",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const StudentProfileDownloadsScreen()),
+                    );
+                  },
+                ),
+              ]),
+  
+              const SizedBox(height: 24),
+              _buildSectionHeader("Privacy & Support"),
+              _buildSettingsGroup([
+                _buildSettingsTile(
+                  icon: Icons.security_rounded,
+                  iconColor: Colors.red,
+                  title: "Privacy and Security",
+                  subtitle: "Terms, security settings",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PrivacySecurityScreen()),
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.help_outline_rounded,
+                  iconColor: Colors.purple,
+                  title: "Help Center",
+                  subtitle: "FAQs, support contact",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
+                    );
+                  },
+                ),
+                _buildSettingsTile(
+                  icon: Icons.feedback_outlined,
+                  iconColor: Colors.teal,
+                  title: "Send Feedback",
+                  subtitle: "Help us improve ELMS",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SendFeedbackScreen()),
+                    );
+                  },
+                ),
+              ]),
 
-            const SizedBox(height: 32),
-            
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 24),
+              _buildSectionHeader("About"),
+              _buildSettingsGroup([
+                _buildSettingsTile(
+                  icon: Icons.info_outline_rounded,
+                  iconColor: Colors.blueGrey,
+                  title: "About ELMS",
+                  subtitle: "App version, team info",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AboutLmsScreen()),
+                    );
+                  },
+                ),
+              ]),
+  
+              const SizedBox(height: 32),
+              
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -113,11 +180,11 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
   Widget _buildSettingsGroup(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+          color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
           )
@@ -129,9 +196,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
           return Column(
             children: [
               children[index],
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Divider(height: 1, color: AppColors.divider),
               ),
             ],
           );
@@ -151,17 +218,17 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: iconColor.withOpacity(0.1),
+          color: iconColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: iconColor, size: 22),
       ),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87),
+        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryText),
       ),
       subtitle: subtitle != null 
-          ? Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.black54))
+          ? Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.secondaryText))
           : null,
       trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey, size: 14),
       onTap: onTap,

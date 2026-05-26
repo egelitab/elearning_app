@@ -6,9 +6,17 @@ import 'dashboards/instructor_dashboard.dart';
 import 'dashboards/student_dashboard.dart';
 import 'utils/date_helper.dart';
 
+/// Global dark mode notifier — toggle anywhere, rebuilds the whole app
+final ValueNotifier<bool> darkModeNotifier = ValueNotifier(false);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DateHelper.init();
+
+  // Load saved dark mode pref before app starts
+  final prefs = await SharedPreferences.getInstance();
+  darkModeNotifier.value = prefs.getBool('pref_dark_mode') ?? false;
+
   runApp(const ELearningApp());
 }
 
@@ -17,18 +25,43 @@ class ELearningApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ELMS Project',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
-      ),
-      // Set the AuthWrapper as the home to handle persistent login
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          title: 'ELMS Project',
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            useMaterial3: true,
+            brightness: Brightness.light,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF09AEF5),
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1E1E1E),
+              foregroundColor: Colors.white,
+            ),
+            cardColor: const Color(0xFF1E1E1E),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color(0xFF1E1E1E),
+              selectedItemColor: Color(0xFF09AEF5),
+              unselectedItemColor: Colors.grey,
+            ),
+          ),
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+          ),
+          home: const AuthWrapper(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

@@ -16,8 +16,11 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   bool _isLoading = true;
   Set<String> _openedIds = {};
 
-  // Must match the key used in api_service.dart
-  static const _prefsKey = 'system_notifications_opened_ids';
+  Future<String> _getOpenedIdsKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email') ?? 'default';
+    return 'system_notifications_opened_ids_$email';
+  }
 
   @override
   void initState() {
@@ -51,14 +54,16 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
 
   Future<Set<String>> _loadOpenedIds() async {
     final prefs = await SharedPreferences.getInstance();
-    return (prefs.getStringList(_prefsKey) ?? []).toSet();
+    final key = await _getOpenedIdsKey();
+    return (prefs.getStringList(key) ?? []).toSet();
   }
 
   Future<void> _markAsOpened(String msgId) async {
     if (_openedIds.contains(msgId)) return;
     setState(() => _openedIds.add(msgId));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _openedIds.toList());
+    final key = await _getOpenedIdsKey();
+    await prefs.setStringList(key, _openedIds.toList());
   }
 
   Future<void> _markAllAsRead() async {
@@ -68,7 +73,8 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
         .toSet();
     setState(() => _openedIds = allIds);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, allIds.toList());
+    final key = await _getOpenedIdsKey();
+    await prefs.setStringList(key, allIds.toList());
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

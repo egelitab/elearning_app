@@ -1628,15 +1628,19 @@ class ApiService {
   }
 
 
-  /// Returns how many admin system-broadcast messages the user has NOT yet opened.
-  /// Uses the same SharedPreferences key as SystemNotificationsScreen so they stay in sync.
-  static const _openedIdsKey = 'system_notifications_opened_ids';
+  /// Returns the user-specific SharedPreferences key for opened system notifications
+  static Future<String> _getOpenedIdsKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email') ?? 'default';
+    return 'system_notifications_opened_ids_$email';
+  }
 
   Future<int> _getUnseenSystemMessageCount() async {
     try {
       final messages = await getSystemMessages();
       final prefs = await SharedPreferences.getInstance();
-      final openedIds = (prefs.getStringList(_openedIdsKey) ?? []).toSet();
+      final key = await _getOpenedIdsKey();
+      final openedIds = (prefs.getStringList(key) ?? []).toSet();
       int unseen = 0;
       for (final m in messages) {
         final id = m['id']?.toString() ?? m['created_at']?.toString() ?? '';
@@ -1657,9 +1661,10 @@ class ApiService {
           .map((m) => m['id']?.toString() ?? m['created_at']?.toString() ?? '')
           .where((id) => id.isNotEmpty)
           .toList();
-      final existing = (prefs.getStringList(_openedIdsKey) ?? []).toSet();
+      final key = await _getOpenedIdsKey();
+      final existing = (prefs.getStringList(key) ?? []).toSet();
       existing.addAll(ids);
-      await prefs.setStringList(_openedIdsKey, existing.toList());
+      await prefs.setStringList(key, existing.toList());
     } catch (_) {}
   }
 

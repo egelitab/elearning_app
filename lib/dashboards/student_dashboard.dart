@@ -7,6 +7,8 @@ import 'student_inbox_screen.dart';
 import 'student_downloads_screen.dart';
 import 'student_profile_screen.dart';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -94,77 +96,84 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        DateTime now = DateTime.now();
-        if (currentBackPressTime == null ||
-            now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
-          currentBackPressTime = now;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Press back again to exit')),
-          );
-          return Future.value(false);
-        }
-        SystemNavigator.pop();
-        return Future.value(true);
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) {
+        return WillPopScope(
+          onWillPop: () async {
+            DateTime now = DateTime.now();
+            if (currentBackPressTime == null ||
+                now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+              currentBackPressTime = now;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Press back again to exit')),
+              );
+              return Future.value(false);
+            }
+            SystemNavigator.pop();
+            return Future.value(true);
+          },
+          child: Scaffold(
+            backgroundColor: AppColors.scaffold,
+            body: _screens[_index],
+            bottomNavigationBar: Container(
+              decoration: BoxDecoration(
+                color: AppColors.navBar,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadow.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  )
+                ],
+              ),
+              child: BottomNavigationBar(
+                elevation: 0,
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: AppColors.navBar,
+                currentIndex: _index,
+                selectedItemColor: AppColors.navSelected,
+                unselectedItemColor: AppColors.navUnselected,
+                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
+                onTap: (i) {
+                  setState(() => _index = i);
+                  if (i == 0 && _announcementUnread > 0) setState(() => _announcementUnread = 0);
+                  if (i == 1 && _materialUnread > 0) setState(() => _materialUnread = 0);
+                  if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
+                },
+                items: [
+                  BottomNavigationBarItem(
+                    icon: _badgeIcon(const Icon(Icons.home_outlined), _announcementUnread),
+                    activeIcon: _badgeIcon(const Icon(Icons.home), _announcementUnread),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _badgeIcon(const Icon(Icons.book_outlined), _materialUnread),
+                    activeIcon: _badgeIcon(const Icon(Icons.book), _materialUnread),
+                    label: 'Courses',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: _badgeIcon(const Icon(Icons.chat_bubble_outline), _chatUnread),
+                    activeIcon: _badgeIcon(const Icon(Icons.chat_bubble), _chatUnread),
+                    label: 'Inbox',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.download_for_offline_outlined),
+                    activeIcon: Icon(Icons.download_for_offline_outlined),
+                    label: 'Downloads',
+                  ),
+                  const BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: 'Profile',
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
       },
-      child: Scaffold(
-        body: _screens[_index],
-        bottomNavigationBar: Container(
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, -5),
-              )
-            ],
-          ),
-          child: BottomNavigationBar(
-            elevation: 0,
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            currentIndex: _index,
-            selectedItemColor: const Color(0xFF09AEF5),
-            unselectedItemColor: Colors.grey.shade400,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
-            onTap: (i) {
-              setState(() => _index = i);
-              if (i == 0 && _announcementUnread > 0) setState(() => _announcementUnread = 0);
-              if (i == 1 && _materialUnread > 0) setState(() => _materialUnread = 0);
-              if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
-            },
-            items: [
-              BottomNavigationBarItem(
-                icon: _badgeIcon(const Icon(Icons.home_outlined), _announcementUnread),
-                activeIcon: _badgeIcon(const Icon(Icons.home), _announcementUnread),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: _badgeIcon(const Icon(Icons.book_outlined), _materialUnread),
-                activeIcon: _badgeIcon(const Icon(Icons.book), _materialUnread),
-                label: 'Courses',
-              ),
-              BottomNavigationBarItem(
-                icon: _badgeIcon(const Icon(Icons.chat_bubble_outline), _chatUnread),
-                activeIcon: _badgeIcon(const Icon(Icons.chat_bubble), _chatUnread),
-                label: 'Inbox',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.download_for_offline_outlined),
-                activeIcon: Icon(Icons.download_for_offline_outlined),
-                label: 'Downloads',
-              ),
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
