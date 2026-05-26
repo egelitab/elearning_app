@@ -7,27 +7,27 @@ class AppColors {
   static bool get isDark => darkModeNotifier.value;
 
   // Backgrounds
-  static Color get scaffold => isDark ? const Color(0xFF0D0D14) : const Color(0xFFF4F7FC);
-  static Color get card    => isDark ? const Color(0xFF1C1C2E) : Colors.white;
-  static Color get surface => isDark ? const Color(0xFF252538) : const Color(0xFFF8FAFF);
+  static Color get scaffold => isDark ? const Color(0xFF0F172A) : const Color(0xFFF4F7FC);
+  static Color get card    => isDark ? const Color(0xFF1E293B) : Colors.white;
+  static Color get surface => isDark ? const Color(0xFF334155) : const Color(0xFFF8FAFF);
 
   // Text
-  static Color get primaryText   => isDark ? Colors.white       : const Color(0xFF0A0A2E);
-  static Color get secondaryText => isDark ? Colors.white60     : Colors.black54;
-  static Color get labelText     => isDark ? Colors.white70     : Colors.black87;
+  static Color get primaryText   => isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0A0A2E);
+  static Color get secondaryText => isDark ? const Color(0xFF94A3B8) : Colors.black54;
+  static Color get labelText     => isDark ? const Color(0xFFE2E8F0) : Colors.black87;
 
   // Borders / dividers
-  static Color get divider => isDark ? Colors.white12 : Colors.black12;
-  static Color get border  => isDark ? Colors.white10 : const Color(0xFFEEEEEE);
+  static Color get divider => isDark ? const Color(0xFF334155) : Colors.black12;
+  static Color get border  => isDark ? const Color(0xFF334155) : const Color(0xFFEEEEEE);
 
   // Nav bar
-  static Color get navBar          => isDark ? const Color(0xFF1C1C2E) : Colors.white;
+  static Color get navBar          => isDark ? const Color(0xFF1E293B) : Colors.white;
   static Color get navSelected     => const Color(0xFF09AEF5);
-  static Color get navUnselected   => isDark ? Colors.white38 : Colors.grey;
+  static Color get navUnselected   => isDark ? const Color(0xFF94A3B8) : Colors.grey;
 
   // App bar
-  static Color get appBar          => isDark ? const Color(0xFF1C1C2E) : Colors.transparent;
-  static Color get appBarForeground => isDark ? Colors.white : const Color(0xFF05398F);
+  static Color get appBar          => isDark ? const Color(0xFF1E293B) : Colors.transparent;
+  static Color get appBarForeground => isDark ? const Color(0xFFF8FAFC) : const Color(0xFF05398F);
 
   // Shadows
   static Color get shadow => isDark ? Colors.black54 : Colors.black12;
