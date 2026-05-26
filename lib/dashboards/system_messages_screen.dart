@@ -44,7 +44,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
       
       appBar: AppBar(
         title: const Text("System Broadcasts", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: const Color(0xFF05398F),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
@@ -95,7 +95,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                           children: [
                             Container(
                               width: 6,
-                              color: const Color(0xFF09AEF5),
+                              color: Theme.of(context).primaryColor,
                             ),
                             Expanded(
                               child: Padding(
@@ -106,10 +106,10 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text(
+                                        Text(
                                           "ADMINISTRATOR",
                                           style: TextStyle(
-                                            color: Color(0xFF05398F),
+                                            color: Theme.of(context).colorScheme.secondary,
                                             fontWeight: FontWeight.w800,
                                             fontSize: 10,
                                             letterSpacing: 1.2

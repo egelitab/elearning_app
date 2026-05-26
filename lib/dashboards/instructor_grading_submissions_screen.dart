@@ -106,7 +106,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       Expanded(
                         child: Text(
                           submission['status'] == 'Graded' ? "Edit Grade" : "Grade Submission",
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -196,7 +196,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09AEF5),
+                        backgroundColor: Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 4,
                       ),
@@ -247,7 +247,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
           onPressed: () => Navigator.pop(context, true), // Return true to trigger refresh
         ),
         title: Column(
@@ -255,7 +255,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
           children: [
             Text(
               widget.gradingTask['title'] ?? 'Grading', 
-              style: const TextStyle(color: Color(0xFF05398F), fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18, fontWeight: FontWeight.bold),
               overflow: TextOverflow.ellipsis,
             ),
             Text(
@@ -284,14 +284,14 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedDepartment,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF05398F)),
+                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.secondary),
                         items: _departments.map((String dept) {
                           return DropdownMenuItem<String>(
                             value: dept,
                             child: Text(
                               dept,
                               style: TextStyle(
-                                color: _selectedDepartment == dept ? const Color(0xFF05398F) : Colors.black87,
+                                color: _selectedDepartment == dept ? Theme.of(context).colorScheme.secondary : Colors.black87,
                                 fontWeight: _selectedDepartment == dept ? FontWeight.bold : FontWeight.normal,
                                 fontSize: 13,
                               ),
@@ -323,14 +323,14 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedSection,
-                        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF05398F)),
+                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.secondary),
                         items: _sections.map((String section) {
                           return DropdownMenuItem<String>(
                             value: section,
                             child: Text(
                               section,
                               style: TextStyle(
-                                color: _selectedSection == section ? const Color(0xFF05398F) : Colors.black87,
+                                color: _selectedSection == section ? Theme.of(context).colorScheme.secondary : Colors.black87,
                                 fontWeight: _selectedSection == section ? FontWeight.bold : FontWeight.normal,
                                 fontSize: 13,
                               ),
@@ -452,13 +452,13 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF09AEF5).withOpacity(0.15),
+                        color: Theme.of(context).primaryColor.withOpacity(0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           initials, 
-                          style: const TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold, fontSize: 14)
+                          style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 14)
                         )
                       ),
                     ),
@@ -590,14 +590,14 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
             child: OutlinedButton(
               onPressed: () => _showGradingSheet(item, index),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: isGraded ? Colors.black26 : const Color(0xFF09AEF5)),
+                side: BorderSide(color: isGraded ? Colors.black26 : Theme.of(context).primaryColor),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
                 isGraded ? "Edit Grade" : "Grade Submission", 
                 style: TextStyle(
-                  color: isGraded ? Colors.black54 : const Color(0xFF09AEF5), 
+                  color: isGraded ? Colors.black54 : Theme.of(context).primaryColor, 
                   fontWeight: FontWeight.bold
                 )
               ),

@@ -270,12 +270,12 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Grid Menu
-                        const Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                        Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                         const SizedBox(height: 15),
                         _buildMenuGrid(),
                         
                         const SizedBox(height: 25),
-                        const Text("Quick Actions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                        Text("Quick Actions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                         const SizedBox(height: 15),
                         _buildQuickAction(Icons.send_rounded, "Post Announcement", "Notify all students", () {
                           _showPostAnnouncementDialog(context);
@@ -342,7 +342,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   const Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                   Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                    const SizedBox(height: 25),
                    
                    DropdownButtonFormField<String>(
@@ -486,7 +486,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                            }
                          },
                          style: ElevatedButton.styleFrom(
-                           backgroundColor: const Color(0xFF09AEF5),
+                           backgroundColor: Theme.of(context).primaryColor,
                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
                          ),
                          child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -528,9 +528,9 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 35),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+          colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -584,10 +584,10 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                      color: Colors.white24,
                      shape: BoxShape.circle,
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     
                     radius: 22,
-                    child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+                    child: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.secondary, size: 24),
                   ),
                 ),
                 if (_systemUnread > 0)
@@ -747,7 +747,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           height: 6,
           width: _currentCardIndex == index ? 24 : 8,
           decoration: BoxDecoration(
-            color: _currentCardIndex == index ? const Color(0xFF09AEF5) : Colors.grey.shade300,
+            color: _currentCardIndex == index ? Theme.of(context).primaryColor : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(4),
           ),
         );
@@ -870,7 +870,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("More Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            Text("More Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
             const SizedBox(height: 20),
             _buildQuickAction(Icons.help_outline_rounded, "Help & Support", "Get assistance", () {
               Navigator.pop(context);
@@ -915,7 +915,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     color: const Color(0xFFE3F2FD),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: const Color(0xFF09AEF5), size: 24),
+                  child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

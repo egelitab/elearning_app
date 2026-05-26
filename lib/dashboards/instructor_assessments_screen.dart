@@ -166,9 +166,9 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         "Create Assessment",
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                       ),
                        const SizedBox(height: 20),
 
@@ -256,9 +256,9 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 margin: const EdgeInsets.only(bottom: 8),
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: allSectionsSelected ? const Color(0xFF09AEF5).withOpacity(0.1) : Colors.white,
+                                  color: allSectionsSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Colors.white,
                                   border: Border.all(
-                                    color: allSectionsSelected ? const Color(0xFF09AEF5) : Colors.black12,
+                                    color: allSectionsSelected ? Theme.of(context).primaryColor : Colors.black12,
                                     width: 1.5,
                                   ),
                                   borderRadius: BorderRadius.circular(16),
@@ -282,7 +282,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                         cls["name"],
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold, 
-                                          color: allSectionsSelected ? const Color(0xFF05398F) : Colors.black87
+                                          color: allSectionsSelected ? Theme.of(context).colorScheme.secondary : Colors.black87
                                         ),
                                       ),
                                     ),
@@ -311,7 +311,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                       },
                                       child: Icon(
                                         allSectionsSelected ? Icons.check_box_rounded : (someSectionsSelected ? Icons.indeterminate_check_box_rounded : Icons.check_box_outline_blank_rounded),
-                                        color: (allSectionsSelected || someSectionsSelected) ? const Color(0xFF09AEF5) : Colors.black26,
+                                        color: (allSectionsSelected || someSectionsSelected) ? Theme.of(context).primaryColor : Colors.black26,
                                       ),
                                     ),
                                     const SizedBox(width: 10),
@@ -350,21 +350,21 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                         margin: const EdgeInsets.only(bottom: 6),
                                         decoration: BoxDecoration(
-                                          color: isSecSelected ? const Color(0xFF09AEF5).withOpacity(0.05) : Colors.transparent,
+                                          color: isSecSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : Colors.transparent,
                                           borderRadius: BorderRadius.circular(8),
                                         ),
                                         child: Row(
                                           children: [
                                             Icon(
                                               isSecSelected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                                              color: isSecSelected ? const Color(0xFF09AEF5) : Colors.black26,
+                                              color: isSecSelected ? Theme.of(context).primaryColor : Colors.black26,
                                               size: 20,
                                             ),
                                             const SizedBox(width: 12),
                                             Text(
                                               sec["name"],
                                               style: TextStyle(
-                                                color: isSecSelected ? const Color(0xFF05398F) : Colors.black87,
+                                                color: isSecSelected ? Theme.of(context).colorScheme.secondary : Colors.black87,
                                                 fontWeight: isSecSelected ? FontWeight.w600 : FontWeight.normal
                                               ),
                                             ),
@@ -395,7 +395,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF09AEF5) : const Color(0xFFF4F7FC),
+                                  color: isSelected ? Theme.of(context).primaryColor : const Color(0xFFF4F7FC),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: isSelected ? Colors.transparent : Colors.black12),
                                 ),
@@ -440,7 +440,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFF09AEF5) : const Color(0xFFF4F7FC),
+                                  color: isSelected ? Theme.of(context).primaryColor : const Color(0xFFF4F7FC),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: isSelected ? Colors.transparent : Colors.black12),
                                 ),
@@ -503,12 +503,12 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF09AEF5).withOpacity(0.1),
+                                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
                               ),
-                              child: const Text("Create New", style: TextStyle(color: Color(0xFF09AEF5), fontWeight: FontWeight.bold)),
+                              child: Text("Create New", style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -548,10 +548,10 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                   });
                                 }
                               },
-                              icon: const Icon(Icons.attach_file, color: Color(0xFF05398F)),
+                              icon: Icon(Icons.attach_file, color: Theme.of(context).colorScheme.secondary),
                               label: Text(
                                 attachedFiles.isEmpty ? "Attach File" : attachedFiles[0]['name'].toString(), 
-                                style: const TextStyle(color: Color(0xFF05398F)),
+                                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               style: ElevatedButton.styleFrom(
@@ -588,10 +588,10 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.calendar_today, color: Color(0xFF05398F)),
+                              icon: Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.secondary),
                               label: Text(
                                 selectedDate == null ? "Set Deadline" : "${selectedDate!.month}/${selectedDate!.day} ${selectedDate!.hour}:${selectedDate!.minute.toString().padLeft(2, '0')}",
-                                style: const TextStyle(color: Color(0xFF05398F)),
+                                style: TextStyle(color: Theme.of(context).colorScheme.secondary),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               style: ElevatedButton.styleFrom(
@@ -645,7 +645,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               }
                           } : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF09AEF5),
+                            backgroundColor: Theme.of(context).primaryColor,
                             disabledBackgroundColor: Colors.black12,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             elevation: (titleController.text.isNotEmpty && selectedDate != null && selectedSections.isNotEmpty) ? 4 : 0,
@@ -715,9 +715,9 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text(
+                    Text(
                       "Form New Groups",
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                     ),
                     const SizedBox(height: 20),
                     
@@ -774,7 +774,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.people_alt_rounded, color: Color(0xFF09AEF5), size: 20),
+                            Icon(Icons.people_alt_rounded, color: Theme.of(context).primaryColor, size: 20),
                             const SizedBox(width: 10),
                             const Text(
                               "Total Students:", 
@@ -783,7 +783,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                             const Spacer(),
                             Text(
                               "${sections.firstWhere((s) => s["id"] == selectedSectionId)["students"]}",
-                              style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 16),
+                              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ],
                         ),
@@ -811,7 +811,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   contentPadding: EdgeInsets.zero,
                                   prefixIcon: IconButton(
-                                    icon: const Icon(Icons.remove_rounded, color: Color(0xFF05398F), size: 20),
+                                    icon: Icon(Icons.remove_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
                                     onPressed: () {
                                       if (groupSize > 1) {
                                         setSheetState(() {
@@ -823,7 +823,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                     splashRadius: 20,
                                   ),
                                   suffixIcon: IconButton(
-                                    icon: const Icon(Icons.add_rounded, color: Color(0xFF05398F), size: 20),
+                                    icon: Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
                                     onPressed: () {
                                       setSheetState(() {
                                         groupSize++;
@@ -915,7 +915,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                             Navigator.pop(context); // Close sheet
                                             _finalizeGroupCreation(groupName!, sec, totalStudents, groupSize, groupingMethod, setAssessmentSheetState, courseId);
                                           },
-                                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5)),
+                                          style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
                                           child: const Text("Continue", style: TextStyle(color: Colors.white)),
                                         ),
                                       ],
@@ -928,7 +928,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               }
                           } : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF09AEF5),
+                          backgroundColor: Theme.of(context).primaryColor,
                           disabledBackgroundColor: Colors.black12,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           elevation: (selectedSectionId != null && groupName != null && groupName!.isNotEmpty && groupSize > 0) ? 4 : 0,
@@ -1000,12 +1000,12 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Assessments", 
-          style: TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+          style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 22, fontWeight: FontWeight.bold)
         ),
       ),
       body: Column(
@@ -1035,7 +1035,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 _selectedCourseIdFilter = null;
                               });
                             },
-                            selectedColor: const Color(0xFF09AEF5),
+                            selectedColor: Theme.of(context).primaryColor,
                             
                             labelStyle: TextStyle(
                               color: _selectedCourseIdFilter == null ? Colors.white : Colors.black87,
@@ -1094,7 +1094,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF09AEF5) : Colors.white,
+                        color: isSelected ? Theme.of(context).primaryColor : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -1152,7 +1152,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateAssessmentSheet,
-        backgroundColor: const Color(0xFF09AEF5),
+        backgroundColor: Theme.of(context).primaryColor,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text("Create", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
@@ -1271,12 +1271,12 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  backgroundColor: const Color(0xFF05398F).withOpacity(0.08),
+                  backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.08),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text(
+                child: Text(
                   "View Details", 
-                  style: TextStyle(color: Color(0xFF05398F), fontSize: 13, fontWeight: FontWeight.bold)
+                  style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 13, fontWeight: FontWeight.bold)
                 ),
               )
             ],

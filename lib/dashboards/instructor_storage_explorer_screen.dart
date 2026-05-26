@@ -167,10 +167,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Sort By", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            Text("Sort By", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
             const SizedBox(height: 10),
             ListTile(
-              leading: const Icon(Icons.text_format_rounded, color: Color(0xFF09AEF5)),
+              leading: Icon(Icons.text_format_rounded, color: Theme.of(context).primaryColor),
               title: const Text("Name"),
               onTap: () {
                 _applySort('name_asc');
@@ -178,7 +178,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               },
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today_rounded, color: Color(0xFF09AEF5)),
+              leading: Icon(Icons.calendar_today_rounded, color: Theme.of(context).primaryColor),
               title: const Text("Date Modified"),
               onTap: () {
                 _applySort('date_desc');
@@ -545,15 +545,15 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     return Scaffold(
       
       appBar: AppBar(
-        backgroundColor: _isSelectionMode ? const Color(0xFF05398F) : const Color(0xFFF4F7FC),
+        backgroundColor: _isSelectionMode ? Theme.of(context).colorScheme.secondary : const Color(0xFFF4F7FC),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(_isSelectionMode ? Icons.close_rounded : Icons.arrow_back_rounded, color: _isSelectionMode ? Colors.white : const Color(0xFF05398F)),
+          icon: Icon(_isSelectionMode ? Icons.close_rounded : Icons.arrow_back_rounded, color: _isSelectionMode ? Colors.white : Theme.of(context).colorScheme.secondary),
           onPressed: _isSelectionMode ? _exitSelectionMode : () => Navigator.pop(context),
         ),
         title: Text(
           _isSelectionMode ? "${_selectedIds.length} Selected" : "Storage Explorer",
-          style: TextStyle(color: _isSelectionMode ? Colors.white : const Color(0xFF05398F), fontWeight: FontWeight.bold),
+          style: TextStyle(color: _isSelectionMode ? Colors.white : Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold),
         ),
         actions: _isSelectionMode ? [
           if (_selectedIds.length == 1)
@@ -584,24 +584,24 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           MenuAnchor(
             builder: (context, controller, child) {
               return IconButton(
-                icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
+                icon: Icon(Icons.more_vert_rounded, color: Theme.of(context).colorScheme.secondary),
                 onPressed: () => controller.isOpen ? controller.close() : controller.open(),
                 tooltip: "More actions",
               );
             },
             menuChildren: [
               MenuItemButton(
-                leadingIcon: const Icon(Icons.cloud_upload_rounded, size: 20, color: Color(0xFF09AEF5)),
+                leadingIcon: Icon(Icons.cloud_upload_rounded, size: 20, color: Theme.of(context).primaryColor),
                 onPressed: _pickAndUploadFile,
                 child: const Text("Upload File"),
               ),
               MenuItemButton(
-                leadingIcon: const Icon(Icons.create_new_folder_rounded, size: 20, color: Color(0xFF09AEF5)),
+                leadingIcon: Icon(Icons.create_new_folder_rounded, size: 20, color: Theme.of(context).primaryColor),
                 onPressed: _showNewFolderDialog,
                 child: const Text("New Folder"),
               ),
               MenuItemButton(
-                leadingIcon: const Icon(Icons.share_rounded, size: 20, color: Color(0xFF09AEF5)),
+                leadingIcon: Icon(Icons.share_rounded, size: 20, color: Theme.of(context).primaryColor),
                 onPressed: () {
                   setState(() => _isSelectionMode = true);
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the items you wish to share.")));
@@ -610,7 +610,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               ),
               const Divider(height: 1),
               SubmenuButton(
-                leadingIcon: const Icon(Icons.sort_rounded, size: 20, color: Color(0xFF05398F)),
+                leadingIcon: Icon(Icons.sort_rounded, size: 20, color: Theme.of(context).colorScheme.secondary),
                 menuChildren: [
                   MenuItemButton(
                     leadingIcon: const Icon(Icons.text_format_rounded, size: 20),
@@ -715,7 +715,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
               label: const Text("Select Item(s)", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF05398F),
+                backgroundColor: Theme.of(context).colorScheme.secondary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ) : ElevatedButton.icon(
@@ -729,7 +729,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               icon: const Icon(Icons.share_rounded, color: Colors.white),
               label: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09AEF5),
+                backgroundColor: Theme.of(context).primaryColor,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
             ),
@@ -768,7 +768,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontWeight: isLast ? FontWeight.bold : FontWeight.w500,
-              color: isLast ? const Color(0xFF05398F) : Colors.black54,
+              color: isLast ? Theme.of(context).colorScheme.secondary : Colors.black54,
               fontSize: 13,
             ),
           ),
@@ -792,13 +792,13 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         children: [
           if (total > 1) 
             IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, size: 20, color: Color(0xFF05398F)), 
+              icon: Icon(Icons.arrow_back_rounded, size: 20, color: Theme.of(context).colorScheme.secondary), 
               onPressed: _navigateBack,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             )
           else
-            const Icon(Icons.storage_rounded, size: 20, color: Color(0xFF05398F)),
+            Icon(Icons.storage_rounded, size: 20, color: Theme.of(context).colorScheme.secondary),
           const SizedBox(width: 8),
           
           Expanded(
@@ -845,12 +845,12 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? const Color(0xFF09AEF5) : Colors.transparent, width: 2),
+          border: Border.all(color: isSelected ? Theme.of(context).primaryColor : Colors.transparent, width: 2),
           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]
         ),
         child: Row(
           children: [
-            if (isSelected) const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24)),
+            if (isSelected) Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Theme.of(context).primaryColor, size: 24)),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -918,7 +918,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   }
 
   Color _getIconColor(String name, String type) {
-    if (type == 'folder') return const Color(0xFF09AEF5);
+    if (type == 'folder') return Theme.of(context).primaryColor;
     String ext = name.toLowerCase().split('.').last;
     if (ext.contains('pdf')) return Colors.red.shade600;
     if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
@@ -993,7 +993,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Share Selected Items", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  Text("Share Selected Items", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                   const SizedBox(height: 8),
                   Text("Sharing ${_selectedIds.length} items from storage.", style: const TextStyle(color: Colors.black54)),
                   const SizedBox(height: 20),
@@ -1084,7 +1084,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                             _fetchContent();
                           }
                        },
-                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                       style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                        child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),

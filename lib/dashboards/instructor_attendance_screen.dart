@@ -35,8 +35,8 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
       appBar: AppBar(
         title: const Text("Attendance", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFF09AEF5), Color(0xFF05398F)]),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
           ),
         ),
         elevation: 0,
@@ -69,8 +69,8 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         leading: Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFF05398F).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: const Icon(Icons.how_to_reg_rounded, color: Color(0xFF05398F)),
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          child: Icon(Icons.how_to_reg_rounded, color: Theme.of(context).colorScheme.secondary),
         ),
         title: Text(course['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         subtitle: Text(course['course_code'] ?? '', style: const TextStyle(color: Colors.grey)),
@@ -169,15 +169,15 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
       appBar: AppBar(
         title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFF09AEF5), Color(0xFF05398F)]),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _createSession,
-        backgroundColor: const Color(0xFF05398F),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text("New Session", style: TextStyle(color: Colors.white)),
       ),
@@ -368,8 +368,8 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
       appBar: AppBar(
         title: Text(widget.sessionTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFF09AEF5), Color(0xFF05398F)]),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),

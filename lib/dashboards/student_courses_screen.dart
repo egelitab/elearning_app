@@ -100,7 +100,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.isDark ? Colors.white : const Color(0xFF05398F),
+                          color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary,
                         ),
                       ),
                       if (_courses.length > 3)
@@ -113,9 +113,9 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                                       StudentAllCoursesScreen(courses: _courses, myGoals: _myGoals)),
                             );
                           },
-                          child: const Text("See All",
+                          child: Text("See All",
                               style: TextStyle(
-                                  color: Color(0xFF09AEF5),
+                                  color: Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.bold)),
                         ),
                     ],
@@ -156,7 +156,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.isDark ? Colors.white : const Color(0xFF05398F),
+                      color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ),const SizedBox(height: 15),
@@ -194,8 +194,8 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                             child: _buildActionChip(
                               "Schedule", 
                               Icons.calendar_month_rounded, 
-                              const Color(0xFF05398F), 
-                              const Color(0xFF09AEF5),
+                              Theme.of(context).colorScheme.secondary, 
+                              Theme.of(context).primaryColor,
                               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentScheduleScreen())),
                             ),
                           ),
@@ -276,7 +276,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 const Spacer(),
                 Text(
                   course['title'] ?? '',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF05398F), height: 1.2),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary, height: 1.2),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

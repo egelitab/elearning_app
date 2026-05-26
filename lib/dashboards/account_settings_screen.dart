@@ -182,12 +182,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             decoration: InputDecoration(
               hintText: "Select Title",
               hintStyle: TextStyle(color: AppColors.secondaryText.withOpacity(0.5)),
-              prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF09AEF5), size: 22),
+              prefixIcon: Icon(Icons.title_rounded, color: Theme.of(context).primaryColor, size: 22),
               filled: true,
               fillColor: AppColors.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
             validator: (value) {
@@ -216,12 +216,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(color: AppColors.secondaryText.withOpacity(0.5)),
-              prefixIcon: Icon(icon, color: const Color(0xFF09AEF5), size: 22),
+              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor, size: 22),
               filled: true,
               fillColor: AppColors.card,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
             validator: (value) {

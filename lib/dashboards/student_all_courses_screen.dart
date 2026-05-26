@@ -5,17 +5,17 @@ class StudentAllCoursesScreen extends StatelessWidget {
   final List<dynamic> courses;
   final List<dynamic> myGoals;
 
-  const StudentAllCoursesScreen({super.key, required this.courses, this.myGoals = const []});
+  StudentAllCoursesScreen({super.key, required this.courses, this.myGoals = const []});
 
-  final List<Color> _cardColors = const [
-    Color(0xFF05398F),
+  final List<Color> _cardColors = [
+    const Color(0xFF05398F),
     Color(0xFF6A1B9A),
     Color(0xFFFF8F00),
     Color(0xFF2E7D32),
   ];
   
-  final List<Color> _lightColors = const [
-    Color(0xFF09AEF5),
+  final List<Color> _lightColors = [
+    const Color(0xFF09AEF5),
     Color(0xFFAB47BC),
     Color(0xFFFFCA28),
     Color(0xFF66BB6A),
@@ -29,13 +29,13 @@ class StudentAllCoursesScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "All Courses",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: Theme.of(context).colorScheme.secondary,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
@@ -121,10 +121,10 @@ class StudentAllCoursesScreen extends StatelessWidget {
                     children: [
                       Text(
                         course['title'] ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF05398F),
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

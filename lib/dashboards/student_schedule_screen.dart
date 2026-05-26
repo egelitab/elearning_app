@@ -124,9 +124,9 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
       appBar: AppBar(
         title: const Text('Weekly Schedule', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+              colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -163,7 +163,7 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF05398F),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
             ),
@@ -216,8 +216,8 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
 
   Widget _buildCell(String text, {bool isHeader = false, double width = 120, bool isTime = false}) {
     // Determine color based on text
-    Color bgColor = isHeader ? const Color(0xFF05398F).withOpacity(0.05) : Colors.white;
-    Color textColor = isHeader ? const Color(0xFF05398F) : Colors.black87;
+    Color bgColor = isHeader ? Theme.of(context).colorScheme.secondary.withOpacity(0.05) : Colors.white;
+    Color textColor = isHeader ? Theme.of(context).colorScheme.secondary : Colors.black87;
     
     if (text.isNotEmpty && !isHeader) {
       // Logic for background color for courses
@@ -232,7 +232,7 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
         Colors.cyan.shade50,
       ];
       bgColor = courseColors[hash % courseColors.length];
-      textColor = Color(0xFF05398F);
+      textColor = Theme.of(context).colorScheme.secondary;
     }
 
     return Container(
@@ -244,7 +244,7 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isHeader ? const Color(0xFF05398F).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+          color: isHeader ? Theme.of(context).colorScheme.secondary.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
           width: 1
         ),
       ),

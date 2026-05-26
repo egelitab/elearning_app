@@ -75,13 +75,13 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.black38),
               ),
-              style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18),
               onChanged: (value) => setState(() => _searchQuery = value),
             )
-          : const Text("Inbox", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
+          : Text("Inbox", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 24, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)), 
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: Theme.of(context).colorScheme.secondary), 
             onPressed: () {
               setState(() {
                 if (_isSearching) {
@@ -119,7 +119,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             _showNewAnnouncementModal();
           }
         },
-        backgroundColor: const Color(0xFF09AEF5),
+        backgroundColor: Theme.of(context).primaryColor,
         elevation: 4,
         child: Icon(
           isChatSelected ? Icons.maps_ugc_rounded : Icons.campaign_rounded, 
@@ -188,7 +188,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                   const SizedBox(height: 25),
                   if (isModalLoading)
                     const Center(child: CircularProgressIndicator())
@@ -329,7 +329,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF09AEF5),
+                          backgroundColor: Theme.of(context).primaryColor,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
                         ),
                         child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -412,7 +412,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       ),
                     Text(
                       selectedBatch == null ? "Select Batch" : selectedBatch!, 
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
                     ),
                   ],
                 ),
@@ -444,7 +444,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                                 final b = batches[i];
                                 return ListTile(
                                   contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.folder_shared_rounded, color: Color(0xFF09AEF5)),
+                                  leading: Icon(Icons.folder_shared_rounded, color: Theme.of(context).primaryColor),
                                   title: Text(b.toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
                                   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                                   onTap: () => setModalState(() => selectedBatch = b.toString()),
@@ -493,7 +493,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       ],
       child: Chip(
         label: Text(current ?? label, style: TextStyle(color: current != null ? Colors.white : Colors.black87, fontSize: 11)),
-        backgroundColor: current != null ? const Color(0xFF09AEF5) : Colors.grey.shade200,
+        backgroundColor: current != null ? Theme.of(context).primaryColor : Colors.grey.shade200,
         deleteIcon: current != null ? const Icon(Icons.close, size: 14, color: Colors.white) : null,
         onDeleted: current != null ? () => onSelected(null) : null,
       ),
@@ -526,7 +526,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                   child: Text(
                     "Announcements",
                     style: TextStyle(
-                      color: !isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      color: !isChatSelected ? Theme.of(context).colorScheme.secondary : Colors.black54,
                       fontWeight: !isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
@@ -549,7 +549,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                   child: Text(
                     "Chats",
                     style: TextStyle(
-                      color: isChatSelected ? const Color(0xFF05398F) : Colors.black54,
+                      color: isChatSelected ? Theme.of(context).colorScheme.secondary : Colors.black54,
                       fontWeight: isChatSelected ? FontWeight.bold : FontWeight.w600,
                     ),
                   ),
@@ -749,7 +749,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     if (t.contains('exam')) return Colors.orange;
     if (t.contains('grade')) return Colors.green;
     if (t.contains('speaker')) return Colors.blue;
-    return const Color(0xFF09AEF5);
+    return Theme.of(context).primaryColor;
   }
 
   Widget _buildAnnouncementTile(String title, String description, String time, IconData icon, Color iconColor, {String? courseCode, String? courseTitle, String? section, List<dynamic>? attachments}) {
@@ -842,17 +842,17 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                           margin: const EdgeInsets.only(right: 8),
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF09AEF5).withOpacity(0.05),
+                            color: Theme.of(context).primaryColor.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFF09AEF5).withOpacity(0.1)),
+                            border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.description_rounded, size: 14, color: Color(0xFF09AEF5)),
+                              Icon(Icons.description_rounded, size: 14, color: Theme.of(context).primaryColor),
                               const SizedBox(width: 6),
                               Text(
                                 file['name'] ?? 'File', 
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF05398F))
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.secondary)
                               ),
                             ],
                           ),

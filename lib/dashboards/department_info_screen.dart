@@ -11,10 +11,10 @@ class DepartmentInfoScreen extends StatelessWidget {
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: const Color(0xFF05398F)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Department Information", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("Department Information", style: TextStyle(color: const Color(0xFF05398F), fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -29,13 +29,13 @@ class DepartmentInfoScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 40,
                     backgroundColor: Color(0xFFE3F2FD),
-                    child: Icon(Icons.business_rounded, size: 45, color: Color(0xFF09AEF5)),
+                    child: Icon(Icons.business_rounded, size: 45, color: const Color(0xFF09AEF5)),
                   ),
                   const SizedBox(height: 16),
-                  const Text("Faculty of Computing", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                  Text("Faculty of Computing", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF05398F))),
                   const Text("Department of Computer Science", style: TextStyle(fontSize: 16, color: Colors.black54)),
                   const Divider(height: 40),
                   _buildDetailRow(Icons.location_on_rounded, "Office Location", "Block 4, 3rd Floor"),
@@ -108,7 +108,7 @@ class DepartmentInfoScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 14)),
                 const SizedBox(height: 8),
-                Text(foot, style: const TextStyle(color: Color(0xFF05398F), fontSize: 12, fontWeight: FontWeight.w500)),
+                Text(foot, style: TextStyle(color: const Color(0xFF05398F), fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),
           )

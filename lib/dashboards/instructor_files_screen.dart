@@ -123,15 +123,15 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   pinned: true,
                   title: Text(
                     (widget.showToggle == false && widget.startInDownloads == true) ? "Downloads" : "My Files", 
-                    style: const TextStyle(
-                      color: Color(0xFF05398F), 
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary, 
                       fontSize: 22, 
                       fontWeight: FontWeight.bold
                     )
                   ),
                   actions: [
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
+                      icon: Icon(Icons.more_vert_rounded, color: Theme.of(context).colorScheme.secondary),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       onSelected: (val) async {
                         if (val == 'recycle') {
@@ -196,7 +196,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           decoration: InputDecoration(
             hintText: "Search your files...",
             hintStyle: const TextStyle(color: Colors.black38),
-            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)),
+            prefixIcon: Icon(Icons.search_rounded, color: Theme.of(context).colorScheme.secondary),
             filled: true,
             fillColor: Colors.transparent,
             border: OutlineInputBorder(
@@ -242,7 +242,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF05398F) : Colors.black54,
+                color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.black54,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
             ),
@@ -303,8 +303,8 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                         )
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF05398F)),
+                    child: Center(
+                      child: Icon(Icons.arrow_forward_ios_rounded, color: Theme.of(context).colorScheme.secondary),
                     ),
                   ),
                 ),
@@ -392,9 +392,9 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFF09AEF5), Color(0xFF05398F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary], begin: Alignment.topLeft, end: Alignment.bottomRight),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: const Color(0xFF05398F).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+          boxShadow: [BoxShadow(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,7 +447,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF09AEF5) : Colors.white,
+                color: isSelected ? Theme.of(context).primaryColor : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
               ),
@@ -517,7 +517,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     String ext = name.split('.').last.toLowerCase();
     if (ext == 'pdf') return Colors.red;
     if (ext == 'mp4') return Colors.orange;
-    return const Color(0xFF05398F);
+    return Theme.of(context).colorScheme.secondary;
   }
 
   Future<void> _openRemoteFile(dynamic fileItem) async {

@@ -168,7 +168,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       
       appBar: _isSelectionMode
         ? AppBar(
-            backgroundColor: const Color(0xFF05398F),
+            backgroundColor: Theme.of(context).colorScheme.secondary,
             leading: IconButton(
               icon: const Icon(Icons.close, color: Colors.white),
               onPressed: () => setState(() {
@@ -208,17 +208,17 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             ],
           )
         : AppBar(
-            title: const Text("Recycle Bin", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+            title: Text("Recycle Bin", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
             
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+              icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.secondary),
               onPressed: () => Navigator.pop(context, true),
             ),
             actions: [
               if (_items.isNotEmpty)
                 IconButton(
-                  icon: const Icon(Icons.checklist_rounded, color: Color(0xFF05398F)),
+                  icon: Icon(Icons.checklist_rounded, color: Theme.of(context).colorScheme.secondary),
                   onPressed: () => setState(() => _isSelectionMode = true),
                 ),
             ],
@@ -268,7 +268,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
     final bool isFolder = item['type'] == 'folder';
     final String name = item['name'] ?? 'Unnamed';
     final String date = DateFormat('MMM d, h:mm a').format(DateTime.parse(item['deleted_at']).toLocal());
-    final Color itemColor = isFolder ? const Color(0xFF09AEF5) : _getColorForFile(name);
+    final Color itemColor = isFolder ? Theme.of(context).primaryColor : _getColorForFile(name);
     final String key = "${item['type']}_${item['id']}";
     final bool isSelected = _selectedItemKeys.contains(key);
 
@@ -337,7 +337,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             if (!_isSelectionMode) ...[
               IconButton(
                 onPressed: () => _restoreItem(item['id'].toString(), item['type']),
-                icon: const Icon(Icons.restore_rounded, color: Color(0xFF05398F)),
+                icon: Icon(Icons.restore_rounded, color: Theme.of(context).colorScheme.secondary),
                 tooltip: "Restore",
               ),
               IconButton(
@@ -376,7 +376,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
       case 'mp4': return const Color(0xFFFF9800);
       case 'jpg':
       case 'png': return const Color(0xFF4CAF50);
-      default: return const Color(0xFF05398F);
+      default: return Theme.of(context).colorScheme.secondary;
     }
   }
 }

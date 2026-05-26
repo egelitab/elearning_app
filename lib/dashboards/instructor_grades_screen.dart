@@ -64,12 +64,12 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Grades", 
-          style: TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+          style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 22, fontWeight: FontWeight.bold)
         ),
       ),
       body: Column(
@@ -103,14 +103,14 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF09AEF5).withOpacity(0.1) : Colors.transparent,
+                          color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
                           child: Text(
                             tab,
                             style: TextStyle(
-                              color: isSelected ? const Color(0xFF05398F) : Colors.black54,
+                              color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.black54,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
@@ -254,7 +254,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: !isFinished ? const Color(0xFF09AEF5) : const Color(0xFFF4F7FC),
+                backgroundColor: !isFinished ? Theme.of(context).primaryColor : const Color(0xFFF4F7FC),
                 elevation: !isFinished ? 2 : 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -262,7 +262,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
               child: Text(
                 !isFinished ? "Grade Submissions" : "Review Grades", 
                 style: TextStyle(
-                  color: !isFinished ? Colors.white : const Color(0xFF05398F), 
+                  color: !isFinished ? Colors.white : Theme.of(context).colorScheme.secondary, 
                   fontWeight: FontWeight.bold,
                   fontSize: 15
                 )

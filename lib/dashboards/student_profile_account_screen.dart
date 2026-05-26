@@ -78,10 +78,10 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
     return Scaffold(
       
       appBar: AppBar(
-        title: const Text('Account Details', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text('Account Details', style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
         
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF05398F)),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.secondary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -102,7 +102,7 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
             ElevatedButton(
               onPressed: _saveData,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09AEF5),
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 55),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -143,7 +143,7 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
         TextField(
           controller: controller,
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, color: const Color(0xFF09AEF5)),
+            prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),

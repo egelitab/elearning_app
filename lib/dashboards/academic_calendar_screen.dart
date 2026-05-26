@@ -43,10 +43,10 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Academic Calendar", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("Academic Calendar", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -168,7 +168,7 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF05398F))),
+                      Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Theme.of(context).colorScheme.secondary)),
                       const SizedBox(height: 5),
                       Row(
                         children: [

@@ -127,10 +127,10 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Schedule & Office Hours", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("Schedule & Office Hours", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -174,7 +174,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                       icon: const Icon(Icons.edit_calendar_rounded),
                       label: const Text("Request Schedule Change"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF05398F),
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -234,7 +234,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                 Text(course, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 4),
                 Text("$day | $time", style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                Text(location, style: const TextStyle(color: Color(0xFF09AEF5), fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(location, style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 13, fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -290,14 +290,14 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.access_time_filled_rounded, color: Color(0xFF05398F), size: 40),
+          Icon(Icons.access_time_filled_rounded, color: Theme.of(context).colorScheme.secondary, size: 40),
           const SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(days, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               Text(time, style: const TextStyle(color: Colors.black54, fontSize: 14)),
-              Text(location, style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.w600, fontSize: 14)),
+              Text(location, style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.w600, fontSize: 14)),
             ],
           ),
         ],

@@ -65,9 +65,9 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
       appBar: AppBar(
         title: const Text('Course Materials', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+              colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -115,7 +115,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
             icon: const Icon(Icons.refresh),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF05398F),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
             ),
@@ -137,7 +137,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                 width: 4,
                 height: 18,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF05398F),
+                  color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(2)
                 ),
               ),
@@ -145,7 +145,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
               Expanded(
                 child: Text(
                   courseTitle, 
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF05398F)),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -153,12 +153,12 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF05398F).withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10)
                 ),
                 child: Text(
                   '${materials.length}', 
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
                 ),
               ),
             ],

@@ -112,9 +112,9 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           ],
         ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+              colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -192,12 +192,12 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: isOpened
               ? Border.all(color: Colors.grey.shade200, width: 1)
-              : Border.all(color: const Color(0xFF09AEF5).withOpacity(0.3), width: 1.2),
+              : Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1.2),
           boxShadow: [
             BoxShadow(
               color: isOpened
                   ? Colors.black.withOpacity(0.02)
-                  : const Color(0xFF09AEF5).withOpacity(0.10),
+                  : Theme.of(context).primaryColor.withOpacity(0.10),
               blurRadius: isOpened ? 4 : 10,
               offset: const Offset(0, 3),
             )
@@ -212,7 +212,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   width: 5,
-                  color: isOpened ? Colors.grey.shade300 : const Color(0xFF09AEF5),
+                  color: isOpened ? Colors.grey.shade300 : Theme.of(context).primaryColor,
                 ),
                 Expanded(
                   child: Padding(
@@ -229,8 +229,8 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                                 child: Container(
                                   width: 8,
                                   height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF09AEF5),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -315,9 +315,9 @@ class SystemNotificationDetailScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+              colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -335,15 +335,15 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+                gradient: LinearGradient(
+                  colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF05398F).withOpacity(0.25),
+                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

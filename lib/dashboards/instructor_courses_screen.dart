@@ -56,7 +56,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         
         elevation: 0,
         centerTitle: false,
-        title: const Text("My Courses", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
+        title: Text("My Courses", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 24, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -113,8 +113,8 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
         _buildCategoryTile(
           "Materials", 
           Icons.layers_rounded, 
-          const Color(0xFF09AEF5), 
-          const Color(0xFF05398F),
+          Theme.of(context).primaryColor, 
+          Theme.of(context).colorScheme.secondary,
           () {
             Navigator.push(
               context,
@@ -267,7 +267,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                     
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF05398F), size: 14),
+                  child: Icon(Icons.arrow_forward_ios_rounded, color: Theme.of(context).colorScheme.secondary, size: 14),
                 ),
               ],
             ),

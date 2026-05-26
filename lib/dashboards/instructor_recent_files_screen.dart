@@ -16,16 +16,16 @@ class InstructorRecentFilesScreen extends StatelessWidget {
       appBar: AppBar(
         
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Recent Files",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: Theme.of(context).colorScheme.secondary,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context),
         ),
       ),

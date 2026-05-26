@@ -153,7 +153,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Rename Material", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("Rename Material", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
         content: TextField(
           controller: _controller,
           autofocus: true,
@@ -185,7 +185,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString().replaceAll('Exception: Server Error: ', '')), backgroundColor: Colors.red));
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
             child: const Text("Save", style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -198,7 +198,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text("Remove Material", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("Remove Material", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
         content: const Text("Are you sure you want to permanently delete this material? This action cannot be undone."),
         actions: [
           TextButton(
@@ -351,7 +351,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                    Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                     const SizedBox(height: 8),
                     Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
                     const SizedBox(height: 20),
@@ -484,7 +484,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                             }
                          },
                          style: ElevatedButton.styleFrom(
-                           backgroundColor: const Color(0xFF09AEF5),
+                           backgroundColor: Theme.of(context).primaryColor,
                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                          ),
                          child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
@@ -569,7 +569,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
           color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF09AEF5) : Colors.transparent,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
             width: 1.5,
           ),
           boxShadow: [
@@ -601,7 +601,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold, 
                       fontSize: 15, 
-                      color: isSelected ? const Color(0xFF05398F) : Colors.black87
+                      color: isSelected ? Theme.of(context).colorScheme.secondary : Colors.black87
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -620,7 +620,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
               ),
             ),
             if (isSelected)
-              const Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5))
+              Icon(Icons.check_circle_rounded, color: Theme.of(context).primaryColor)
             else if (_selectedMaterials.isNotEmpty)
               const Icon(Icons.circle_outlined, color: Colors.black26)
             else
@@ -670,11 +670,11 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         elevation: 0,
         leading: isSelectionMode 
           ? IconButton(
-              icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
+              icon: Icon(Icons.close_rounded, color: Theme.of(context).colorScheme.secondary),
               onPressed: _clearSelection,
             )
           : IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
               onPressed: () => Navigator.pop(context),
             ),
         title: _isSearching && !isSelectionMode
@@ -686,7 +686,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   border: InputBorder.none,
                   hintStyle: TextStyle(color: Colors.black38),
                 ),
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18),
                 onChanged: (val) {
                   setState(() {
                     _searchQuery = val.toLowerCase();
@@ -695,12 +695,12 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
               )
             : Text(
                 isSelectionMode ? "${_selectedMaterials.length} Selected" : "My Materials", 
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 22, fontWeight: FontWeight.bold)
               ),
         actions: [
           if (!isSelectionMode)
             IconButton(
-              icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)),
+              icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: Theme.of(context).colorScheme.secondary),
               onPressed: () {
                 setState(() {
                   if (_isSearching) {
@@ -756,7 +756,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                 FloatingActionButton.extended(
                   heroTag: "upload_btn",
                   onPressed: _handleDirectUpload,
-                  backgroundColor: const Color(0xFF09AEF5),
+                  backgroundColor: Theme.of(context).primaryColor,
                   elevation: 4,
                   icon: const Icon(Icons.cloud_upload_rounded, color: Colors.white),
                   label: const Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -771,7 +771,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     });
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the materials you wish to share.")));
                   },
-                  backgroundColor: const Color(0xFF09AEF5),
+                  backgroundColor: Theme.of(context).primaryColor,
                   elevation: 4,
                   icon: const Icon(Icons.share_rounded, color: Colors.white),
                   label: const Text("Share", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -804,7 +804,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     icon: const Icon(Icons.share_rounded, color: Colors.white, size: 24),
                     label: const Text("Share", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF09AEF5),
+                      backgroundColor: Theme.of(context).primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),

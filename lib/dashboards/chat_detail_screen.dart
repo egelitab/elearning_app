@@ -107,21 +107,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         
         elevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: const Color(0xFF09AEF5).withOpacity(0.1),
-              child: Text(widget.name[0], style: const TextStyle(color: Color(0xFF09AEF5), fontSize: 14, fontWeight: FontWeight.bold)),
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: Text(widget.name[0], style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 14, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 widget.name, 
-                style: const TextStyle(color: Color(0xFF05398F), fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18, fontWeight: FontWeight.bold),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -180,7 +180,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isMe ? const Color(0xFF09AEF5) : Colors.white,
+              color: isMe ? Theme.of(context).primaryColor : Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
                 topRight: const Radius.circular(16),
@@ -243,7 +243,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               onTap: _sendMessage,
               child: Container(
                 padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(color: Color(0xFF09AEF5), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Theme.of(context).primaryColor, shape: BoxShape.circle),
                 child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),

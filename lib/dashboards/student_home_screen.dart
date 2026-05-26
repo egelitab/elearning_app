@@ -285,12 +285,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Grid Menu
-                        Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
+                        Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
                         const SizedBox(height: 15),
                         _buildMenuGrid(),
                         
                         const SizedBox(height: 30),
-                        Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
+                        Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
                         const SizedBox(height: 15),
                         if (_isScheduleLoading)
                           const Center(
@@ -305,7 +305,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                           ..._todaySchedule.map((s) => _buildScheduleTask(s['course'], s['time'], s['color'])),
 
                         const SizedBox(height: 30),
-                        Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : const Color(0xFF05398F))),
+                        Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
                         const SizedBox(height: 15),
                         if (_isTasksLoading)
                           const Center(
@@ -347,9 +347,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 35),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+          colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -403,10 +403,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                      color: Colors.white24,
                      shape: BoxShape.circle,
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     
                     radius: 22,
-                    child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+                    child: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.secondary, size: 24),
                   ),
                 ),
                 if (_systemUnread > 0)
@@ -503,7 +503,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                     builder: (context) => CourseDetailsScreen(
                       course: targetCourse,
                       allCourses: _courses,
-                      themeColor: const Color(0xFF05398F),
+                      themeColor: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 );
@@ -900,7 +900,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(task['title'], 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
               ),
               const SizedBox(height: 8),
               Text(task['course_title'] ?? "General", 

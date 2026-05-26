@@ -67,10 +67,10 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
     return Scaffold(
       
       appBar: AppBar(
-        title: const Text('Ask a Question', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text('Ask a Question', style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
         
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF05398F)),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.secondary),
       ),
       body: Column(
         children: [
@@ -99,7 +99,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF09AEF5) : Colors.white,
+          color: isMe ? Theme.of(context).primaryColor : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
@@ -160,7 +160,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _isSending ? Colors.grey : const Color(0xFF09AEF5),
+                  color: _isSending ? Colors.grey : Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
                 child: _isSending

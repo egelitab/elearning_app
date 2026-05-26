@@ -86,7 +86,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
       builder: (context, isDark, _) => Scaffold(
       backgroundColor: AppColors.scaffold,
       appBar: AppBar(
-        backgroundColor: isSelectionMode ? const Color(0xFF05398F) : AppColors.appBar,
+        backgroundColor: isSelectionMode ? Theme.of(context).colorScheme.secondary : AppColors.appBar,
         elevation: 0,
         automaticallyImplyLeading: false,
         leading: isSelectionMode 
@@ -130,7 +130,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
             )
           else if (_isSearching)
             IconButton(
-              icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
+              icon: Icon(Icons.close_rounded, color: Theme.of(context).colorScheme.secondary),
               onPressed: () => setState(() {
                 _searchQuery = '';
                 _searchController.clear();
@@ -168,7 +168,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                       margin: const EdgeInsets.only(right: 12),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(0xFF09AEF5) : AppColors.card,
+                        color: isSelected ? Theme.of(context).primaryColor : AppColors.card,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
@@ -300,9 +300,9 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF09AEF5).withOpacity(0.1) : Colors.transparent,
+        color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(16),
-        border: isSelected ? Border.all(color: const Color(0xFF09AEF5), width: 1.5) : null,
+        border: isSelected ? Border.all(color: Theme.of(context).primaryColor, width: 1.5) : null,
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -344,7 +344,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF09AEF5) : iconColor.withOpacity(0.1),
+                      color: isSelected ? Theme.of(context).primaryColor : iconColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -377,7 +377,7 @@ class _StudentDownloadsScreenState extends State<StudentDownloadsScreen> {
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24),
+                Icon(Icons.check_circle_rounded, color: Theme.of(context).primaryColor, size: 24),
             ],
           ),
         ),

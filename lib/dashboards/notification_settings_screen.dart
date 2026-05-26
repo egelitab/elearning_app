@@ -185,7 +185,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         title: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryText)),
         subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.secondaryText)),
         value: value,
-        activeColor: const Color(0xFF09AEF5),
+        activeColor: Theme.of(context).primaryColor,
         onChanged: onChanged,
       ),
     );

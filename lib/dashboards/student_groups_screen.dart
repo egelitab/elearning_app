@@ -44,9 +44,9 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
       appBar: AppBar(
         title: const Text("My Groups", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+              colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -108,22 +108,22 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF05398F).withOpacity(0.03),
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.03),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), shape: BoxShape.circle),
-                  child: const Icon(Icons.groups_rounded, color: Color(0xFF09AEF5), size: 28),
+                  decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                  child: Icon(Icons.groups_rounded, color: Theme.of(context).primaryColor, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(groupName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF05398F))),
+                      Text(groupName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.secondary)),
                       const SizedBox(height: 2),
                       Text("$courseTitle | $batchName", style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
@@ -158,9 +158,9 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: const Color(0xFF05398F).withOpacity(0.1),
+            backgroundColor: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
             child: Text(name.isNotEmpty ? name[0].toUpperCase() : "?", 
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
             ),
           ),
           const SizedBox(width: 12),

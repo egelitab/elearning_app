@@ -136,12 +136,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Edit Announcement",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF05398F),
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                   const SizedBox(height: 25),
@@ -301,7 +301,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09AEF5),
+                        backgroundColor: Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -352,22 +352,22 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context, _hasChanged),
         ),
-        title: const Text(
+        title: Text(
           "Announcement Details",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: Theme.of(context).colorScheme.secondary,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: widget.canEdit
             ? [
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.edit_outlined,
-                    color: Color(0xFF05398F),
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   onPressed: _showEditModal,
                   tooltip: "Edit",
@@ -409,15 +409,15 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF09AEF5).withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       section != null
                           ? "$courseCode • Section $section"
                           : courseCode,
-                      style: const TextStyle(
-                        color: Color(0xFF05398F),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -426,10 +426,10 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   const SizedBox(height: 16),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF05398F),
+                      color: Theme.of(context).colorScheme.secondary,
                       height: 1.2,
                     ),
                   ),
@@ -443,7 +443,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFF05398F),
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
                         radius: 20,
                         child: Text(
                           (instructor ?? 'A').substring(0, 1).toUpperCase(),
@@ -499,18 +499,18 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     const SizedBox(height: 48),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.attach_file_rounded,
-                          color: Color(0xFF05398F),
+                          color: Theme.of(context).colorScheme.secondary,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           "Attachments (${attachments.length})",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF05398F),
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ],
@@ -550,21 +550,21 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: const Color(0xFF09AEF5).withOpacity(0.1)),
+        border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF09AEF5).withOpacity(0.05),
+            color: Theme.of(context).primaryColor.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: FutureBuilder<bool>(
             future: path.isNotEmpty ? _apiService.isFileDownloaded(path) : Future.value(false),
             builder: (context, snapshot) {
               IconData currentIcon = _getIconForType(type);
-              Color currentColor = const Color(0xFF09AEF5);
+              Color currentColor = Theme.of(context).primaryColor;
               if (snapshot.connectionState == ConnectionState.done && snapshot.data == false) {
                 currentIcon = Icons.download_rounded;
                 currentColor = Colors.grey;
@@ -596,13 +596,13 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         ),
         trailing: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF05398F).withOpacity(0.05),
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
           ),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.download_rounded,
-              color: Color(0xFF05398F),
+              color: Theme.of(context).colorScheme.secondary,
               size: 20,
             ),
             onPressed: () => _launchURL(context, fileUrl, name),

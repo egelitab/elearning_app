@@ -147,7 +147,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF09AEF5).withOpacity(0.3),
+                          color: Theme.of(context).primaryColor.withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         )
@@ -161,7 +161,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         backgroundColor: const Color(0xFFE3F2FD), // Profile placeholder
                         backgroundImage: _profileImagePath != null ? FileImage(File(_profileImagePath!)) : null,
                         child: _profileImagePath == null
-                            ? const Icon(Icons.person_rounded, size: 70, color: Color(0xFF09AEF5))
+                            ? Icon(Icons.person_rounded, size: 70, color: Theme.of(context).primaryColor)
                             : null,
                       ),
                     ),
@@ -196,8 +196,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+                            gradient: LinearGradient(
+                              colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
@@ -250,12 +250,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF09AEF5).withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   _email,
-                  style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 13)
+                  style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 13)
                 ),
               ),
               const SizedBox(height: 4),

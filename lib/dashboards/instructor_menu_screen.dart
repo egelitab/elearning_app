@@ -36,10 +36,10 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
+          icon: Icon(Icons.arrow_back_ios_rounded, color: Theme.of(context).colorScheme.secondary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("All Services", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("All Services", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(25),
@@ -98,7 +98,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
             ),
             
             const SizedBox(height: 40),
-            const Text("Account & Support", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+            Text("Account & Support", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
             const SizedBox(height: 20),
             _buildListAction(Icons.help_outline_rounded, "Help & Support", "Get assistance and tutorials", () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
@@ -159,7 +159,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(12)),
-          child: Icon(icon, color: const Color(0xFF09AEF5)),
+          child: Icon(icon, color: Theme.of(context).primaryColor),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         subtitle: Text(sub, style: const TextStyle(fontSize: 12, color: Colors.black54)),

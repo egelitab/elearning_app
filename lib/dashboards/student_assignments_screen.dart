@@ -80,15 +80,15 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
         
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("My Assignments", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text("My Assignments", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF09AEF5),
+          labelColor: Theme.of(context).primaryColor,
           unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF09AEF5),
+          indicatorColor: Theme.of(context).primaryColor,
           indicatorWeight: 3,
           tabs: [
             Tab(text: "Tasks (${pending.length})"),
@@ -353,7 +353,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(task['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+              Text(task['title'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
               const SizedBox(height: 20),
               ListTile(
                 leading: Icon(isSubmitted ? Icons.update_rounded : Icons.upload_file_rounded, color: Colors.blue),

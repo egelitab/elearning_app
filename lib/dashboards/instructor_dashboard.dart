@@ -122,7 +122,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             type: BottomNavigationBarType.fixed,
             
             currentIndex: _index,
-            selectedItemColor: const Color(0xFF09AEF5),
+            selectedItemColor: Theme.of(context).primaryColor,
             unselectedItemColor: Colors.grey.shade400,
             selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),

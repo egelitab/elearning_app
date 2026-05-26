@@ -117,8 +117,8 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
         onTap: onTap,
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-          child: Icon(icon, color: const Color(0xFF09AEF5)),
+          decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: Theme.of(context).primaryColor),
         ),
         title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryText)),
         subtitle: Text(sub, style: TextStyle(fontSize: 13, color: AppColors.secondaryText)),

@@ -140,7 +140,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         elevation: 0,
         leading: _selectedIds.isNotEmpty
         ? IconButton(
-            icon: const Icon(Icons.close_rounded, color: Color(0xFF05398F)),
+            icon: Icon(Icons.close_rounded, color: Theme.of(context).colorScheme.secondary),
             onPressed: () => setState(() => _selectedIds.clear()),
           )
         : IconButton(
@@ -586,7 +586,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Share to ${chapter['title']}", 
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
                   const SizedBox(height: 10),
                   const Text("Select materials from your storage to assign to this chapter.", 
                     style: TextStyle(color: Colors.black54)),

@@ -60,11 +60,11 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
               const SizedBox(height: 15),
               _buildPreferenceCard(
                 child: SwitchListTile(
-                  secondary: Icon(Icons.dark_mode_rounded, color: isDark ? const Color(0xFF09AEF5) : Colors.indigo.shade700),
+                  secondary: Icon(Icons.dark_mode_rounded, color: isDark ? Theme.of(context).primaryColor : Colors.indigo.shade700),
                   title: Text("Dark Theme", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryText)),
                   subtitle: Text("Enable dark interface", style: TextStyle(color: AppColors.secondaryText)),
                   value: _darkMode,
-                  activeColor: const Color(0xFF09AEF5),
+                  activeColor: Theme.of(context).primaryColor,
                   onChanged: (val) {
                     setState(() => _darkMode = val);
                     _savePreference('pref_dark_mode', val);

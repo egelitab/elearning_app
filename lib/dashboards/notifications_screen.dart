@@ -76,7 +76,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       
       appBar: AppBar(
         title: const Text("Notifications", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: const Color(0xFF05398F),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
@@ -187,15 +187,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF05398F).withOpacity(0.25),
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.25),
               blurRadius: 10,
               offset: const Offset(0, 4),
             )
