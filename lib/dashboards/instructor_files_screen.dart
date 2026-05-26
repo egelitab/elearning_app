@@ -102,7 +102,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
         : _error != null
@@ -118,7 +118,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           : CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  backgroundColor: const Color(0xFFF4F7FC),
+                  
                   elevation: 0,
                   pinned: true,
                   title: Text(

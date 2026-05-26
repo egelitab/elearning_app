@@ -43,7 +43,7 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("My Grades", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

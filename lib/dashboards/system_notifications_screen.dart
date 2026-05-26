@@ -95,7 +95,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,7 +308,7 @@ class SystemNotificationDetailScreen extends StatelessWidget {
         DateFormat('MMMM d, yyyy  •  h:mm a').format(date.toLocal());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text(
           "System Notification",

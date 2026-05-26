@@ -41,7 +41,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("System Broadcasts", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xFF05398F),

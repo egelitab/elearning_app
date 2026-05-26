@@ -249,7 +249,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Professional light grayish blue background
+       // Professional light grayish blue background
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -585,7 +585,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                      shape: BoxShape.circle,
                   ),
                   child: const CircleAvatar(
-                    backgroundColor: Colors.white,
+                    
                     radius: 22,
                     child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
                   ),

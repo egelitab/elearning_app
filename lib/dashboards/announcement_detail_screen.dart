@@ -347,7 +347,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         _currentAnnouncement['attachment_details'] as List<dynamic>? ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

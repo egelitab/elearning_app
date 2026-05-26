@@ -61,9 +61,9 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Match background color to theme
+       // Match background color to theme
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         centerTitle: false,
         title: _isSearching 

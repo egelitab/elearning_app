@@ -61,7 +61,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text('Course Materials', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

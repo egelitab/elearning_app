@@ -115,11 +115,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      
       appBar: AppBar(
         title: const Text("Reset Password", style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
-        backgroundColor: Colors.white,
+        
         foregroundColor: Colors.black,
       ),
       body: Padding(

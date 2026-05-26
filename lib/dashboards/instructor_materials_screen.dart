@@ -664,7 +664,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
     bool isSelectionMode = _selectedMaterials.isNotEmpty || _isSelecting;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         backgroundColor: isSelectionMode ? const Color(0xFFE3F2FD) : const Color(0xFFF4F7FC),
         elevation: 0,

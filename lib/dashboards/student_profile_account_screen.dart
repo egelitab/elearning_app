@@ -71,15 +71,15 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
   Widget build(BuildContext context) {
     if (!_isDataLoaded) {
       return const Scaffold(
-        backgroundColor: Color(0xFFF4F7FC),
+        
         body: Center(child: CircularProgressIndicator()),
       );
     }
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text('Account Details', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF05398F)),
       ),

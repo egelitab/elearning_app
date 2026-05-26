@@ -33,7 +33,7 @@ class _InstructorAnalyticsScreenState extends State<InstructorAnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("Analytics", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -208,7 +208,7 @@ class _CourseAnalyticsScreenState extends State<_CourseAnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

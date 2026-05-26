@@ -75,9 +75,9 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),

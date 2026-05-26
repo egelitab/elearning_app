@@ -102,9 +102,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        
         elevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
@@ -225,7 +225,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F7FC),
+                  
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: TextField(

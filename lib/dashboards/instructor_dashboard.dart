@@ -120,7 +120,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
           child: BottomNavigationBar(
             elevation: 0,
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
+            
             currentIndex: _index,
             selectedItemColor: const Color(0xFF09AEF5),
             unselectedItemColor: Colors.grey.shade400,

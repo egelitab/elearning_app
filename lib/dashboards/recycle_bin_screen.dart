@@ -165,7 +165,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
     final categorized = _categorizeItems();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: _isSelectionMode
         ? AppBar(
             backgroundColor: const Color(0xFF05398F),
@@ -209,7 +209,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
           )
         : AppBar(
             title: const Text("Recycle Bin", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-            backgroundColor: Colors.white,
+            
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),

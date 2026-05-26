@@ -83,10 +83,10 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
     final isPdf = ext == 'pdf';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Use a light grey theme consistent with the app
+       // Use a light grey theme consistent with the app
       appBar: AppBar(
         title: Text(widget.fileName, style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),

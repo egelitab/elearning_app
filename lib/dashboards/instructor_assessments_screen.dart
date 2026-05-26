@@ -192,7 +192,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF4F7FC),
+                          
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -467,7 +467,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F7FC),
+                                  
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -555,7 +555,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 overflow: TextOverflow.ellipsis,
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF4F7FC),
+                                
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -595,7 +595,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 overflow: TextOverflow.ellipsis,
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFF4F7FC),
+                                
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
@@ -742,7 +742,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF4F7FC),
+                        
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButtonHideUnderline(
@@ -856,7 +856,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F7FC),
+                                  
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -995,9 +995,9 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
@@ -1036,7 +1036,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               });
                             },
                             selectedColor: const Color(0xFF09AEF5),
-                            backgroundColor: Colors.white,
+                            
                             labelStyle: TextStyle(
                               color: _selectedCourseIdFilter == null ? Colors.white : Colors.black87,
                               fontWeight: _selectedCourseIdFilter == null ? FontWeight.bold : FontWeight.normal,
@@ -1062,7 +1062,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                 });
                               },
                               selectedColor: cls["color"],
-                              backgroundColor: Colors.white,
+                              
                               labelStyle: TextStyle(
                                 color: isSelected ? Colors.white : Colors.black87,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

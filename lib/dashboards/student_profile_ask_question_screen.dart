@@ -65,10 +65,10 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text('Ask a Question', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF05398F)),
       ),
@@ -140,7 +140,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F7FC),
+                  
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(

@@ -134,9 +134,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: _selectedIds.isNotEmpty
         ? IconButton(
@@ -336,7 +336,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ElevatedButton(
             onPressed: _openGuide,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
+              
               foregroundColor: widget.themeColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               elevation: 0,

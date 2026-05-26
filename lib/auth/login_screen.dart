@@ -95,11 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      
       appBar: AppBar(
         title: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
-        backgroundColor: Colors.white,
+        
         foregroundColor: Colors.black,
       ),
       body: Padding(
@@ -199,11 +199,11 @@ class AdminRoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      
       appBar: AppBar(
         title: const Text("Select Role", style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
-        backgroundColor: Colors.white,
+        
         foregroundColor: Colors.black,
       ),
       body: Center(

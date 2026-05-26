@@ -404,7 +404,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                      shape: BoxShape.circle,
                   ),
                   child: const CircleAvatar(
-                    backgroundColor: Colors.white,
+                    
                     radius: 22,
                     child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
                   ),

@@ -51,9 +51,9 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Match home screen background
+       // Match home screen background
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         centerTitle: false,
         title: const Text("My Courses", style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)),
@@ -264,7 +264,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4F7FC),
+                    
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF05398F), size: 14),

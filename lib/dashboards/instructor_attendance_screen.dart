@@ -31,7 +31,7 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("Attendance", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -165,7 +165,7 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -364,7 +364,7 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.sessionTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

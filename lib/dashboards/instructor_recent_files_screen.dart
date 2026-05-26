@@ -12,9 +12,9 @@ class InstructorRecentFilesScreen extends StatelessWidget {
     Map<String, List<dynamic>> groupedFiles = _groupFilesByTime(recentFiles);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         title: const Text(
           "Recent Files",

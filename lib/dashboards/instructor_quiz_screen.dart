@@ -32,7 +32,7 @@ class _InstructorQuizScreenState extends State<InstructorQuizScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("Quiz Manager", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -121,7 +121,7 @@ class _CourseQuizManageScreenState extends State<_CourseQuizManageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -339,7 +339,7 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
     final isPublished = _quiz?['is_published'] == true;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.quizTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

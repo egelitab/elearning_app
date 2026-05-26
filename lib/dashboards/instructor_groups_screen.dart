@@ -238,7 +238,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF4F7FC),
+                        
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButtonHideUnderline(
@@ -289,7 +289,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF4F7FC),
+                          
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -321,7 +321,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF4F7FC),
+                          
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: DropdownButtonHideUnderline(
@@ -435,7 +435,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF4F7FC),
+                                  
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: DropdownButtonHideUnderline(
@@ -592,9 +592,9 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
@@ -778,9 +778,9 @@ class GroupDetailScreen extends StatelessWidget {
     final method = (groups.isNotEmpty && groups[0]["method"] != null) ? groups[0]["method"] : "N/A";
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),

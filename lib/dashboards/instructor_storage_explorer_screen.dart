@@ -543,7 +543,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         backgroundColor: _isSelectionMode ? const Color(0xFF05398F) : const Color(0xFFF4F7FC),
         elevation: 0,

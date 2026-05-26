@@ -32,7 +32,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: const Text("Quizzes", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -120,7 +120,7 @@ class _CourseQuizListScreenState extends State<_CourseQuizListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(
@@ -354,7 +354,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
     final options = (q['options'] as List?) ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
         title: Text("${_currentIndex + 1} / ${_questions.length}", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         flexibleSpace: Container(

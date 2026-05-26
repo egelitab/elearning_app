@@ -242,9 +242,9 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
+      
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
+        
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
@@ -371,7 +371,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       });
                     },
                     selectedColor: typeColor.withOpacity(0.15),
-                    backgroundColor: Colors.white,
+                    
                     side: BorderSide(
                       color: isSelected ? typeColor : Colors.black12,
                     ),
@@ -539,7 +539,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F7FC),
+                  
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.black12),
                 ),
