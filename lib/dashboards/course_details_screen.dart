@@ -1060,7 +1060,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               if (goal['target_hours'] != null)
                 Chip(
                   label: Text(
-                    '${goal['progress_hours'] ?? '0'} / ${goal['target_hours']} Hours',
+                    '${((double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 3600).toStringAsFixed(1)} / ${goal['target_hours']} Hours',
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   backgroundColor: widget.themeColor.withOpacity(0.1),
@@ -1080,8 +1080,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           if (goal['target_hours'] != null) ...[
             SizedBox(height: 16),
             _buildProgressBarWithMilestones(
-              (double.tryParse(goal['progress_hours']?.toString() ?? '0') ??
-                      0) /
+              ((double.tryParse(goal['progress_hours']?.toString() ?? '0') ??
+                      0) / 3600) /
                   (double.tryParse(goal['target_hours']?.toString() ?? '1') ??
                       1),
               widget.themeColor,

@@ -167,6 +167,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                   'description': g['description'],
                   'progress_hours': g['progress_hours'],
                   'target_hours': g['target_hours'],
+                  'course_id': g['course_id'],
                 },
               )
               .toList();
@@ -574,14 +575,26 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
       );
     }
 
-    if (_courses.isNotEmpty) {
-      displayTitle = _courses.first['title']?.toString() ?? "Course Hub";
+    final Map<String, dynamic>? targetCourse =
+        _recentCourseData ??
+        (_courses.isNotEmpty
+            ? Map<String, dynamic>.from(_courses.first)
+            : null);
+
+    if (targetCourse != null) {
+      displayTitle = targetCourse['title']?.toString() ?? "Course Hub";
       displaySubtitle =
-          _courses.first['course_code']?.toString() ?? "My Enrolled Course";
+          _recentMaterialTitle.isNotEmpty && _recentCourseData != null
+          ? _recentMaterialTitle
+          : (targetCourse['course_code']?.toString() ?? 'Tap to open course');
 
       final activeGoals = _myGoals
-          .where((g) => g['target_hours'] != null)
+          .where((g) => 
+              g['target_hours'] != null && 
+              g['course_id']?.toString() == targetCourse['id']?.toString()
+          )
           .toList();
+          
       if (activeGoals.isNotEmpty) {
         double totalTarget = 0.0;
         double totalProgress = 0.0;
@@ -595,27 +608,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
           }
           progStr ??= g['progress_hours']?.toString();
 
-          totalProgress += double.tryParse(progStr ?? '0.0') ?? 0.0;
+          totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
         }
         if (totalTarget > 0) progress = totalProgress / totalTarget;
         if (progress > 1.0) progress = 1.0;
       }
-    }
-
-    // Determine which course to show & navigate to
-    // Priority: last opened course → first enrolled course
-    final Map<String, dynamic>? targetCourse =
-        _recentCourseData ??
-        (_courses.isNotEmpty
-            ? Map<String, dynamic>.from(_courses.first)
-            : null);
-
-    if (targetCourse != null) {
-      displayTitle = targetCourse['title']?.toString() ?? displayTitle;
-      displaySubtitle =
-          _recentMaterialTitle.isNotEmpty && _recentCourseData != null
-          ? _recentMaterialTitle
-          : (targetCourse['course_code']?.toString() ?? 'Tap to open course');
     }
 
     return Padding(

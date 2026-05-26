@@ -302,8 +302,14 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
       double totalProgress = 0.0;
       for (var g in courseGoals) {
         totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-        totalProgress +=
-            double.tryParse(g['progress_hours']?.toString() ?? '0.0') ?? 0.0;
+        
+        String? progStr;
+        if (g.containsKey('goal') && g['goal'] != null) {
+          progStr = g['goal']['progress_hours']?.toString();
+        }
+        progStr ??= g['progress_hours']?.toString();
+        
+        totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
       }
       if (totalTarget > 0) progress = totalProgress / totalTarget;
       if (progress > 1.0) progress = 1.0;
