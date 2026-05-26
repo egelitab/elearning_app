@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'student_home_screen.dart';
 import 'student_courses_screen.dart';
 import 'student_inbox_screen.dart';
@@ -54,11 +55,51 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   Future<void> _fetchBadges() async {
     try {
+      // 1. Server-side push notification counts
       final counts = await _apiService.getUnreadNotificationCounts();
+
+      // 2. Local SharedPreferences counts (same keys as StudentInboxScreen)
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString('email') ?? 'default';
+
+      // -- Chats: count group_id entries not yet in opened set
+      final openedChatIds =
+          (prefs.getStringList('student_inbox_opened_chats_$email') ?? [])
+              .toSet();
+      final inbox = await _apiService.getGroupInbox();
+      final localUnreadChats = inbox
+          .where((c) {
+            final id = c['group_id']?.toString() ?? '';
+            return id.isNotEmpty && !openedChatIds.contains(id);
+          })
+          .length;
+
+      // -- Announcements: count announcement ids not yet in opened set
+      final openedAnnIds =
+          (prefs.getStringList(
+                  'student_inbox_opened_announcements_$email') ??
+              [])
+              .toSet();
+      final announcements = await _apiService.getAnnouncements('student');
+      final localUnreadAnn = announcements
+          .where((a) {
+            final id = a['id']?.toString() ?? a['created_at']?.toString() ?? '';
+            return id.isNotEmpty && !openedAnnIds.contains(id);
+          })
+          .length;
+
       if (mounted) {
         setState(() {
-          _chatUnread = counts['chat'] ?? 0;
-          _announcementUnread = counts['announcement'] ?? 0;
+          // Inbox icon  = max of server chat count OR local unread chats
+          _chatUnread =
+              localUnreadChats > (counts['chat'] ?? 0)
+                  ? localUnreadChats
+                  : (counts['chat'] ?? 0);
+          // Home icon   = max of server announcement count OR local unread anns
+          _announcementUnread =
+              localUnreadAnn > (counts['announcement'] ?? 0)
+                  ? localUnreadAnn
+                  : (counts['announcement'] ?? 0);
           _materialUnread = counts['material'] ?? 0;
           // Note: system unread is handled by the bell icon in StudentHomeScreen
         });
@@ -148,6 +189,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 ),
                 onTap: (i) {
                   setState(() => _index = i);
+                  // Only clear the in-memory badge for the current session.
+                  // SharedPreferences is written only when the student
+                  // actually opens an item inside the Inbox screen — or uses
+                  // the "Mark all read" button inside System Notifications.
                   if (i == 0 && _announcementUnread > 0)
                     setState(() => _announcementUnread = 0);
                   if (i == 1 && _materialUnread > 0)
