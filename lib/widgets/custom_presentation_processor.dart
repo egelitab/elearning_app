@@ -20,7 +20,10 @@ import 'package:microsoft_viewer/models/slide.dart';
 class CustomPresentationProcessor {
   static final Map<int, Size> _slideSizes = {};
 
-  void getPresentationDetails(ArchiveFile presentationFile, Presentation presentation) {
+  void getPresentationDetails(
+    ArchiveFile presentationFile,
+    Presentation presentation,
+  ) {
     final fileContent = utf8.decode(presentationFile.content);
     final presentationDoc = xml.XmlDocument.parse(fileContent);
 
@@ -53,7 +56,9 @@ class CustomPresentationProcessor {
     }
     var masterSlidesRoot = presentationDoc.findAllElements("p:sldMasterIdLst");
     if (masterSlidesRoot.isNotEmpty) {
-      var masterSlides = masterSlidesRoot.first.findAllElements("p:sldMasterId");
+      var masterSlides = masterSlidesRoot.first.findAllElements(
+        "p:sldMasterId",
+      );
       if (masterSlides.isNotEmpty) {
         for (var slide in masterSlides) {
           int id = 0;
@@ -125,50 +130,90 @@ class CustomPresentationProcessor {
     }
   }
 
-  void readAllSlides(Presentation presentation, List<Relationship> relationShips, Archive archive, String presentationOutputDirectory) {
+  void readAllSlides(
+    Presentation presentation,
+    List<Relationship> relationShips,
+    Archive archive,
+    String presentationOutputDirectory,
+  ) {
     final Map<String, ArchiveFile> fileMap = {};
-    for (var f in archive) { fileMap[f.name] = f; }
-    
+    for (var f in archive) {
+      fileMap[f.name] = f;
+    }
+
     for (int i = 0; i < presentation.slides.length; i++) {
-      var slideRelation = relationShips.firstWhereOrNull((rel) => rel.id == presentation.slides[i].rId);
+      var slideRelation = relationShips.firstWhereOrNull(
+        (rel) => rel.id == presentation.slides[i].rId,
+      );
       if (slideRelation == null) continue;
 
       String target = slideRelation.target;
       if (!target.startsWith("ppt/")) target = "ppt/$target";
-      var slideFile = fileMap[target] ?? archive.singleWhereOrNull((f) => f.name.endsWith(target.split('/').last));
-      
+      var slideFile =
+          fileMap[target] ??
+          archive.singleWhereOrNull(
+            (f) => f.name.endsWith(target.split('/').last),
+          );
+
       if (slideFile != null && slideFile.isFile) {
         final slideDoc = xml.XmlDocument.parse(utf8.decode(slideFile.content));
         presentation.slides[i].fileName = slideFile.name.split("/").last;
 
         // Parse slide relationships
-        List<Relationship> slideRels = _parseRels("${presentation.slides[i].fileName}.rels", fileMap, archive);
-        
+        List<Relationship> slideRels = _parseRels(
+          "${presentation.slides[i].fileName}.rels",
+          fileMap,
+          archive,
+        );
+
         // Find p:spTree
         var spTree = slideDoc.findAllElements("p:spTree").firstOrNull;
         if (spTree != null) {
-          _processShapesInTree(spTree, presentation.slides[i], slideRels, presentationOutputDirectory);
+          _processShapesInTree(
+            spTree,
+            presentation.slides[i],
+            slideRels,
+            presentationOutputDirectory,
+          );
         }
 
         // Improved Background Logic: Slide -> Layout -> Master
-        _resolveBackground(slideDoc, presentation.slides[i], slideRels, fileMap, presentationOutputDirectory);
+        _resolveBackground(
+          slideDoc,
+          presentation.slides[i],
+          slideRels,
+          fileMap,
+          presentationOutputDirectory,
+        );
       }
     }
   }
 
-  void _processShapesInTree(xml.XmlElement tree, Slide slide, List<Relationship> slideRels, String outputDir) {
+  void _processShapesInTree(
+    xml.XmlElement tree,
+    Slide slide,
+    List<Relationship> slideRels,
+    String outputDir,
+  ) {
     // Process all shapes and pics, accounting for nesting
-    var elements = tree.descendants.whereType<xml.XmlElement>().where((e) => e.name.local == "sp" || e.name.local == "pic");
-    
+    var elements = tree.descendants.whereType<xml.XmlElement>().where(
+      (e) => e.name.local == "sp" || e.name.local == "pic",
+    );
+
     for (var element in elements) {
       _processSingleElement(element, slide, slideRels, outputDir);
     }
   }
 
-  void _processSingleElement(xml.XmlElement element, Slide slide, List<Relationship> slideRels, String outputDir) {
+  void _processSingleElement(
+    xml.XmlElement element,
+    Slide slide,
+    List<Relationship> slideRels,
+    String outputDir,
+  ) {
     // Cumulative Transformation
     double x = 0, y = 0, w = 0, h = 0;
-    
+
     // Get local transform
     var xfrm = element.findAllElements("a:xfrm").firstOrNull;
     if (xfrm != null) {
@@ -185,7 +230,9 @@ class CustomPresentationProcessor {
     }
 
     // Apply recursive group transforms up the tree
-    var ancestors = element.ancestors.whereType<xml.XmlElement>().where((e) => e.name.local == "grpSp");
+    var ancestors = element.ancestors.whereType<xml.XmlElement>().where(
+      (e) => e.name.local == "grpSp",
+    );
     for (var group in ancestors) {
       var gXfrm = group.getElement("p:grpSpPr")?.getElement("a:xfrm");
       if (gXfrm != null) {
@@ -206,7 +253,7 @@ class CustomPresentationProcessor {
 
           double sx = gex / gcex;
           double sy = gey / gcey;
-          
+
           x = gox + (x - gcx) * sx;
           y = goy + (y - gcy) * sy;
           w *= sx;
@@ -224,7 +271,12 @@ class CustomPresentationProcessor {
         for (var para in txt.findAllElements("a:p")) {
           List<PresentationText> texts = [];
           for (var r in para.findAllElements("a:r")) {
-            double fs = (double.tryParse(r.getElement("a:rPr")?.getAttribute("sz") ?? "1800") ?? 1800) / 100;
+            double fs =
+                (double.tryParse(
+                      r.getElement("a:rPr")?.getAttribute("sz") ?? "1800",
+                    ) ??
+                    1800) /
+                100;
             var t = r.getElement("a:t")?.innerText ?? "";
             if (t.isNotEmpty) texts.add(PresentationText(t, fs));
           }
@@ -241,27 +293,42 @@ class CustomPresentationProcessor {
         slide.presentationTextBoxes.add(box);
       } else {
         // Empty shape or stylized shape - give it a generic indicator for now
-        slide.presentationShapes.add(PresentationShape("shape", "", offset, size));
+        slide.presentationShapes.add(
+          PresentationShape("shape", "", offset, size),
+        );
       }
     } else if (element.name.local == "pic") {
-      var embed = element.findAllElements("a:blip").firstOrNull?.getAttribute("r:embed");
+      var embed = element
+          .findAllElements("a:blip")
+          .firstOrNull
+          ?.getAttribute("r:embed");
       if (embed != null) {
         var rel = slideRels.firstWhereOrNull((r) => r.id == embed);
         if (rel != null) {
           String imgName = rel.target.split('/').last;
-          slide.presentationShapes.add(PresentationShape("image", "IMG|$outputDir$imgName", offset, size));
+          slide.presentationShapes.add(
+            PresentationShape("image", "IMG|$outputDir$imgName", offset, size),
+          );
         }
       }
     }
   }
 
-  void _resolveBackground(xml.XmlDocument doc, Slide slide, List<Relationship> rels, Map<String, ArchiveFile> fileMap, String outputDir) {
+  void _resolveBackground(
+    xml.XmlDocument doc,
+    Slide slide,
+    List<Relationship> rels,
+    Map<String, ArchiveFile> fileMap,
+    String outputDir,
+  ) {
     // 1. Direct Background
     var bg = doc.findAllElements("p:bg").firstOrNull;
     if (_applyBackground(bg, slide, rels, outputDir)) return;
 
     // 2. Layout Background
-    var layoutRel = rels.firstWhereOrNull((r) => r.target.contains("slideLayout"));
+    var layoutRel = rels.firstWhereOrNull(
+      (r) => r.target.contains("slideLayout"),
+    );
     if (layoutRel != null) {
       String path = layoutRel.target;
       if (!path.startsWith("ppt/")) path = "ppt/${path.replaceAll("../", "")}";
@@ -269,25 +336,48 @@ class CustomPresentationProcessor {
       if (lFile != null) {
         var lDoc = xml.XmlDocument.parse(utf8.decode(lFile.content));
         var lRels = _parseRels("${path.split('/').last}.rels", fileMap, null);
-        if (_applyBackground(lDoc.findAllElements("p:bg").firstOrNull, slide, lRels, outputDir)) return;
-        
+        if (_applyBackground(
+          lDoc.findAllElements("p:bg").firstOrNull,
+          slide,
+          lRels,
+          outputDir,
+        ))
+          return;
+
         // 3. Master Background
-        var masterRel = lRels.firstWhereOrNull((r) => r.target.contains("slideMaster"));
+        var masterRel = lRels.firstWhereOrNull(
+          (r) => r.target.contains("slideMaster"),
+        );
         if (masterRel != null) {
           String mPath = masterRel.target;
-          if (!mPath.startsWith("ppt/")) mPath = "ppt/${mPath.replaceAll("../", "")}";
+          if (!mPath.startsWith("ppt/"))
+            mPath = "ppt/${mPath.replaceAll("../", "")}";
           var mFile = fileMap[mPath];
           if (mFile != null) {
             var mDoc = xml.XmlDocument.parse(utf8.decode(mFile.content));
-            var mRels = _parseRels("${mPath.split('/').last}.rels", fileMap, null);
-            _applyBackground(mDoc.findAllElements("p:bg").firstOrNull, slide, mRels, outputDir);
+            var mRels = _parseRels(
+              "${mPath.split('/').last}.rels",
+              fileMap,
+              null,
+            );
+            _applyBackground(
+              mDoc.findAllElements("p:bg").firstOrNull,
+              slide,
+              mRels,
+              outputDir,
+            );
           }
         }
       }
     }
   }
 
-  bool _applyBackground(xml.XmlElement? bg, Slide slide, List<Relationship> rels, String outputDir) {
+  bool _applyBackground(
+    xml.XmlElement? bg,
+    Slide slide,
+    List<Relationship> rels,
+    String outputDir,
+  ) {
     if (bg == null) return false;
     var blip = bg.findAllElements("a:blip").firstOrNull;
     var embed = blip?.getAttribute("r:embed");
@@ -301,18 +391,28 @@ class CustomPresentationProcessor {
     return false;
   }
 
-  List<Relationship> _parseRels(String fileName, Map<String, ArchiveFile> fileMap, Archive? archive) {
+  List<Relationship> _parseRels(
+    String fileName,
+    Map<String, ArchiveFile> fileMap,
+    Archive? archive,
+  ) {
     List<Relationship> result = [];
     String path = fileName.endsWith(".rels") ? fileName : "$fileName.rels";
     if (!path.contains("_rels/")) {
-      if (path.contains("slide")) path = "ppt/slides/_rels/$path";
-      else if (path.contains("slideLayout")) path = "ppt/slideLayouts/_rels/$path";
-      else if (path.contains("slideMaster")) path = "ppt/slideMasters/_rels/$path";
+      if (path.contains("slide"))
+        path = "ppt/slides/_rels/$path";
+      else if (path.contains("slideLayout"))
+        path = "ppt/slideLayouts/_rels/$path";
+      else if (path.contains("slideMaster"))
+        path = "ppt/slideMasters/_rels/$path";
     }
-    
+
     var file = fileMap[path];
-    if (file == null && archive != null) file = archive.singleWhereOrNull((f) => f.name.endsWith(path.split('/').last));
-    
+    if (file == null && archive != null)
+      file = archive.singleWhereOrNull(
+        (f) => f.name.endsWith(path.split('/').last),
+      );
+
     if (file != null) {
       var doc = xml.XmlDocument.parse(utf8.decode(file.content));
       for (var rel in doc.findAllElements("Relationship")) {
@@ -324,7 +424,10 @@ class CustomPresentationProcessor {
     return result;
   }
 
-  Future<List<Widget>> displayPresentation(Presentation presentation, double screenWidth) async {
+  Future<List<Widget>> displayPresentation(
+    Presentation presentation,
+    double screenWidth,
+  ) async {
     List<Widget> slideWidgets = [];
     for (int i = 0; i < presentation.slides.length; i++) {
       List<Widget> tempValue = await compute(getSlideDetails, {
@@ -341,66 +444,121 @@ class CustomPresentationProcessor {
     Slide slide = params['slide'];
     double screenWidth = params['screenWidth'];
     Size? presSize = params['presentationSize'];
-    
+
     List<Widget> tempShapes = [];
     double maxWidth = presSize?.width ?? 960;
     double maxHeight = presSize?.height ?? 540;
     const double divisionFactor = 12700;
 
     for (var box in slide.presentationTextBoxes) {
-       double dx = box.offset.dx / divisionFactor;
-       double dy = box.offset.dy / divisionFactor;
-       double w = box.size.width / divisionFactor;
-       double h = box.size.height / divisionFactor;
-       
-       List<Widget> paras = [];
-       for (var para in box.presentationParas) {
-         paras.add(RichText(text: TextSpan(children: para.textSpans.map((s) => TextSpan(text: s.text, style: TextStyle(fontSize: s.fontSize, color: Colors.black))).toList())));
-       }
-       
-       tempShapes.add(Positioned(
-         top: dy, left: dx,
-         child: SizedBox(height: h != 0 ? h : null, width: w != 0 ? w : null, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: paras)),
-       ));
-    }
-    
-    for (var shape in slide.presentationShapes) {
-       double dx = shape.offset.dx / divisionFactor;
-       double dy = shape.offset.dy / divisionFactor;
-       double w = shape.size.width / divisionFactor;
-       double h = shape.size.height / divisionFactor;
-       
-       if (shape.text.startsWith("IMG|")) {
-         String path = shape.text.substring(4);
-         tempShapes.add(Positioned(
-           top: dy, left: dx,
-           child: Image.file(File(path), width: w, height: h, fit: BoxFit.fill),
-         ));
-       } else {
-         tempShapes.add(Positioned(
-           top: dy, left: dx,
-           child: Container(
-             decoration: BoxDecoration(border: Border.all(color: Colors.blue.withOpacity(0.05))),
-             height: h, width: w,
-           )
-         ));
-       }
+      double dx = box.offset.dx / divisionFactor;
+      double dy = box.offset.dy / divisionFactor;
+      double w = box.size.width / divisionFactor;
+      double h = box.size.height / divisionFactor;
+
+      List<Widget> paras = [];
+      for (var para in box.presentationParas) {
+        paras.add(
+          RichText(
+            text: TextSpan(
+              children: para.textSpans
+                  .map(
+                    (s) => TextSpan(
+                      text: s.text,
+                      style: TextStyle(
+                        fontSize: s.fontSize,
+                        color: Colors.black,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        );
+      }
+
+      tempShapes.add(
+        Positioned(
+          top: dy,
+          left: dx,
+          child: SizedBox(
+            height: h != 0 ? h : null,
+            width: w != 0 ? w : null,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: paras,
+            ),
+          ),
+        ),
+      );
     }
 
-    return [Container(
-      constraints: BoxConstraints(maxWidth: screenWidth),
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))],
-        image: slide.backgroundImagePath.isNotEmpty 
-          ? DecorationImage(image: FileImage(File(slide.backgroundImagePath)), fit: BoxFit.fill) 
-          : null,
+    for (var shape in slide.presentationShapes) {
+      double dx = shape.offset.dx / divisionFactor;
+      double dy = shape.offset.dy / divisionFactor;
+      double w = shape.size.width / divisionFactor;
+      double h = shape.size.height / divisionFactor;
+
+      if (shape.text.startsWith("IMG|")) {
+        String path = shape.text.substring(4);
+        tempShapes.add(
+          Positioned(
+            top: dy,
+            left: dx,
+            child: Image.file(
+              File(path),
+              width: w,
+              height: h,
+              fit: BoxFit.fill,
+            ),
+          ),
+        );
+      } else {
+        tempShapes.add(
+          Positioned(
+            top: dy,
+            left: dx,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.blue.withOpacity(0.05)),
+              ),
+              height: h,
+              width: w,
+            ),
+          ),
+        );
+      }
+    }
+
+    return [
+      Container(
+        constraints: BoxConstraints(maxWidth: screenWidth),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+          image: slide.backgroundImagePath.isNotEmpty
+              ? DecorationImage(
+                  image: FileImage(File(slide.backgroundImagePath)),
+                  fit: BoxFit.fill,
+                )
+              : null,
+        ),
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: maxWidth,
+            height: maxHeight,
+            child: Stack(children: tempShapes),
+          ),
+        ),
       ),
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(width: maxWidth, height: maxHeight, child: Stack(children: tempShapes)),
-      ),
-    )];
+    ];
   }
 }

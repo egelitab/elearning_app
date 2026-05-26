@@ -10,10 +10,10 @@ class CourseDetailsScreen extends StatefulWidget {
   final Color themeColor;
 
   const CourseDetailsScreen({
-    super.key, 
-    required this.course, 
+    super.key,
+    required this.course,
     this.allCourses,
-    this.themeColor = Colors.blue
+    this.themeColor = Colors.blue,
   });
 
   @override
@@ -31,7 +31,6 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   bool _isLoading = true;
   bool _isInstructor = false;
   List<dynamic> _goals = [];
-
 
   @override
   void initState() {
@@ -70,19 +69,25 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       setState(() => _isInstructor = role == 'instructor');
 
       // Fetch chapters
-      final chapters = await _apiService.getCourseChapters(_currentCourse['id'].toString());
+      final chapters = await _apiService.getCourseChapters(
+        _currentCourse['id'].toString(),
+      );
       setState(() => _chapters = chapters);
 
       try {
-        final goals = await _apiService.getCourseGoals(_currentCourse['id'].toString());
+        final goals = await _apiService.getCourseGoals(
+          _currentCourse['id'].toString(),
+        );
         setState(() => _goals = goals);
       } catch (e) {
         print("Error fetching goals: $e");
       }
 
       // Fetch ALL materials for the course in one go
-      final allMaterials = await _apiService.getMaterialsByCourse(_currentCourse['id'].toString());
-      
+      final allMaterials = await _apiService.getMaterialsByCourse(
+        _currentCourse['id'].toString(),
+      );
+
       // Filter materials: those without a chapter_id go to _courseMaterials
       setState(() {
         // Use a set to track IDs to avoid duplicates in General Materials
@@ -94,7 +99,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           generalIds.add(mId);
           return true;
         }).toList();
-        
+
         // Initialize chapter materials map
         _chapterMaterials = {};
         for (var chapter in chapters) {
@@ -119,14 +124,28 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _openGuide() async {
     final urlStr = _currentCourse['course_guide_url'];
     if (urlStr == null) return;
-    
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening guide...")));
+
+    if (mounted)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Downloading and opening guide...")),
+      );
     try {
-      if (!_isInstructor) await _apiService.logReadingDuration(_currentCourse['id'].toString(), 'guide', 3600); // Mock 1h progression
-      await _apiService.downloadAndOpenFile(urlStr, context: context, fileName: "Course Guide");
+      if (!_isInstructor)
+        await _apiService.logReadingDuration(
+          _currentCourse['id'].toString(),
+          'guide',
+          3600,
+        ); // Mock 1h progression
+      await _apiService.downloadAndOpenFile(
+        urlStr,
+        context: context,
+        fileName: "Course Guide",
+      );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -134,53 +153,70 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        
         elevation: 0,
         leading: _selectedIds.isNotEmpty
-        ? IconButton(
-            icon: Icon(Icons.close_rounded, color: Theme.of(context).colorScheme.secondary),
-            onPressed: () => setState(() => _selectedIds.clear()),
-          )
-        : IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: widget.themeColor, size: 20),
-            onPressed: () => Navigator.pop(context),
-          ),
-      title: _selectedIds.isNotEmpty 
-        ? Text("${_selectedIds.length} Selected", style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold))
-        : _buildCourseSwitcher(),
-      actions: [
-        if (_selectedIds.isNotEmpty && _isInstructor)
-          IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-            onPressed: _showRemoveConfirmation,
-            tooltip: "Remove Selected",
-          ),
-        if (_selectedIds.isEmpty && _isInstructor) ...[
-          IconButton(
-            icon: Icon(Icons.quiz_outlined, color: widget.themeColor),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CreateQuizScreen(
-                    currentCourseId: _currentCourse['id'].toString(),
-                    allCourses: _allCourses,
-                  ),
+            ? IconButton(
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
-              );
-            },
-            tooltip: "Create Quiz",
-          ),
-          IconButton(
-            icon: Icon(Icons.track_changes_outlined, color: widget.themeColor),
-            onPressed: _showSetGoalDialog,
-            tooltip: "Set Course Goals",
-          ),
-          IconButton(
-            icon: Icon(Icons.add_circle_outline_rounded, color: widget.themeColor),
-            onPressed: () async {
+                onPressed: () => setState(() => _selectedIds.clear()),
+              )
+            : IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: widget.themeColor,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+        title: _selectedIds.isNotEmpty
+            ? Text(
+                "${_selectedIds.length} Selected",
+                style: TextStyle(
+                  color: widget.themeColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              )
+            : _buildCourseSwitcher(),
+        actions: [
+          if (_selectedIds.isNotEmpty && _isInstructor)
+            IconButton(
+              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+              onPressed: _showRemoveConfirmation,
+              tooltip: "Remove Selected",
+            ),
+          if (_selectedIds.isEmpty && _isInstructor) ...[
+            IconButton(
+              icon: Icon(Icons.quiz_outlined, color: widget.themeColor),
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CreateQuizScreen(
+                      currentCourseId: _currentCourse['id'].toString(),
+                      allCourses: _allCourses,
+                    ),
+                  ),
+                );
+              },
+              tooltip: "Create Quiz",
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.track_changes_outlined,
+                color: widget.themeColor,
+              ),
+              onPressed: _showSetGoalDialog,
+              tooltip: "Set Course Goals",
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.add_circle_outline_rounded,
+                color: widget.themeColor,
+              ),
+              onPressed: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -194,81 +230,119 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               },
               tooltip: "Add Materials",
             ),
+          ],
         ],
-      ],
       ),
-      body: _isLoading 
-        ? Center(child: CircularProgressIndicator())
-        : ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              // Course Info (Name removed as it is now in AppBar)
-              Text(_currentCourse['instructor_name'] ?? '', 
-                style: const TextStyle(color: Colors.black54, fontSize: 18)),
-              
-              SizedBox(height: 25),
-              
-              // Course Guide Card
-              if (_currentCourse['course_guide_url'] != null)
-                _buildGuideCard()
-              else
-                _buildNoGuideCard(),
-              
-              SizedBox(height: 30),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                // Course Info (Name removed as it is now in AppBar)
+                Text(
+                  _currentCourse['instructor_name'] ?? '',
+                  style: const TextStyle(color: Colors.black54, fontSize: 18),
+                ),
 
-              // NEW: Course Goals
-              if (_goals.isNotEmpty) ...[
-                Row(
-                  children: [
-                     Icon(Icons.track_changes_outlined, color: widget.themeColor),
-                     SizedBox(width: 8),
-                     const Text("Course Goals", 
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                  ]
+                SizedBox(height: 25),
+
+                // Course Guide Card
+                if (_currentCourse['course_guide_url'] != null)
+                  _buildGuideCard()
+                else
+                  _buildNoGuideCard(),
+
+                SizedBox(height: 30),
+
+                // NEW: Course Goals
+                if (_goals.isNotEmpty) ...[
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.track_changes_outlined,
+                        color: widget.themeColor,
+                      ),
+                      SizedBox(width: 8),
+                      const Text(
+                        "Course Goals",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  ..._goals.map((g) => _buildGoalCard(g)).toList(),
+                  SizedBox(height: 30),
+                ],
+
+                // NEW: Main Course Materials (Unassigned to chapters)
+                if (_courseMaterials.isNotEmpty) ...[
+                  const Text(
+                    "General Materials",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: _courseMaterials
+                          .map((m) => _buildMaterialItem(m))
+                          .toList(),
+                    ),
+                  ),
+                  SizedBox(height: 30),
+                ],
+
+                const Text(
+                  "Chapters & Materials",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
                 SizedBox(height: 15),
-                ..._goals.map((g) => _buildGoalCard(g)).toList(),
-                SizedBox(height: 30),
+
+                if (_chapters.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Text(
+                        "No chapters added for this course yet.",
+                        style: TextStyle(color: Colors.black38),
+                      ),
+                    ),
+                  )
+                else
+                  ..._chapters.map((ch) => _buildChapterTile(ch)).toList(),
               ],
-              
-              // NEW: Main Course Materials (Unassigned to chapters)
-              if (_courseMaterials.isNotEmpty) ...[
-                const Text("General Materials", 
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
-                  child: Column(
-                    children: _courseMaterials.map((m) => _buildMaterialItem(m)).toList(),
-                  ),
-                ),
-                SizedBox(height: 30),
-              ],
-              
-              const Text("Chapters & Materials", 
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-              SizedBox(height: 15),
-              
-              if (_chapters.isEmpty)
-                Center(child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text("No chapters added for this course yet.", style: TextStyle(color: Colors.black38)),
-                ))
-              else
-                ..._chapters.map((ch) => _buildChapterTile(ch)).toList(),
-            ],
-          ),
+            ),
     );
   }
 
   Widget _buildCourseSwitcher() {
     if (_allCourses.length <= 1) {
-      return Text(_currentCourse['title'] ?? 'Course Details', 
-        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold));
+      return Text(
+        _currentCourse['title'] ?? 'Course Details',
+        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold),
+      );
     }
 
     return PopupMenuButton<dynamic>(
@@ -279,7 +353,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           Flexible(
             child: Text(
               _currentCourse['title'] ?? 'Course Details',
-              style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 20),
+              style: TextStyle(
+                color: widget.themeColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -297,13 +375,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       },
       itemBuilder: (context) => _allCourses
           .where((c) => c['id'] != _currentCourse['id'])
-          .map((c) => PopupMenuItem<dynamic>(
-        value: c,
-        child: Text(
-          c['title'] ?? c['course_code'],
-          style: TextStyle(fontWeight: FontWeight.w500, color: widget.themeColor, fontSize: 20),
-        ),
-      )).toList(),
+          .map(
+            (c) => PopupMenuItem<dynamic>(
+              value: c,
+              child: Text(
+                c['title'] ?? c['course_code'],
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: widget.themeColor,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -311,34 +396,63 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [widget.themeColor, widget.themeColor.withOpacity(0.8)]),
+        gradient: LinearGradient(
+          colors: [widget.themeColor, widget.themeColor.withOpacity(0.8)],
+        ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: widget.themeColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: widget.themeColor.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Theme.of(context).cardColor.withOpacity(0.2), borderRadius: BorderRadius.circular(15)),
-            child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 30),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: const Icon(
+              Icons.picture_as_pdf_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
           SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Course Guide", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Course Guide",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 SizedBox(height: 4),
-                Text("Official PDF syllabus and guidelines", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 15)),
+                Text(
+                  "Official PDF syllabus and guidelines",
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 15,
+                  ),
+                ),
               ],
             ),
           ),
           ElevatedButton(
             onPressed: _openGuide,
             style: ElevatedButton.styleFrom(
-              
               foregroundColor: widget.themeColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 0,
             ),
             child: const Text("View"),
@@ -360,7 +474,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         children: [
           Icon(Icons.info_outline_rounded, color: Colors.black38),
           SizedBox(width: 15),
-          Expanded(child: Text("No course guide uploaded yet.", style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w500))),
+          Expanded(
+            child: Text(
+              "No course guide uploaded yet.",
+              style: TextStyle(
+                color: Colors.black45,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -375,7 +497,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -389,28 +517,51 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Chapter ${chapter['order_index'] + 1}", 
-                        style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 1)),
+                      Text(
+                        "Chapter ${chapter['order_index'] + 1}",
+                        style: TextStyle(
+                          color: widget.themeColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          letterSpacing: 1,
+                        ),
+                      ),
                       SizedBox(height: 4),
-                      Text(chapter['title'] ?? '', 
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(
+                        chapter['title'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 if (_isInstructor)
                   IconButton(
                     onPressed: () => _showShareDialog(chapter),
-                    icon: Icon(Icons.add_circle_outline_rounded, color: widget.themeColor),
+                    icon: Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: widget.themeColor,
+                    ),
                     tooltip: "Share material to this chapter",
                   ),
               ],
             ),
           ),
-          
+
           if (materials.isEmpty)
             Padding(
               padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-              child: Text("No materials shared for this chapter.", style: TextStyle(color: Colors.black38, fontSize: 15, fontStyle: FontStyle.italic)),
+              child: Text(
+                "No materials shared for this chapter.",
+                style: TextStyle(
+                  color: Colors.black38,
+                  fontSize: 15,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             )
           else
             Container(
@@ -444,40 +595,57 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       child: Container(
         color: isSelected ? widget.themeColor.withOpacity(0.1) : null,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 0,
+          ),
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isSelected ? widget.themeColor : widget.themeColor.withOpacity(0.1), 
-              borderRadius: BorderRadius.circular(10)
+              color: isSelected
+                  ? widget.themeColor
+                  : widget.themeColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: FutureBuilder<bool>(
-              future: material['file_path'] != null ? _apiService.isFileDownloaded(material['file_path']) : Future.value(false),
+              future: material['file_path'] != null
+                  ? _apiService.isFileDownloaded(material['file_path'])
+                  : Future.value(false),
               builder: (context, snapshot) {
-                String fileName = (material['file_path'] ?? material['title'] ?? '').toString().toLowerCase();
+                String fileName =
+                    (material['file_path'] ?? material['title'] ?? '')
+                        .toString()
+                        .toLowerCase();
                 IconData defaultIcon = _getIconForFile(fileName);
-                
-                if (snapshot.connectionState == ConnectionState.done && snapshot.data == false && !_isInstructor) {
+
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.data == false &&
+                    !_isInstructor) {
                   defaultIcon = Icons.download_rounded;
                 }
                 return Icon(
-                  isSelected ? Icons.check_rounded : defaultIcon, 
-                  color: isSelected ? Colors.white : widget.themeColor, 
-                  size: 20
+                  isSelected ? Icons.check_rounded : defaultIcon,
+                  color: isSelected ? Colors.white : widget.themeColor,
+                  size: 20,
                 );
-              }
+              },
             ),
           ),
-          title: Text(material['title'] ?? '', 
+          title: Text(
+            material['title'] ?? '',
             style: TextStyle(
-              fontSize: 16, 
+              fontSize: 16,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? widget.themeColor : Colors.black87
-            )
+              color: isSelected ? widget.themeColor : Colors.black87,
+            ),
           ),
-          trailing: isSelected 
-            ? Icon(Icons.check_circle_rounded, color: widget.themeColor, size: 20)
-            : const Icon(Icons.chevron_right_rounded, color: Colors.black12),
+          trailing: isSelected
+              ? Icon(
+                  Icons.check_circle_rounded,
+                  color: widget.themeColor,
+                  size: 20,
+                )
+              : const Icon(Icons.chevron_right_rounded, color: Colors.black12),
         ),
       ),
     );
@@ -486,24 +654,48 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _openMaterial(dynamic material) async {
     final urlStr = material['file_path'];
     if (urlStr == null) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("File not found")));
       return;
     }
-    
+
     // Save as recently opened BEFORE opening (so dashboard always reflects intent)
     if (!_isInstructor) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('recent_material_title', material['title']?.toString() ?? '');
+      await prefs.setString(
+        'recent_material_title',
+        material['title']?.toString() ?? '',
+      );
       await prefs.setString('recent_material_url', urlStr.toString());
-      await prefs.setString('recent_course_title', _currentCourse['title']?.toString() ?? '');
+      await prefs.setString(
+        'recent_course_title',
+        _currentCourse['title']?.toString() ?? '',
+      );
     }
 
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening material...")));
+    if (mounted)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Downloading and opening material...")),
+      );
     try {
-      if (!_isInstructor) await _apiService.logReadingDuration(_currentCourse['id'].toString(), material['id'].toString(), 3600); // Mock 1h progression
-      await _apiService.downloadAndOpenFile(urlStr, context: context, fileName: material['title']);
+      if (!_isInstructor)
+        await _apiService.logReadingDuration(
+          _currentCourse['id'].toString(),
+          material['id'].toString(),
+          3600,
+        ); // Mock 1h progression
+      await _apiService.downloadAndOpenFile(
+        urlStr,
+        context: context,
+        fileName: material['title'],
+      );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -522,15 +714,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Remove Materials"),
-        content: Text("Are you sure you want to remove ${_selectedIds.length} material(s) from this course?"),
+        content: Text(
+          "Are you sure you want to remove ${_selectedIds.length} material(s) from this course?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
               await _removeSelectedMaterials();
-            }, 
-            child: const Text("Remove", style: TextStyle(color: Colors.red))
+            },
+            child: const Text("Remove", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -540,15 +737,22 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   Future<void> _removeSelectedMaterials() async {
     setState(() => _isLoading = true);
     try {
-      await _apiService.unshareMaterials(_selectedIds.toList(), _currentCourse['id'].toString());
+      await _apiService.unshareMaterials(
+        _selectedIds.toList(),
+        _currentCourse['id'].toString(),
+      );
       _selectedIds.clear();
       await _fetchDetails();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Materials removed successfully.")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Materials removed successfully.")),
+        );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -580,70 +784,103 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Share to ${chapter['title']}", 
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                  SizedBox(height: 10),
-                  const Text("Select materials from your storage to assign to this chapter.", 
-                    style: TextStyle(color: Colors.black54)),
-                  SizedBox(height: 20),
-                  
-                  Expanded(
-                    child: myMaterials.isEmpty 
-                      ? Center(child: Text("Your storage is empty."))
-                      : ListView.builder(
-                          itemCount: myMaterials.length,
-                          itemBuilder: (context, index) {
-                            final mat = myMaterials[index];
-                            final matId = mat['id'].toString();
-                            final isSelected = selectedIds.contains(matId);
-                            
-                            return CheckboxListTile(
-                              value: isSelected,
-                              title: Text(mat['title'] ?? ''),
-                              secondary: const Icon(Icons.insert_drive_file_rounded),
-                              activeColor: widget.themeColor,
-                              onChanged: (val) {
-                                setSheetState(() {
-                                  if (val == true) selectedIds.add(matId);
-                                  else selectedIds.remove(matId);
-                                });
-                              },
-                            );
-                          },
-                        ),
+                  Text(
+                    "Share to ${chapter['title']}",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
-                  
+                  SizedBox(height: 10),
+                  const Text(
+                    "Select materials from your storage to assign to this chapter.",
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  SizedBox(height: 20),
+
+                  Expanded(
+                    child: myMaterials.isEmpty
+                        ? Center(child: Text("Your storage is empty."))
+                        : ListView.builder(
+                            itemCount: myMaterials.length,
+                            itemBuilder: (context, index) {
+                              final mat = myMaterials[index];
+                              final matId = mat['id'].toString();
+                              final isSelected = selectedIds.contains(matId);
+
+                              return CheckboxListTile(
+                                value: isSelected,
+                                title: Text(mat['title'] ?? ''),
+                                secondary: const Icon(
+                                  Icons.insert_drive_file_rounded,
+                                ),
+                                activeColor: widget.themeColor,
+                                onChanged: (val) {
+                                  setSheetState(() {
+                                    if (val == true)
+                                      selectedIds.add(matId);
+                                    else
+                                      selectedIds.remove(matId);
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                  ),
+
                   SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: selectedIds.isEmpty ? null : () async {
-                        try {
-                          await _apiService.shareMaterials(
-                            selectedIds.toList(), 
-                            _currentCourse['id'].toString(), 
-                            _currentCourse['department_id'].toString(), 
-                            null, // section
-                            chapterId: chapter['id'].toString()
-                          );
-                          Navigator.pop(context);
-                          _fetchDetails();
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Materials shared successfully!")));
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error sharing: $e")));
-                        }
-                      },
+                      onPressed: selectedIds.isEmpty
+                          ? null
+                          : () async {
+                              try {
+                                await _apiService.shareMaterials(
+                                  selectedIds.toList(),
+                                  _currentCourse['id'].toString(),
+                                  _currentCourse['department_id'].toString(),
+                                  null, // section
+                                  chapterId: chapter['id'].toString(),
+                                );
+                                Navigator.pop(context);
+                                _fetchDetails();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Materials shared successfully!",
+                                    ),
+                                  ),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error sharing: $e")),
+                                );
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.themeColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
-                      child: const Text("Share Selected", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "Share Selected",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -657,12 +894,20 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
 
   IconData _getIconForFile(String filename) {
     if (filename.endsWith('.pdf')) return Icons.picture_as_pdf_rounded;
-    if (filename.endsWith('.doc') || filename.endsWith('.docx')) return Icons.description_rounded;
-    if (filename.endsWith('.xls') || filename.endsWith('.xlsx')) return Icons.table_chart_rounded;
-    if (filename.endsWith('.ppt') || filename.endsWith('.pptx')) return Icons.slideshow_rounded;
-    if (filename.endsWith('.jpg') || filename.endsWith('.jpeg') || filename.endsWith('.png')) return Icons.image_rounded;
-    if (filename.endsWith('.mp4') || filename.endsWith('.mov')) return Icons.video_collection_rounded;
-    if (filename.endsWith('.zip') || filename.endsWith('.rar')) return Icons.folder_zip_rounded;
+    if (filename.endsWith('.doc') || filename.endsWith('.docx'))
+      return Icons.description_rounded;
+    if (filename.endsWith('.xls') || filename.endsWith('.xlsx'))
+      return Icons.table_chart_rounded;
+    if (filename.endsWith('.ppt') || filename.endsWith('.pptx'))
+      return Icons.slideshow_rounded;
+    if (filename.endsWith('.jpg') ||
+        filename.endsWith('.jpeg') ||
+        filename.endsWith('.png'))
+      return Icons.image_rounded;
+    if (filename.endsWith('.mp4') || filename.endsWith('.mov'))
+      return Icons.video_collection_rounded;
+    if (filename.endsWith('.zip') || filename.endsWith('.rar'))
+      return Icons.folder_zip_rounded;
     return Icons.description_rounded;
   }
 
@@ -702,13 +947,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.only(left: position > 0 ? position : 0),
             child: Icon(
-              Icons.star_rounded, 
-              size: 20, 
+              Icons.star_rounded,
+              size: 20,
               color: completed ? color : Colors.grey.withOpacity(0.4),
-              shadows: completed ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)] : null,
+              shadows: completed
+                  ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)]
+                  : null,
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -721,7 +968,13 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: widget.themeColor.withOpacity(0.3)),
-        boxShadow: [BoxShadow(color: widget.themeColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: widget.themeColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,29 +983,54 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text(goal['title'] ?? 'Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: widget.themeColor)),
+                child: Text(
+                  goal['title'] ?? 'Goal',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: widget.themeColor,
+                  ),
+                ),
               ),
               if (goal['recurrence'] != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(goal['recurrence'], style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: Text(
+                    goal['recurrence'],
+                    style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
                 ),
               if (_isInstructor)
                 IconButton(
-                  icon: const Icon(Icons.edit_outlined, size: 20, color: Colors.black54),
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 20,
+                    color: Colors.black54,
+                  ),
                   onPressed: () => _showSetGoalDialog(goal),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
-                )
+                ),
             ],
           ),
-          if (goal['description'] != null && goal['description'].isNotEmpty) ...[
+          if (goal['description'] != null &&
+              goal['description'].isNotEmpty) ...[
             SizedBox(height: 8),
-            Text(goal['description'], style: const TextStyle(color: Colors.black87, fontSize: 14)),
+            Text(
+              goal['description'],
+              style: const TextStyle(color: Colors.black87, fontSize: 14),
+            ),
           ],
           SizedBox(height: 12),
           Wrap(
@@ -761,13 +1039,19 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             children: [
               if (goal['target_hours'] != null)
                 Chip(
-                  label: Text('${goal['progress_hours'] ?? '0'} / ${goal['target_hours']} Hours', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text(
+                    '${goal['progress_hours'] ?? '0'} / ${goal['target_hours']} Hours',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   backgroundColor: widget.themeColor.withOpacity(0.1),
                   side: BorderSide.none,
                 ),
               if (goal['target_score'] != null)
                 Chip(
-                  label: Text('Target Score: ${goal['target_score']}%', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  label: Text(
+                    'Target Score: ${goal['target_score']}%',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   backgroundColor: Colors.green.withOpacity(0.1),
                   side: BorderSide.none,
                 ),
@@ -776,8 +1060,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           if (goal['target_hours'] != null) ...[
             SizedBox(height: 16),
             _buildProgressBarWithMilestones(
-              (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
-              (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
+              (double.tryParse(goal['progress_hours']?.toString() ?? '0') ??
+                      0) /
+                  (double.tryParse(goal['target_hours']?.toString() ?? '1') ??
+                      1),
               widget.themeColor,
             ),
           ],
@@ -789,8 +1075,12 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
   void _showSetGoalDialog([dynamic existingGoal]) {
     final titleCtrl = TextEditingController(text: existingGoal?['title']);
     final descCtrl = TextEditingController(text: existingGoal?['description']);
-    final hoursCtrl = TextEditingController(text: existingGoal?['target_hours']?.toString());
-    final scoreCtrl = TextEditingController(text: existingGoal?['target_score']?.toString());
+    final hoursCtrl = TextEditingController(
+      text: existingGoal?['target_hours']?.toString(),
+    );
+    final scoreCtrl = TextEditingController(
+      text: existingGoal?['target_score']?.toString(),
+    );
     String selectedRecurrence = existingGoal?['recurrence'] ?? 'Weekly';
     bool isSaving = false;
 
@@ -803,26 +1093,41 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           builder: (context, setSheetState) {
             return Container(
               padding: EdgeInsets.only(
-                top: 25, left: 25, right: 25,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 25
+                top: 25,
+                left: 25,
+                right: 25,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 25,
               ),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(existingGoal == null ? "Set Course Goal" : "Edit Course Goal", 
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: widget.themeColor)),
+                    Text(
+                      existingGoal == null
+                          ? "Set Course Goal"
+                          : "Edit Course Goal",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: widget.themeColor,
+                      ),
+                    ),
                     SizedBox(height: 20),
                     TextField(
                       controller: titleCtrl,
                       decoration: InputDecoration(
                         labelText: "Goal Title",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
                     SizedBox(height: 15),
@@ -831,7 +1136,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       maxLines: 2,
                       decoration: InputDecoration(
                         labelText: "Description (Optional)",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                     ),
                     SizedBox(height: 15),
@@ -843,7 +1150,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               labelText: "Target Reading Hours",
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
                             ),
                           ),
                         ),
@@ -854,7 +1163,9 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               labelText: "Target Score %",
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
                             ),
                           ),
                         ),
@@ -865,13 +1176,18 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       value: selectedRecurrence,
                       decoration: InputDecoration(
                         labelText: "Goal Recurrence",
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                       ),
                       items: ['Daily', 'Weekly', 'Monthly']
-                          .map((r) => DropdownMenuItem(value: r, child: Text(r)))
+                          .map(
+                            (r) => DropdownMenuItem(value: r, child: Text(r)),
+                          )
                           .toList(),
                       onChanged: (val) {
-                        if (val != null) setSheetState(() => selectedRecurrence = val);
+                        if (val != null)
+                          setSheetState(() => selectedRecurrence = val);
                       },
                     ),
                     SizedBox(height: 20),
@@ -879,44 +1195,86 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: isSaving ? null : () async {
-                          if (titleCtrl.text.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Title is required.")));
-                            return;
-                          }
-                          setSheetState(() => isSaving = true);
-                          try {
-                            final Map<String, dynamic> payload = {
-                              "title": titleCtrl.text,
-                              "description": descCtrl.text,
-                              "target_hours": hoursCtrl.text.isNotEmpty ? double.tryParse(hoursCtrl.text) : null,
-                              "target_score": scoreCtrl.text.isNotEmpty ? double.tryParse(scoreCtrl.text) : null,
-                              "recurrence": selectedRecurrence,
-                            };
-                            
-                            if (existingGoal == null) {
-                              await _apiService.createCourseGoal(_currentCourse['id'].toString(), payload);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Goal created successfully!")));
-                            } else {
-                              await _apiService.updateCourseGoal(existingGoal['id'].toString(), payload);
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Goal updated successfully!")));
-                            }
-                            
-                            if (mounted) Navigator.pop(context);
-                            _fetchDetails();
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-                          } finally {
-                            if (mounted) setSheetState(() => isSaving = false);
-                          }
-                        },
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                if (titleCtrl.text.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Title is required."),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                setSheetState(() => isSaving = true);
+                                try {
+                                  final Map<String, dynamic> payload = {
+                                    "title": titleCtrl.text,
+                                    "description": descCtrl.text,
+                                    "target_hours": hoursCtrl.text.isNotEmpty
+                                        ? double.tryParse(hoursCtrl.text)
+                                        : null,
+                                    "target_score": scoreCtrl.text.isNotEmpty
+                                        ? double.tryParse(scoreCtrl.text)
+                                        : null,
+                                    "recurrence": selectedRecurrence,
+                                  };
+
+                                  if (existingGoal == null) {
+                                    await _apiService.createCourseGoal(
+                                      _currentCourse['id'].toString(),
+                                      payload,
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Goal created successfully!",
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    await _apiService.updateCourseGoal(
+                                      existingGoal['id'].toString(),
+                                      payload,
+                                    );
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Goal updated successfully!",
+                                        ),
+                                      ),
+                                    );
+                                  }
+
+                                  if (mounted) Navigator.pop(context);
+                                  _fetchDetails();
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error: $e")),
+                                  );
+                                } finally {
+                                  if (mounted)
+                                    setSheetState(() => isSaving = false);
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: widget.themeColor,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
-                        child: isSaving 
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("Save Goal", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        child: isSaving
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                "Save Goal",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
                       ),
                     ),
                   ],

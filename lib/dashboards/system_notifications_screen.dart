@@ -7,7 +7,8 @@ class SystemNotificationsScreen extends StatefulWidget {
   const SystemNotificationsScreen({super.key});
 
   @override
-  State<SystemNotificationsScreen> createState() => _SystemNotificationsScreenState();
+  State<SystemNotificationsScreen> createState() =>
+      _SystemNotificationsScreenState();
 }
 
 class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
@@ -95,14 +96,17 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               "System Notifications",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 18,
+              ),
             ),
             if (_unreadCount > 0)
               Text(
@@ -114,7 +118,10 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
+              colors: [
+                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).primaryColor,
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -126,10 +133,18 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           if (_unreadCount > 0)
             TextButton.icon(
               onPressed: _markAllAsRead,
-              icon: const Icon(Icons.done_all_rounded, color: Colors.white, size: 18),
+              icon: const Icon(
+                Icons.done_all_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               label: const Text(
                 "Mark all read",
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
         ],
@@ -137,17 +152,24 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _messages.isEmpty
+            ? Center(child: CircularProgressIndicator())
+            : _messages.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.notifications_none_rounded, size: 80, color: Colors.grey.shade300),
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      size: 80,
+                      color: Colors.grey.shade300,
+                    ),
                     SizedBox(height: 16),
                     Text(
                       "No system notifications",
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -164,8 +186,11 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   Widget _buildItem(dynamic msg) {
     final String id = _msgId(msg);
     final bool isOpened = _openedIds.contains(id);
-    final DateTime date = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
-    final String formattedDate = DateFormat('MMM d, h:mm a').format(date.toLocal());
+    final DateTime date =
+        DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
+    final String formattedDate = DateFormat(
+      'MMM d, h:mm a',
+    ).format(date.toLocal());
     final String title = msg['title'] ?? 'System Notification';
     final String content = msg['content'] ?? '';
 
@@ -192,7 +217,10 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: isOpened
               ? Border.all(color: Colors.grey.shade200, width: 1)
-              : Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3), width: 1.2),
+              : Border.all(
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  width: 1.2,
+                ),
           boxShadow: [
             BoxShadow(
               color: isOpened
@@ -200,7 +228,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                   : Theme.of(context).primaryColor.withOpacity(0.10),
               blurRadius: isOpened ? 4 : 10,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
         child: ClipRRect(
@@ -212,11 +240,16 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   width: 5,
-                  color: isOpened ? Colors.grey.shade300 : Theme.of(context).primaryColor,
+                  color: isOpened
+                      ? Colors.grey.shade300
+                      : Theme.of(context).primaryColor,
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -225,7 +258,10 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                           children: [
                             if (!isOpened)
                               Padding(
-                                padding: const EdgeInsets.only(top: 4, right: 8),
+                                padding: const EdgeInsets.only(
+                                  top: 4,
+                                  right: 8,
+                                ),
                                 child: Container(
                                   width: 8,
                                   height: 8,
@@ -239,9 +275,13 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                               child: Text(
                                 title,
                                 style: TextStyle(
-                                  fontWeight: isOpened ? FontWeight.w500 : FontWeight.bold,
+                                  fontWeight: isOpened
+                                      ? FontWeight.w500
+                                      : FontWeight.bold,
                                   fontSize: 15,
-                                  color: isOpened ? Colors.black54 : Colors.black87,
+                                  color: isOpened
+                                      ? Colors.black54
+                                      : Colors.black87,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -250,7 +290,9 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                             Text(
                               formattedDate,
                               style: TextStyle(
-                                color: isOpened ? Colors.grey.shade400 : Colors.grey.shade500,
+                                color: isOpened
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade500,
                                 fontSize: 11,
                               ),
                             ),
@@ -266,7 +308,9 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                         Text(
                           content,
                           style: TextStyle(
-                            color: isOpened ? Colors.grey.shade400 : Colors.grey.shade600,
+                            color: isOpened
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade600,
                             fontSize: 13,
                             height: 1.4,
                           ),
@@ -304,11 +348,11 @@ class SystemNotificationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedDate =
-        DateFormat('MMMM d, yyyy  •  h:mm a').format(date.toLocal());
+    final String formattedDate = DateFormat(
+      'MMMM d, yyyy  •  h:mm a',
+    ).format(date.toLocal());
 
     return Scaffold(
-      
       appBar: AppBar(
         title: const Text(
           "System Notification",
@@ -317,7 +361,10 @@ class SystemNotificationDetailScreen extends StatelessWidget {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
+              colors: [
+                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).primaryColor,
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -336,14 +383,19 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
+                  colors: [
+                    Theme.of(context).colorScheme.secondary,
+                    Theme.of(context).primaryColor,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.25),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.secondary.withOpacity(0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -360,7 +412,11 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                           color: Theme.of(context).cardColor.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.campaign_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                       SizedBox(width: 10),
                       Text(
@@ -387,11 +443,18 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                   SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.access_time_rounded, color: Colors.white60, size: 14),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: Colors.white60,
+                        size: 14,
+                      ),
                       SizedBox(width: 5),
                       Text(
                         formattedDate,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),

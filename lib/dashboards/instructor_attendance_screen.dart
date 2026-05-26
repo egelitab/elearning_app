@@ -5,10 +5,12 @@ class InstructorAttendanceScreen extends StatefulWidget {
   const InstructorAttendanceScreen({super.key});
 
   @override
-  State<InstructorAttendanceScreen> createState() => _InstructorAttendanceScreenState();
+  State<InstructorAttendanceScreen> createState() =>
+      _InstructorAttendanceScreenState();
 }
 
-class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen> {
+class _InstructorAttendanceScreenState
+    extends State<InstructorAttendanceScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _courses = [];
   bool _isLoading = true;
@@ -22,7 +24,11 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
   Future<void> _fetchCourses() async {
     try {
       final courses = await _apiService.getInstructorCourses();
-      if (mounted) setState(() { _courses = courses; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _courses = courses;
+          _isLoading = false;
+        });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -31,12 +37,19 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: const Text("Attendance", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text(
+          "Attendance",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
           ),
         ),
         elevation: 0,
@@ -45,15 +58,20 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _courses.isEmpty
-              ? Center(child: Text("No courses found", style: TextStyle(color: Colors.grey)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: _courses.length,
-                  itemBuilder: (context, index) {
-                    final course = _courses[index];
-                    return _buildCourseCard(course);
-                  },
-                ),
+          ? Center(
+              child: Text(
+                "No courses found",
+                style: TextStyle(color: Colors.grey),
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: _courses.length,
+              itemBuilder: (context, index) {
+                final course = _courses[index];
+                return _buildCourseCard(course);
+              },
+            ),
     );
   }
 
@@ -63,17 +81,38 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 12,
+        ),
         leading: Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Theme.of(context).colorScheme.secondary.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: Icon(Icons.how_to_reg_rounded, color: Theme.of(context).colorScheme.secondary),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(
+            Icons.how_to_reg_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
         ),
-        title: Text(course['title'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        subtitle: Text(course['course_code'] ?? '', style: const TextStyle(color: Colors.grey)),
+        title: Text(
+          course['title'] ?? '',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(
+          course['course_code'] ?? '',
+          style: const TextStyle(color: Colors.grey),
+        ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
         onTap: () {
           Navigator.push(
@@ -94,10 +133,14 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
 class _AttendanceSessionsScreen extends StatefulWidget {
   final String courseId;
   final String courseTitle;
-  const _AttendanceSessionsScreen({required this.courseId, required this.courseTitle});
+  const _AttendanceSessionsScreen({
+    required this.courseId,
+    required this.courseTitle,
+  });
 
   @override
-  State<_AttendanceSessionsScreen> createState() => _AttendanceSessionsScreenState();
+  State<_AttendanceSessionsScreen> createState() =>
+      _AttendanceSessionsScreenState();
 }
 
 class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
@@ -115,14 +158,20 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
     setState(() => _isLoading = true);
     try {
       final sessions = await _apiService.getAttendanceSessions(widget.courseId);
-      if (mounted) setState(() { _sessions = sessions; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _sessions = sessions;
+          _isLoading = false;
+        });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _createSession() async {
-    final titleController = TextEditingController(text: "Lecture ${_sessions.length + 1}");
+    final titleController = TextEditingController(
+      text: "Lecture ${_sessions.length + 1}",
+    );
     final date = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -137,11 +186,20 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
         title: const Text("New Attendance Session"),
         content: TextField(
           controller: titleController,
-          decoration: const InputDecoration(labelText: "Session Title", border: OutlineInputBorder()),
+          decoration: const InputDecoration(
+            labelText: "Session Title",
+            border: OutlineInputBorder(),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text("Create")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Create"),
+          ),
         ],
       ),
     );
@@ -157,7 +215,9 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
       _fetchSessions();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
       }
     }
   }
@@ -165,12 +225,22 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: Text(widget.courseTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          widget.courseTitle,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -184,26 +254,37 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _sessions.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.event_busy_rounded, size: 64, color: Colors.grey.shade300),
-                      SizedBox(height: 16),
-                      const Text("No attendance sessions yet", style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      SizedBox(height: 8),
-                      const Text("Tap + to create one", style: TextStyle(color: Colors.grey)),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_busy_rounded,
+                    size: 64,
+                    color: Colors.grey.shade300,
                   ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _fetchSessions,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: _sessions.length,
-                    itemBuilder: (context, index) => _buildSessionCard(_sessions[index]),
+                  SizedBox(height: 16),
+                  const Text(
+                    "No attendance sessions yet",
+                    style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
-                ),
+                  SizedBox(height: 8),
+                  const Text(
+                    "Tap + to create one",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _fetchSessions,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: _sessions.length,
+                itemBuilder: (context, index) =>
+                    _buildSessionCard(_sessions[index]),
+              ),
+            ),
     );
   }
 
@@ -218,7 +299,13 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
@@ -243,7 +330,13 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(session['title'] ?? 'Session', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    child: Text(
+                      session['title'] ?? 'Session',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                   Text(
                     (session['session_date'] ?? '').toString().split('T')[0],
@@ -260,7 +353,10 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
                   SizedBox(width: 8),
                   _statusChip("Absent", absent, Colors.red),
                   const Spacer(),
-                  Text("$total students", style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(
+                    "$total students",
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
                 ],
               ),
             ],
@@ -273,8 +369,18 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
   Widget _statusChip(String label, int count, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-      child: Text("$count $label", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        "$count $label",
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
@@ -282,7 +388,10 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
 class _MarkAttendanceScreen extends StatefulWidget {
   final String sessionId;
   final String sessionTitle;
-  const _MarkAttendanceScreen({required this.sessionId, required this.sessionTitle});
+  const _MarkAttendanceScreen({
+    required this.sessionId,
+    required this.sessionTitle,
+  });
 
   @override
   State<_MarkAttendanceScreen> createState() => _MarkAttendanceScreenState();
@@ -303,13 +412,20 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
 
   Future<void> _fetchDetail() async {
     try {
-      final data = await _apiService.getAttendanceSessionDetail(widget.sessionId);
+      final data = await _apiService.getAttendanceSessionDetail(
+        widget.sessionId,
+      );
       final records = data['records'] as List<dynamic>;
       final Map<String, String> map = {};
       for (var r in records) {
         map[r['student_id'].toString()] = r['status'] ?? 'unmarked';
       }
-      if (mounted) setState(() { _records = records; _statusMap = map; _isLoading = false; });
+      if (mounted)
+        setState(() {
+          _records = records;
+          _statusMap = map;
+          _isLoading = false;
+        });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -327,18 +443,28 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
     setState(() => _isSaving = true);
     try {
       final records = _statusMap.entries
-          .map((e) => {"student_id": e.key, "status": e.value == 'unmarked' ? 'absent' : e.value})
+          .map(
+            (e) => {
+              "student_id": e.key,
+              "status": e.value == 'unmarked' ? 'absent' : e.value,
+            },
+          )
           .toList();
       await _apiService.markAttendance(widget.sessionId, records);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Attendance saved!"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Attendance saved!"),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -347,11 +473,16 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
 
   Color _statusColor(String status) {
     switch (status) {
-      case 'present': return Colors.green;
-      case 'late': return Colors.orange;
-      case 'absent': return Colors.red;
-      case 'excused': return Colors.blue;
-      default: return Colors.grey;
+      case 'present':
+        return Colors.green;
+      case 'late':
+        return Colors.orange;
+      case 'absent':
+        return Colors.red;
+      case 'excused':
+        return Colors.blue;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -364,12 +495,22 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: Text(widget.sessionTitle, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text(
+          widget.sessionTitle,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary]),
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).colorScheme.secondary,
+              ],
+            ),
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
@@ -378,8 +519,21 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
             TextButton(
               onPressed: _isSaving ? null : _save,
               child: _isSaving
-                  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text("SAVE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      "SAVE",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
         ],
       ),
@@ -389,17 +543,37 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
               children: [
                 // Quick action bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   color: Theme.of(context).cardColor,
                   child: Row(
                     children: [
-                      const Text("Mark All: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        "Mark All: ",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       SizedBox(width: 8),
-                      _quickButton("Present", Colors.green, () => _markAll('present')),
+                      _quickButton(
+                        "Present",
+                        Colors.green,
+                        () => _markAll('present'),
+                      ),
                       SizedBox(width: 6),
-                      _quickButton("Absent", Colors.red, () => _markAll('absent')),
+                      _quickButton(
+                        "Absent",
+                        Colors.red,
+                        () => _markAll('absent'),
+                      ),
                       const Spacer(),
-                      Text("${_records.length} students", style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      Text(
+                        "${_records.length} students",
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -417,21 +591,31 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
                         decoration: BoxDecoration(
                           color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: _statusColor(status).withOpacity(0.3)),
+                          border: Border.all(
+                            color: _statusColor(status).withOpacity(0.3),
+                          ),
                         ),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: _statusColor(status).withOpacity(0.15),
+                            backgroundColor: _statusColor(
+                              status,
+                            ).withOpacity(0.15),
                             child: Text(
                               "${index + 1}",
-                              style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: _statusColor(status),
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           title: Text(
                             "${record['first_name'] ?? ''} ${record['last_name'] ?? ''}",
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
-                          subtitle: Text(record['institutional_id'] ?? '', style: const TextStyle(fontSize: 12)),
+                          subtitle: Text(
+                            record['institutional_id'] ?? '',
+                            style: const TextStyle(fontSize: 12),
+                          ),
                           trailing: GestureDetector(
                             onTap: () {
                               setState(() {
@@ -439,14 +623,21 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
                               });
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
                               decoration: BoxDecoration(
                                 color: _statusColor(status).withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 status.toUpperCase(),
-                                style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold, fontSize: 12),
+                                style: TextStyle(
+                                  color: _statusColor(status),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
                               ),
                             ),
                           ),
@@ -465,8 +656,18 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-        child: Text(label, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }

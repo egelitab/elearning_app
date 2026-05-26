@@ -37,7 +37,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   void initState() {
     super.initState();
     _fetchBadges();
-    _pollTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchBadges());
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _fetchBadges(),
+    );
   }
 
   @override
@@ -76,8 +79,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ),
             child: Text(
               count > 99 ? '99+' : '$count',
-              style: TextStyle(
-                color: Theme.of(context).cardColor,
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
               ),
@@ -95,7 +98,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       onWillPop: () async {
         DateTime now = DateTime.now();
         if (currentBackPressTime == null ||
-            now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+            now.difference(currentBackPressTime!) >
+                const Duration(seconds: 2)) {
           currentBackPressTime = now;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Press back again to exit')),
@@ -114,24 +118,27 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
-              )
+              ),
             ],
           ),
           child: BottomNavigationBar(
             elevation: 0,
             type: BottomNavigationBarType.fixed,
-            
+
             currentIndex: _index,
             selectedItemColor: Theme.of(context).primaryColor,
             unselectedItemColor: Colors.grey.shade400,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
             onTap: (i) {
               setState(() => _index = i);
-              if (i == 2 && _chatUnread > 0) {
-                setState(() => _chatUnread = 0);
-                _apiService.markNotificationsAsReadByTypes(['chat']);
-              }
+              if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
             },
             items: [
               const BottomNavigationBarItem(
@@ -145,8 +152,14 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 label: 'Courses',
               ),
               BottomNavigationBarItem(
-                icon: _badgeIcon(const Icon(Icons.chat_bubble_outline), _chatUnread),
-                activeIcon: _badgeIcon(const Icon(Icons.chat_bubble), _chatUnread),
+                icon: _badgeIcon(
+                  const Icon(Icons.chat_bubble_outline),
+                  _chatUnread,
+                ),
+                activeIcon: _badgeIcon(
+                  const Icon(Icons.chat_bubble),
+                  _chatUnread,
+                ),
                 label: 'Inbox',
               ),
               const BottomNavigationBarItem(

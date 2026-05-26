@@ -5,7 +5,11 @@ class StudentAllCoursesScreen extends StatelessWidget {
   final List<dynamic> courses;
   final List<dynamic> myGoals;
 
-  StudentAllCoursesScreen({super.key, required this.courses, this.myGoals = const []});
+  StudentAllCoursesScreen({
+    super.key,
+    required this.courses,
+    this.myGoals = const [],
+  });
 
   final List<Color> _cardColors = [
     const Color(0xFF05398F),
@@ -13,7 +17,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
     Color(0xFFFF8F00),
     Color(0xFF2E7D32),
   ];
-  
+
   final List<Color> _lightColors = [
     const Color(0xFF09AEF5),
     Color(0xFFAB47BC),
@@ -24,12 +28,14 @@ class StudentAllCoursesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
@@ -61,20 +67,32 @@ class StudentAllCoursesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFullWidthCourseCard(BuildContext context, dynamic course, Color darkColor, Color lightColor) {
-    final courseGoals = myGoals.where((g) => g['course_id'].toString() == course['id'].toString() && g['target_hours'] != null).toList();
+  Widget _buildFullWidthCourseCard(
+    BuildContext context,
+    dynamic course,
+    Color darkColor,
+    Color lightColor,
+  ) {
+    final courseGoals = myGoals
+        .where(
+          (g) =>
+              g['course_id'].toString() == course['id'].toString() &&
+              g['target_hours'] != null,
+        )
+        .toList();
     double progress = 0.0;
     if (courseGoals.isNotEmpty) {
       double totalTarget = 0.0;
       double totalProgress = 0.0;
       for (var g in courseGoals) {
         totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-        totalProgress += double.tryParse(g['progress_hours']?.toString() ?? '0.0') ?? 0.0;
+        totalProgress +=
+            double.tryParse(g['progress_hours']?.toString() ?? '0.0') ?? 0.0;
       }
       if (totalTarget > 0) progress = totalProgress / totalTarget;
       if (progress > 1.0) progress = 1.0;
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -85,7 +103,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
             color: Colors.black.withOpacity(0.04),
             blurRadius: 15,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -95,11 +113,13 @@ class StudentAllCoursesScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CourseDetailsScreen(
-                course: course, 
-                allCourses: courses,
-                themeColor: darkColor
-              )),
+              MaterialPageRoute(
+                builder: (context) => CourseDetailsScreen(
+                  course: course,
+                  allCourses: courses,
+                  themeColor: darkColor,
+                ),
+              ),
             );
           },
           child: Padding(
@@ -112,7 +132,11 @@ class StudentAllCoursesScreen extends StatelessWidget {
                     color: lightColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(_getIcon(course['title']), color: darkColor, size: 32),
+                  child: Icon(
+                    _getIcon(course['title']),
+                    color: darkColor,
+                    size: 32,
+                  ),
                 ),
                 SizedBox(width: 20),
                 Expanded(
@@ -142,7 +166,10 @@ class StudentAllCoursesScreen extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: darkColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
@@ -158,7 +185,9 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           ),
                           const Spacer(),
                           Text(
-                            courseGoals.isNotEmpty ? "${(progress * 100).toInt()}% (Goal Progress)" : "0%",
+                            courseGoals.isNotEmpty
+                                ? "${(progress * 100).toInt()}% (Goal Progress)"
+                                : "0%",
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black45,

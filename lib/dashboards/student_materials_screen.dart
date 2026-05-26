@@ -28,9 +28,9 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     try {
       // 1. Fetch courses
       final courses = await _apiService.getStudentCourses();
-      
+
       Map<String, List<dynamic>> materialsMap = {};
-      
+
       // 2. Fetch materials for each course
       for (var course in courses) {
         final courseId = course['id'].toString();
@@ -51,9 +51,9 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading materials: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading materials: $e')));
       }
     }
   }
@@ -61,13 +61,18 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: const Text('Course Materials', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text(
+          'Course Materials',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).colorScheme.secondary,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -76,9 +81,9 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
         elevation: 1,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isLoading 
-        ? Center(child: CircularProgressIndicator())
-        : _categorizedMaterials.isEmpty 
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _categorizedMaterials.isEmpty
           ? _buildEmptyState()
           : RefreshIndicator(
               onRefresh: _fetchMaterials,
@@ -86,7 +91,9 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                 padding: const EdgeInsets.all(20),
                 itemCount: _categorizedMaterials.length,
                 itemBuilder: (context, index) {
-                  String courseTitle = _categorizedMaterials.keys.elementAt(index);
+                  String courseTitle = _categorizedMaterials.keys.elementAt(
+                    index,
+                  );
                   List<dynamic> materials = _categorizedMaterials[courseTitle]!;
                   return _buildCourseSection(courseTitle, materials);
                 },
@@ -100,26 +107,38 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.folder_open_rounded, size: 80, color: Colors.grey.shade300),
+          Icon(
+            Icons.folder_open_rounded,
+            size: 80,
+            color: Colors.grey.shade300,
+          ),
           SizedBox(height: 16),
-          const Text('No shared materials yet', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)
+          const Text(
+            'No shared materials yet',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           SizedBox(height: 8),
-          const Text('Materials from your instructors will appear here.', 
-            style: TextStyle(color: Colors.grey)
+          const Text(
+            'Materials from your instructors will appear here.',
+            style: TextStyle(color: Colors.grey),
           ),
           SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _fetchMaterials, 
+            onPressed: _fetchMaterials,
             icon: const Icon(Icons.refresh),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -138,14 +157,18 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                 height: 18,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.secondary,
-                  borderRadius: BorderRadius.circular(2)
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  courseTitle, 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+                  courseTitle,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -153,12 +176,18 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10)
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.secondary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  '${materials.length}', 
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
+                  '${materials.length}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 ),
               ),
             ],
@@ -174,11 +203,14 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     String title = material['title'] ?? 'Untitled Material';
     String description = material['description'] ?? '';
     String fileType = material['file_type'] ?? '';
-    int fileSize = int.tryParse(material['file_size_bytes']?.toString() ?? '0') ?? 0;
+    int fileSize =
+        int.tryParse(material['file_size_bytes']?.toString() ?? '0') ?? 0;
     String date = '';
     if (material['created_at'] != null) {
       try {
-        date = DateFormat('MMM d, yyyy').format(DateTime.parse(material['created_at']));
+        date = DateFormat(
+          'MMM d, yyyy',
+        ).format(DateTime.parse(material['created_at']));
       } catch (e) {
         date = material['created_at'].toString().split('T')[0];
       }
@@ -193,10 +225,16 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     } else if (fileType.contains('image')) {
       iconData = Icons.image_rounded;
       iconColor = Colors.green;
-    } else if (fileType.contains('word') || fileType.contains('officedocument.word') || title.endsWith('.docx') || title.endsWith('.doc')) {
+    } else if (fileType.contains('word') ||
+        fileType.contains('officedocument.word') ||
+        title.endsWith('.docx') ||
+        title.endsWith('.doc')) {
       iconData = Icons.description_rounded;
       iconColor = Colors.blue.shade700;
-    } else if (fileType.contains('presentation') || fileType.contains('powerpoint') || title.endsWith('.pptx') || title.endsWith('.ppt')) {
+    } else if (fileType.contains('presentation') ||
+        fileType.contains('powerpoint') ||
+        title.endsWith('.pptx') ||
+        title.endsWith('.ppt')) {
       iconData = Icons.slideshow_rounded;
       iconColor = Colors.orange.shade800;
     } else if (fileType.contains('video')) {
@@ -207,107 +245,149 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     return DownloadableBehavior(
       filePath: material['file_path']?.toString() ?? '',
       fileName: material['title'] ?? 'material',
-      builder: (context, isDownloaded, isDownloading, isPaused, progress, onTap) {
-        IconData currentIconData = iconData;
-        Color currentIconColor = iconColor;
+      builder:
+          (context, isDownloaded, isDownloading, isPaused, progress, onTap) {
+            IconData currentIconData = iconData;
+            Color currentIconColor = iconColor;
 
-        if (!isDownloaded && !isDownloading) {
-          currentIconData = Icons.download_rounded;
-          currentIconColor = Colors.grey;
-        } else if (isDownloading) {
-          currentIconData = isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded;
-          currentIconColor = Colors.orange;
-        }
+            if (!isDownloaded && !isDownloading) {
+              currentIconData = Icons.download_rounded;
+              currentIconColor = Colors.grey;
+            } else if (isDownloading) {
+              currentIconData = isPaused
+                  ? Icons.play_arrow_rounded
+                  : Icons.pause_rounded;
+              currentIconColor = Colors.orange;
+            }
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              )
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                final courseId = _courses.firstWhere((c) => c['title'] == courseTitle, orElse: () => {'id': ''})['id'].toString();
-                if (courseId.isNotEmpty) {
-                  _apiService.logReadingDuration(courseId, material['id']?.toString() ?? 'unknown', 3600);
-                }
-                if (onTap != null) onTap();
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    Stack(
-                      alignment: Alignment.center,
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    final courseId = _courses
+                        .firstWhere(
+                          (c) => c['title'] == courseTitle,
+                          orElse: () => {'id': ''},
+                        )['id']
+                        .toString();
+                    if (courseId.isNotEmpty) {
+                      _apiService.logReadingDuration(
+                        courseId,
+                        material['id']?.toString() ?? 'unknown',
+                        3600,
+                      );
+                    }
+                    if (onTap != null) onTap();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
                       children: [
-                        if (isDownloading)
-                          SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: CircularProgressIndicator(
-                              value: progress,
-                              strokeWidth: 3,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (isDownloading)
+                              SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: CircularProgressIndicator(
+                                  value: progress,
+                                  strokeWidth: 3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.orange,
+                                  ),
+                                ),
+                              ),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: currentIconColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                currentIconData,
+                                color: currentIconColor,
+                                size: 24,
+                              ),
                             ),
+                          ],
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (description.isNotEmpty &&
+                                  description != 'null') ...[
+                                SizedBox(height: 2),
+                                Text(
+                                  description,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                              SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  if (date.isNotEmpty) ...[
+                                    Text(
+                                      date,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey.shade500,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                  ],
+                                  Text(
+                                    _formatFileSize(fileSize),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade500,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: currentIconColor.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(currentIconData, color: currentIconColor, size: 24),
                         ),
                       ],
                     ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(title, 
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (description.isNotEmpty && description != 'null') ...[
-                            SizedBox(height: 2),
-                            Text(description, 
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                          SizedBox(height: 6),
-                          Row(
-                            children: [
-                              if (date.isNotEmpty) ...[
-                                Text(date, style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-                                SizedBox(width: 12),
-                              ],
-                              Text(_formatFileSize(fileSize), style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
-      }
+            );
+          },
     );
   }
 
@@ -317,5 +397,4 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
     var i = (math.log(bytes) / math.log(1024)).floor();
     return ((bytes / math.pow(1024, i)).toStringAsFixed(1)) + ' ' + suffixes[i];
   }
-
 }

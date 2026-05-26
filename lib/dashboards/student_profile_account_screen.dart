@@ -6,10 +6,12 @@ class StudentProfileAccountScreen extends StatefulWidget {
   const StudentProfileAccountScreen({super.key});
 
   @override
-  State<StudentProfileAccountScreen> createState() => _StudentProfileAccountScreenState();
+  State<StudentProfileAccountScreen> createState() =>
+      _StudentProfileAccountScreenState();
 }
 
-class _StudentProfileAccountScreenState extends State<StudentProfileAccountScreen> {
+class _StudentProfileAccountScreenState
+    extends State<StudentProfileAccountScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _groupNameController = TextEditingController();
   String _studentId = '';
@@ -49,10 +51,13 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('username', _usernameController.text);
       await prefs.setString('group_name', _groupNameController.text);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request sent to admin successfully!'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Request sent to admin successfully!'),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
@@ -70,18 +75,22 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
   @override
   Widget build(BuildContext context) {
     if (!_isDataLoaded) {
-      return const Scaffold(
-        
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
-      
       appBar: AppBar(
-        title: Text('Account Details', style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
-        
+        title: Text(
+          'Account Details',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.secondary),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.secondary,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -90,14 +99,26 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
           children: [
             const Text(
               "Manage Your Info",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 30),
             _buildReadOnlyField("Student ID (Cannot be changed)", _studentId),
             const SizedBox(height: 20),
-            _buildEditableField("Username", _usernameController, Icons.alternate_email_rounded),
+            _buildEditableField(
+              "Username",
+              _usernameController,
+              Icons.alternate_email_rounded,
+            ),
             const SizedBox(height: 20),
-            _buildEditableField("Group Name", _groupNameController, Icons.groups_rounded),
+            _buildEditableField(
+              "Group Name",
+              _groupNameController,
+              Icons.groups_rounded,
+            ),
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: _saveData,
@@ -105,9 +126,14 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 55),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
-              child: const Text("Request Admin Approval", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              child: const Text(
+                "Request Admin Approval",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -119,7 +145,14 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black54, fontSize: 13)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.black54,
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
@@ -128,17 +161,31 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
             color: Colors.grey.shade200,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(value, style: const TextStyle(fontSize: 16, color: Colors.black45)),
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 16, color: Colors.black45),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildEditableField(String label, TextEditingController controller, IconData icon) {
+  Widget _buildEditableField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blueGrey, fontSize: 13)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.blueGrey,
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
@@ -146,8 +193,14 @@ class _StudentProfileAccountScreenState extends State<StudentProfileAccountScree
             prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
             filled: true,
             fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 16,
+            ),
           ),
         ),
       ],

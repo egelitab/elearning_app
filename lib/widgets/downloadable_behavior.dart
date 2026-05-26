@@ -12,13 +12,14 @@ class DownloadableBehavior extends StatefulWidget {
   final String filePath;
   final String fileName;
   final Widget Function(
-    BuildContext context, 
-    bool isDownloaded, 
-    bool isDownloading, 
-    bool isPaused, 
-    double? progress, 
-    Future<void> Function() onTap
-  ) builder;
+    BuildContext context,
+    bool isDownloaded,
+    bool isDownloading,
+    bool isPaused,
+    double? progress,
+    Future<void> Function() onTap,
+  )
+  builder;
 
   const DownloadableBehavior({
     super.key,
@@ -37,7 +38,7 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
   bool _isDownloading = false;
   bool _isPaused = false;
   double? _progress;
-  
+
   StreamSubscription<List<int>>? _subscription;
   IOSink? _fileSink;
   File? _targetFile;
@@ -57,14 +58,17 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
 
   Future<void> _checkStatus() async {
     if (widget.filePath.isEmpty) return;
-    bool downloaded = await _apiService.isFileDownloaded(widget.filePath, fileName: widget.fileName);
+    bool downloaded = await _apiService.isFileDownloaded(
+      widget.filePath,
+      fileName: widget.fileName,
+    );
     if (mounted) {
       setState(() {
         _isDownloaded = downloaded;
       });
     }
   }
-  
+
   Future<void> _handleTap() async {
     if (_isDownloaded) {
       await _openFile();
@@ -119,8 +123,9 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
         }
         if (!normalizedPath.startsWith('/') && !cleanBaseUrl.endsWith('/')) {
           url = '$cleanBaseUrl/$normalizedPath';
-        } else if (normalizedPath.startsWith('/') && cleanBaseUrl.endsWith('/')) {
-           url = cleanBaseUrl + normalizedPath.substring(1);
+        } else if (normalizedPath.startsWith('/') &&
+            cleanBaseUrl.endsWith('/')) {
+          url = cleanBaseUrl + normalizedPath.substring(1);
         } else {
           url = '$cleanBaseUrl$normalizedPath';
         }
@@ -136,13 +141,15 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
         if (Platform.isAndroid) {
           dir = Directory('/storage/emulated/0/Download/ELMS');
         } else {
-          dir = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+          dir = Directory(
+            '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+          );
         }
-        
+
         if (!await dir.exists()) {
           await dir.create(recursive: true);
         }
-        
+
         String finalFileName = widget.fileName;
         if (!finalFileName.contains('.') && widget.filePath.contains('.')) {
           final ext = widget.filePath.split('.').last;
@@ -151,7 +158,7 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
         if (finalFileName.isEmpty || !finalFileName.contains('.')) {
           finalFileName = "file_${DateTime.now().millisecondsSinceEpoch}.bin";
         }
-        
+
         _targetFile = File('${dir.path}/$finalFileName');
         _fileSink = _targetFile!.openWrite();
 
@@ -186,7 +193,9 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
                 _isDownloading = false;
                 _isPaused = false;
               });
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Download failed: $e')));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('Download failed: $e')));
             }
           },
           cancelOnError: true,
@@ -200,7 +209,9 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
         _isPaused = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not start download: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not start download: $e')));
       }
     }
   }
@@ -212,7 +223,9 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
       if (Platform.isAndroid) {
         dir = Directory('/storage/emulated/0/Download/ELMS');
       } else {
-        dir = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+        dir = Directory(
+          '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+        );
       }
       String finalFileName = widget.fileName;
       if (!finalFileName.contains('.') && widget.filePath.contains('.')) {
@@ -223,13 +236,29 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
     }
 
     if (await _targetFile!.exists()) {
-      if (['txt', 'docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls', 'pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp']
-          .contains(_targetFile!.path.split('.').last.toLowerCase())) {
+      if ([
+        'txt',
+        'docx',
+        'pptx',
+        'xlsx',
+        'doc',
+        'ppt',
+        'xls',
+        'pdf',
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'bmp',
+      ].contains(_targetFile!.path.split('.').last.toLowerCase())) {
         if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => FileViewerScreen(filePath: _targetFile!.path, fileName: widget.fileName)
+            builder: (context) => FileViewerScreen(
+              filePath: _targetFile!.path,
+              fileName: widget.fileName,
+            ),
           ),
         );
       } else {
@@ -243,6 +272,13 @@ class _DownloadableBehaviorState extends State<DownloadableBehavior> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.builder(context, _isDownloaded, _isDownloading, _isPaused, _progress, _handleTap);
+    return widget.builder(
+      context,
+      _isDownloaded,
+      _isDownloading,
+      _isPaused,
+      _progress,
+      _handleTap,
+    );
   }
 }

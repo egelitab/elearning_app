@@ -3,17 +3,21 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DateHelper {
-  static final ValueNotifier<String> calendarFormat = ValueNotifier<String>('Global');
+  static final ValueNotifier<String> calendarFormat = ValueNotifier<String>(
+    'Global',
+  );
   static SharedPreferences? _prefs;
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
-    calendarFormat.value = _prefs?.getString('pref_calendar_format') ?? 'Global';
+    calendarFormat.value =
+        _prefs?.getString('pref_calendar_format') ?? 'Global';
   }
 
   static Future<void> refresh() async {
     await _prefs?.reload();
-    calendarFormat.value = _prefs?.getString('pref_calendar_format') ?? 'Global';
+    calendarFormat.value =
+        _prefs?.getString('pref_calendar_format') ?? 'Global';
   }
 
   static String formatDue(String dueDateStr) {
@@ -29,7 +33,8 @@ class DateHelper {
       }
 
       if (difference.inHours < 24) {
-        if (difference.inHours == 0) return "Due in ${difference.inMinutes} mins";
+        if (difference.inHours == 0)
+          return "Due in ${difference.inMinutes} mins";
         return "Due in ${difference.inHours} hrs";
       }
 
@@ -60,12 +65,12 @@ class DateHelper {
       if (startOnly) return "${slot.split(' - ')[0]} (Eth)";
       return "$slot (Eth)";
     }
-    
+
     // Input is assumed to be Ethiopian format (e.g., "02:00 - 03:45")
     try {
       final parts = slot.split(' - ');
       if (parts.length != 2) return slot;
-      
+
       if (startOnly) return _ethToGregorian(parts[0]);
       return "${_ethToGregorian(parts[0])} - ${_ethToGregorian(parts[1])}";
     } catch (_) {
@@ -76,15 +81,15 @@ class DateHelper {
   static String _ethToGregorian(String ethTime) {
     final timeParts = ethTime.trim().split(':');
     if (timeParts.length != 2) return ethTime;
-    
+
     int hour = int.parse(timeParts[0]);
     int minute = int.parse(timeParts[1]);
-    
+
     // Ethiopian daytime starts at 6:00 AM Gregorian (12:00 Eth)
     // 1:00 Eth = 7:00 AM Greg
     // Offset is +6
     int gregHour = (hour + 6);
-    
+
     String period = "AM";
     if (gregHour >= 12) {
       if (gregHour >= 24) {
@@ -97,9 +102,9 @@ class DateHelper {
     } else {
       period = "AM";
     }
-    
+
     if (gregHour == 0) gregHour = 12;
-    
+
     return "${gregHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period";
   }
 
@@ -122,6 +127,3 @@ class DateHelper {
     return "$ethHour:${dt.minute.toString().padLeft(2, '0')} $period";
   }
 }
-
-
-

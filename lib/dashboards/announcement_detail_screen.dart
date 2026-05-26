@@ -347,12 +347,14 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         _currentAnnouncement['attachment_details'] as List<dynamic>? ?? [];
 
     return Scaffold(
-      
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: Theme.of(context).colorScheme.secondary),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context, _hasChanged),
         ),
         title: Text(
@@ -443,7 +445,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary,
                         radius: 20,
                         child: Text(
                           (instructor ?? 'A').substring(0, 1).toUpperCase(),
@@ -550,7 +554,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.1)),
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -561,16 +567,19 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: FutureBuilder<bool>(
-            future: path.isNotEmpty ? _apiService.isFileDownloaded(path) : Future.value(false),
+            future: path.isNotEmpty
+                ? _apiService.isFileDownloaded(path)
+                : Future.value(false),
             builder: (context, snapshot) {
               IconData currentIcon = _getIconForType(type);
               Color currentColor = Theme.of(context).primaryColor;
-              if (snapshot.connectionState == ConnectionState.done && snapshot.data == false) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.data == false) {
                 currentIcon = Icons.download_rounded;
                 currentColor = Colors.grey;
               }
               return Icon(currentIcon, color: currentColor, size: 26);
-            }
+            },
           ),
         ),
         title: Text(
@@ -624,14 +633,22 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     return Icons.insert_drive_file_rounded;
   }
 
-  Future<void> _launchURL(BuildContext context, String url, String? fileName) async {
+  Future<void> _launchURL(
+    BuildContext context,
+    String url,
+    String? fileName,
+  ) async {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Downloading and opening file...")),
       );
     }
     try {
-      await _apiService.downloadAndOpenFile(url, context: context, fileName: fileName);
+      await _apiService.downloadAndOpenFile(
+        url,
+        context: context,
+        fileName: fileName,
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(

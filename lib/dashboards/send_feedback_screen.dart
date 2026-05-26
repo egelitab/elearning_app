@@ -30,9 +30,9 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
 
   void _submitFeedback() async {
     if (_selectedRating == -1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a rating.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a rating.')));
       return;
     }
 
@@ -64,10 +64,19 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
           backgroundColor: AppColors.appBar,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_rounded, color: AppColors.appBarForeground),
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: AppColors.appBarForeground,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text("Send Feedback", style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold)),
+          title: Text(
+            "Send Feedback",
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -76,7 +85,11 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
             children: [
               Text(
                 "How was your experience?",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryText),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
@@ -98,10 +111,14 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+                        color: isSelected
+                            ? AppColors.primary.withOpacity(0.1)
+                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : Colors.transparent,
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.transparent,
                           width: 2,
                         ),
                       ),
@@ -109,17 +126,19 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                         children: [
                           Text(
                             _ratings[index]["emoji"]!,
-                            style: TextStyle(
-                              fontSize: isSelected ? 36 : 30,
-                            ),
+                            style: TextStyle(fontSize: isSelected ? 36 : 30),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _ratings[index]["label"]!,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppColors.primary : AppColors.secondaryText,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.secondaryText,
                             ),
                           ),
                         ],
@@ -131,7 +150,11 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
               const SizedBox(height: 40),
               Text(
                 "Tell us more (Optional)",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primaryText),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
               ),
               const SizedBox(height: 10),
               TextField(
@@ -140,7 +163,9 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                 style: TextStyle(color: AppColors.primaryText),
                 decoration: InputDecoration(
                   hintText: "What did you like or dislike?",
-                  hintStyle: TextStyle(color: AppColors.secondaryText.withOpacity(0.5)),
+                  hintStyle: TextStyle(
+                    color: AppColors.secondaryText.withOpacity(0.5),
+                  ),
                   filled: true,
                   fillColor: AppColors.card,
                   border: OutlineInputBorder(
@@ -168,11 +193,17 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                       ? const SizedBox(
                           height: 24,
                           width: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text(
                           "Submit Feedback",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

@@ -15,7 +15,10 @@ class TermsConditionsScreen extends StatelessWidget {
           backgroundColor: AppColors.appBar,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.appBarForeground),
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.appBarForeground,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(

@@ -5,18 +5,23 @@ import '../widgets/downloadable_behavior.dart';
 class InstructorGradingSubmissionsScreen extends StatefulWidget {
   final dynamic gradingTask;
 
-  const InstructorGradingSubmissionsScreen({super.key, required this.gradingTask});
+  const InstructorGradingSubmissionsScreen({
+    super.key,
+    required this.gradingTask,
+  });
 
   @override
-  State<InstructorGradingSubmissionsScreen> createState() => _InstructorGradingSubmissionsScreenState();
+  State<InstructorGradingSubmissionsScreen> createState() =>
+      _InstructorGradingSubmissionsScreenState();
 }
 
-class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSubmissionsScreen> {
+class _InstructorGradingSubmissionsScreenState
+    extends State<InstructorGradingSubmissionsScreen> {
   final ApiService _apiService = ApiService();
   List<dynamic> _submissions = [];
   bool _isLoading = true;
   String? _error;
-  
+
   String _filter = 'All'; // All, Needs Grading, Graded
   String _selectedSection = 'All Sections';
   List<String> _sections = ['All Sections'];
@@ -36,19 +41,22 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
       _error = null;
     });
     try {
-      final data = await _apiService.getSubmissions(widget.gradingTask['id'].toString());
+      final data = await _apiService.getSubmissions(
+        widget.gradingTask['id'].toString(),
+      );
       if (mounted) {
         setState(() {
           _submissions = data;
-          
+
           // Extract unique departments and sections for filters
           for (var sub in data) {
             String? dept = sub['department_name'];
             String? sect = sub['section'];
-            if (dept != null && !_departments.contains(dept)) _departments.add(dept);
+            if (dept != null && !_departments.contains(dept))
+              _departments.add(dept);
             if (sect != null && !_sections.contains(sect)) _sections.add(sect);
           }
-          
+
           _isLoading = false;
         });
       }
@@ -63,8 +71,12 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
   }
 
   void _showGradingSheet(Map<String, dynamic> submission, int index) {
-    final TextEditingController scoreController = TextEditingController(text: submission['score']);
-    final TextEditingController feedbackController = TextEditingController(text: submission['feedback']);
+    final TextEditingController scoreController = TextEditingController(
+      text: submission['score'],
+    );
+    final TextEditingController feedbackController = TextEditingController(
+      text: submission['feedback'],
+    );
 
     showModalBottomSheet(
       context: context,
@@ -105,22 +117,32 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                     children: [
                       Expanded(
                         child: Text(
-                          submission['status'] == 'Graded' ? "Edit Grade" : "Grade Submission",
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+                          submission['status'] == 'Graded'
+                              ? "Edit Grade"
+                              : "Grade Submission",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
                         ),
                       ),
                       SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           submission['name'],
-                          style: const TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.bold,
+                          ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                      )
+                      ),
                     ],
                   ),
                   SizedBox(height: 25),
-                  
+
                   // Grade Input
                   Row(
                     children: [
@@ -128,26 +150,36 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                         child: TextField(
                           controller: scoreController,
                           keyboardType: TextInputType.number,
-                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
                           decoration: InputDecoration(
                             labelText: "Score",
                             labelStyle: const TextStyle(fontSize: 16),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            prefixIcon: const Icon(Icons.star_rounded, color: Color(0xFFFFCA28)),
+                            prefixIcon: const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFFFCA28),
+                            ),
                           ),
                         ),
                       ),
                       SizedBox(width: 15),
                       const Text(
-                        "/ 100", 
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black54)
+                        "/ 100",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
+                        ),
                       ),
                     ],
                   ),
                   SizedBox(height: 20),
-                  
+
                   // Feedback Input
                   TextField(
                     controller: feedbackController,
@@ -161,7 +193,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                     ),
                   ),
                   SizedBox(height: 30),
-                  
+
                   // Save Button
                   SizedBox(
                     width: double.infinity,
@@ -170,37 +202,56 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       onPressed: () async {
                         if (scoreController.text.isNotEmpty) {
                           try {
-                            double gradeVal = double.parse(scoreController.text);
+                            double gradeVal = double.parse(
+                              scoreController.text,
+                            );
                             await _apiService.gradeSubmission(
-                              submission['id'].toString(), 
-                              gradeVal, 
-                              feedbackController.text
+                              submission['id'].toString(),
+                              gradeVal,
+                              feedbackController.text,
                             );
 
                             if (mounted) {
                               Navigator.pop(context);
                               _fetchSubmissions(); // Refresh the list
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Grade Saved successfully!"), backgroundColor: Colors.green)
+                                const SnackBar(
+                                  content: Text("Grade Saved successfully!"),
+                                  backgroundColor: Colors.green,
+                                ),
                               );
                             }
                           } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("Error saving grade: $e"), backgroundColor: Colors.red)
+                              SnackBar(
+                                content: Text("Error saving grade: $e"),
+                                backgroundColor: Colors.red,
+                              ),
                             );
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Please enter a score."))
+                            const SnackBar(
+                              content: Text("Please enter a score."),
+                            ),
                           );
                         }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 4,
                       ),
-                      child: const Text("Save Grade", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        "Save Grade",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 10),
@@ -209,59 +260,71 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
             ),
           ),
         );
-      }
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     Color typeColor = widget.gradingTask['color'] ?? Colors.blue;
-    
+
     if (_isLoading) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (_error != null) {
       return Scaffold(
-        body: Center(child: Text(_error!, style: const TextStyle(color: Colors.red))),
+        body: Center(
+          child: Text(_error!, style: const TextStyle(color: Colors.red)),
+        ),
       );
     }
 
     final filteredSubmissions = _submissions.where((sub) {
       final isGraded = sub['grade'] != null;
-      bool statusMatches = _filter == 'All' || 
-          (_filter == 'Graded' && isGraded) || 
+      bool statusMatches =
+          _filter == 'All' ||
+          (_filter == 'Graded' && isGraded) ||
           (_filter == 'Needs Grading' && !isGraded);
-      
-      bool sectionMatches = _selectedSection == 'All Sections' || sub['section'] == _selectedSection;
-      bool departmentMatches = _selectedDepartment == 'All Departments' || sub['department_name'] == _selectedDepartment;
-      
+
+      bool sectionMatches =
+          _selectedSection == 'All Sections' ||
+          sub['section'] == _selectedSection;
+      bool departmentMatches =
+          _selectedDepartment == 'All Departments' ||
+          sub['department_name'] == _selectedDepartment;
+
       return statusMatches && sectionMatches && departmentMatches;
     }).toList();
 
     return Scaffold(
-      
       appBar: AppBar(
-        
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
-          onPressed: () => Navigator.pop(context, true), // Return true to trigger refresh
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+            size: 20,
+          ),
+          onPressed: () =>
+              Navigator.pop(context, true), // Return true to trigger refresh
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.gradingTask['title'] ?? 'Grading', 
-              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18, fontWeight: FontWeight.bold),
+              widget.gradingTask['title'] ?? 'Grading',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.secondary,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
             Text(
               "${widget.gradingTask['course_title'] ?? ''} (${widget.gradingTask['course_code'] ?? ''})",
               style: const TextStyle(color: Colors.black54, fontSize: 12),
-            )
+            ),
           ],
         ),
       ),
@@ -284,15 +347,22 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedDepartment,
-                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.secondary),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                         items: _departments.map((String dept) {
                           return DropdownMenuItem<String>(
                             value: dept,
                             child: Text(
                               dept,
                               style: TextStyle(
-                                color: _selectedDepartment == dept ? Theme.of(context).colorScheme.secondary : Colors.black87,
-                                fontWeight: _selectedDepartment == dept ? FontWeight.bold : FontWeight.normal,
+                                color: _selectedDepartment == dept
+                                    ? Theme.of(context).colorScheme.secondary
+                                    : Colors.black87,
+                                fontWeight: _selectedDepartment == dept
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 fontSize: 13,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -323,15 +393,22 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: _selectedSection,
-                        icon: Icon(Icons.keyboard_arrow_down_rounded, color: Theme.of(context).colorScheme.secondary),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: Theme.of(context).colorScheme.secondary,
+                        ),
                         items: _sections.map((String section) {
                           return DropdownMenuItem<String>(
                             value: section,
                             child: Text(
                               section,
                               style: TextStyle(
-                                color: _selectedSection == section ? Theme.of(context).colorScheme.secondary : Colors.black87,
-                                fontWeight: _selectedSection == section ? FontWeight.bold : FontWeight.normal,
+                                color: _selectedSection == section
+                                    ? Theme.of(context).colorScheme.secondary
+                                    : Colors.black87,
+                                fontWeight: _selectedSection == section
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 fontSize: 13,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -352,7 +429,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
               ],
             ),
           ),
-          
+
           // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -371,31 +448,38 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       });
                     },
                     selectedColor: typeColor.withOpacity(0.15),
-                    
+
                     side: BorderSide(
                       color: isSelected ? typeColor : Colors.black12,
                     ),
                     labelStyle: TextStyle(
                       color: isSelected ? typeColor : Colors.black87,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 );
               }).toList(),
             ),
           ),
-          
+
           Expanded(
             child: filteredSubmissions.isEmpty
-              ? Center(child: Text("No submissions found", style: TextStyle(color: Colors.black54)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: filteredSubmissions.length,
-                  itemBuilder: (context, index) {
-                    final item = filteredSubmissions[index];
-                    return _buildSubmissionCard(item, index);
-                  },
-                ),
+                ? Center(
+                    child: Text(
+                      "No submissions found",
+                      style: TextStyle(color: Colors.black54),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: filteredSubmissions.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredSubmissions[index];
+                      return _buildSubmissionCard(item, index);
+                    },
+                  ),
           ),
         ],
       ),
@@ -405,12 +489,12 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
   Widget _buildSubmissionCard(dynamic item, int index) {
     bool isGraded = item['grade'] != null;
     bool isGroup = item['group_id'] != null;
-    
-    String displayName = isGroup 
+
+    String displayName = isGroup
         ? (item['group_name'] ?? 'Unknown Group')
         : "${item['first_name'] ?? ''} ${item['last_name'] ?? ''}";
-    
-    String initials = isGroup 
+
+    String initials = isGroup
         ? (item['group_name']?.toString().split('-').last.trim() ?? 'G')
         : (item['first_name']?[0] ?? 'S');
 
@@ -418,12 +502,16 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
     if (item['submission_date'] != null) {
       try {
         DateTime dt = DateTime.parse(item['submission_date']).toLocal();
-        submittedAt = "${_getMonth(dt.month)} ${dt.day}, ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}";
+        submittedAt =
+            "${_getMonth(dt.month)} ${dt.day}, ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}";
       } catch (_) {}
     }
 
-    String fileName = item['file_path']?.toString().split('/').last ?? 'submission.file';
-    String displayFileName = isGroup ? "Group Submission" : "$displayName's Submission";
+    String fileName =
+        item['file_path']?.toString().split('/').last ?? 'submission.file';
+    String displayFileName = isGroup
+        ? "Group Submission"
+        : "$displayName's Submission";
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -436,7 +524,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
             color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -457,9 +545,13 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       ),
                       child: Center(
                         child: Text(
-                          initials, 
-                          style: TextStyle(color: Theme.of(context).primaryColor, fontWeight: FontWeight.bold, fontSize: 14)
-                        )
+                          initials,
+                          style: TextStyle(
+                            color: Theme.of(context).primaryColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(width: 12),
@@ -467,16 +559,42 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), overflow: TextOverflow.ellipsis),
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           SizedBox(height: 2),
-                          Text("${item['department_name'] ?? ''} - ${item['section'] ?? ''}", style: const TextStyle(fontSize: 12, color: Colors.black54), overflow: TextOverflow.ellipsis),
+                          Text(
+                            "${item['department_name'] ?? ''} - ${item['section'] ?? ''}",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.access_time_rounded, size: 12, color: Colors.black45),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 12,
+                                color: Colors.black45,
+                              ),
                               SizedBox(width: 4),
                               Expanded(
-                                child: Text("Submitted: $submittedAt", style: const TextStyle(color: Colors.black45, fontSize: 12), overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  "Submitted: $submittedAt",
+                                  style: const TextStyle(
+                                    color: Colors.black45,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),
@@ -489,34 +607,52 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
               SizedBox(width: 8),
               if (isGraded)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        color: Colors.green,
+                        size: 14,
+                      ),
                       SizedBox(width: 4),
                       Text(
                         "${item['grade']} / 100",
-                        style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     "Needs Grading",
-                    style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 11),
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11,
+                    ),
                   ),
-                )
+                ),
             ],
           ),
           SizedBox(height: 16),
@@ -524,64 +660,95 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
           DownloadableBehavior(
             filePath: item['file_path']?.toString() ?? '',
             fileName: fileName,
-            builder: (context, isDownloaded, isDownloading, isPaused, progress, onTap) {
-              IconData mainIcon = fileName.toLowerCase().endsWith('.pdf') ? Icons.picture_as_pdf_rounded : Icons.description_rounded;
-              Color mainColor = fileName.toLowerCase().endsWith('.pdf') ? Colors.redAccent : Colors.blueAccent;
-              
-              if (!isDownloaded && !isDownloading) {
-                mainIcon = Icons.download_rounded;
-                mainColor = Colors.grey;
-              } else if (isDownloading) {
-                mainIcon = isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded;
-                mainColor = Colors.orange;
-              }
+            builder:
+                (
+                  context,
+                  isDownloaded,
+                  isDownloading,
+                  isPaused,
+                  progress,
+                  onTap,
+                ) {
+                  IconData mainIcon = fileName.toLowerCase().endsWith('.pdf')
+                      ? Icons.picture_as_pdf_rounded
+                      : Icons.description_rounded;
+                  Color mainColor = fileName.toLowerCase().endsWith('.pdf')
+                      ? Colors.redAccent
+                      : Colors.blueAccent;
 
-              return Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black12),
-                ),
-                child: InkWell(
-                  onTap: onTap,
-                  child: Row(
-                    children: [
-                      Stack(
-                        alignment: Alignment.center,
+                  if (!isDownloaded && !isDownloading) {
+                    mainIcon = Icons.download_rounded;
+                    mainColor = Colors.grey;
+                  } else if (isDownloading) {
+                    mainIcon = isPaused
+                        ? Icons.play_arrow_rounded
+                        : Icons.pause_rounded;
+                    mainColor = Colors.orange;
+                  }
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: InkWell(
+                      onTap: onTap,
+                      child: Row(
                         children: [
-                          if (isDownloading)
-                            SizedBox(
-                              width: 32,
-                              height: 32,
-                              child: CircularProgressIndicator(
-                                value: progress,
-                                strokeWidth: 3,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
-                              ),
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              if (isDownloading)
+                                SizedBox(
+                                  width: 32,
+                                  height: 32,
+                                  child: CircularProgressIndicator(
+                                    value: progress,
+                                    strokeWidth: 3,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.orange,
+                                    ),
+                                  ),
+                                ),
+                              Icon(mainIcon, color: mainColor, size: 24),
+                            ],
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  displayFileName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    color: Colors.black87,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  isDownloading
+                                      ? (isPaused
+                                            ? "Paused"
+                                            : "Downloading... ${(progress != null ? (progress * 100).toStringAsFixed(0) : "0")}%")
+                                      : (!isDownloaded
+                                            ? "Tap to download"
+                                            : "Click to view submission"),
+                                  style: const TextStyle(
+                                    color: Colors.black54,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
-                          Icon(mainIcon, color: mainColor, size: 24),
+                          ),
                         ],
                       ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(displayFileName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis),
-                            Text(
-                              isDownloading 
-                                ? (isPaused ? "Paused" : "Downloading... ${(progress != null ? (progress * 100).toStringAsFixed(0) : "0")}%") 
-                                : (!isDownloaded ? "Tap to download" : "Click to view submission"), 
-                            style: const TextStyle(color: Colors.black54, fontSize: 12)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
+                    ),
+                  );
+                },
           ),
           SizedBox(height: 16),
           // Action Button
@@ -590,16 +757,24 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
             child: OutlinedButton(
               onPressed: () => _showGradingSheet(item, index),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: isGraded ? Colors.black26 : Theme.of(context).primaryColor),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                side: BorderSide(
+                  color: isGraded
+                      ? Colors.black26
+                      : Theme.of(context).primaryColor,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
-                isGraded ? "Edit Grade" : "Grade Submission", 
+                isGraded ? "Edit Grade" : "Grade Submission",
                 style: TextStyle(
-                  color: isGraded ? Colors.black54 : Theme.of(context).primaryColor, 
-                  fontWeight: FontWeight.bold
-                )
+                  color: isGraded
+                      ? Colors.black54
+                      : Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -609,7 +784,20 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
   }
 
   String _getMonth(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return months[month - 1];
   }
 }

@@ -5,7 +5,8 @@ class InstructorConvertScreen extends StatefulWidget {
   const InstructorConvertScreen({super.key});
 
   @override
-  State<InstructorConvertScreen> createState() => _InstructorConvertScreenState();
+  State<InstructorConvertScreen> createState() =>
+      _InstructorConvertScreenState();
 }
 
 class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
@@ -21,21 +22,36 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
 
     if (title.isEmpty || content.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter both title and content"), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text("Please enter both title and content"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
-    setState(() { _isConverting = true; _result = null; });
+    setState(() {
+      _isConverting = true;
+      _result = null;
+    });
 
     try {
       final result = await _apiService.convertTextToPdf(title, content);
-      if (mounted) setState(() { _result = result; _isConverting = false; });
+      if (mounted)
+        setState(() {
+          _result = result;
+          _isConverting = false;
+        });
     } catch (e) {
       if (mounted) {
         setState(() => _isConverting = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString().replaceAll('Exception: ', '')}"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+              "Error: ${e.toString().replaceAll('Exception: ', '')}",
+            ),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -51,12 +67,16 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: const Text("To PDF", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text(
+          "To PDF",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         flexibleSpace: Container(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [Color(0xFFFF6D00), Color(0xFFFF8F00)]),
+            gradient: LinearGradient(
+              colors: [Color(0xFFFF6D00), Color(0xFFFF8F00)],
+            ),
           ),
         ),
         elevation: 0,
@@ -89,9 +109,12 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Title field
-            const Text("Document Title", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const Text(
+              "Document Title",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _titleController,
@@ -99,15 +122,27 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
                 hintText: "e.g. Lecture Notes - Week 5",
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFF8F00))),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFF8F00)),
+                ),
               ),
             ),
             const SizedBox(height: 20),
 
             // Content field
-            const Text("Content", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            const Text(
+              "Content",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
             const SizedBox(height: 8),
             TextField(
               controller: _contentController,
@@ -116,9 +151,18 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
                 hintText: "Paste or type your content here...",
                 filled: true,
                 fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFFF8F00))),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFF8F00)),
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -130,15 +174,31 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
               child: ElevatedButton.icon(
                 onPressed: _isConverting ? null : _convert,
                 icon: _isConverting
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.picture_as_pdf_rounded, color: Colors.white),
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.picture_as_pdf_rounded,
+                        color: Colors.white,
+                      ),
                 label: Text(
                   _isConverting ? "Converting..." : "Generate PDF",
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF6D00),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -158,14 +218,29 @@ class _InstructorConvertScreenState extends State<InstructorConvertScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_rounded, color: Colors.green),
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: Colors.green,
+                        ),
                         const SizedBox(width: 8),
-                        const Text("PDF Generated Successfully!", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+                        const Text(
+                          "PDF Generated Successfully!",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text("File: ${_result!['filename'] ?? ''}", style: const TextStyle(fontSize: 13)),
-                    Text("Size: ${_formatBytes(_result!['size'] ?? 0)}", style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                    Text(
+                      "File: ${_result!['filename'] ?? ''}",
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    Text(
+                      "Size: ${_formatBytes(_result!['size'] ?? 0)}",
+                      style: const TextStyle(fontSize: 13, color: Colors.grey),
+                    ),
                     const SizedBox(height: 12),
                     const Text(
                       "The PDF has been saved on the server. You can access it from the Downloads section.",

@@ -18,7 +18,6 @@ import 'system_notifications_screen.dart';
 import 'academic_calendar_screen.dart';
 import '../utils/date_helper.dart';
 
-
 class InstructorHomeScreen extends StatefulWidget {
   const InstructorHomeScreen({super.key});
 
@@ -84,16 +83,24 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
       if (_pageController.hasClients) {
         int nextPage = _pageController.page!.round() + 1;
-        if (nextPage > 1) { // We have 2 cards, so index 0 and 1
+        if (nextPage > 1) {
+          // We have 2 cards, so index 0 and 1
           nextPage = 0;
-          _pageController.animateToPage(nextPage, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
+          _pageController.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOut,
+          );
         } else {
-          _pageController.animateToPage(nextPage, duration: const Duration(milliseconds: 400), curve: Curves.easeIn);
+          _pageController.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeIn,
+          );
         }
       }
     });
   }
-
 
   Future<void> _initData() async {
     await _fetchCourses();
@@ -122,14 +129,20 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     int currentDayIdx = now.weekday - 1; // 0 = Mon, 6 = Sun
 
     // Filter for digital schedules
-    final digitalSchedules = _schedules.where((s) => s['file_path'] == 'DIGITAL_ENTRY').toList();
-    
+    final digitalSchedules = _schedules
+        .where((s) => s['file_path'] == 'DIGITAL_ENTRY')
+        .toList();
+
     // Find matching slots for instructor's courses
-    final Set<String> myCourseTitles = _courses.map((c) => (c['title'] as String).toLowerCase()).toSet();
-    myCourseTitles.addAll(_courses.map((c) => (c['course_code'] as String).toLowerCase()));
+    final Set<String> myCourseTitles = _courses
+        .map((c) => (c['title'] as String).toLowerCase())
+        .toSet();
+    myCourseTitles.addAll(
+      _courses.map((c) => (c['course_code'] as String).toLowerCase()),
+    );
 
     List<Map<String, dynamic>> slots = [];
-    
+
     for (var schedule in digitalSchedules) {
       if (schedule['content'] == null) continue;
       final content = schedule['content'] as Map<String, dynamic>;
@@ -137,14 +150,15 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         String entry = value.toString().trim().toLowerCase();
         // Remove pipe and dash suffixes for cleaner matching
         String courseTitleOnly = entry.split('|')[0].split('-')[0].trim();
-        
-        bool isMyCourse = myCourseTitles.contains(entry) || 
-                         myCourseTitles.contains(courseTitleOnly);
-        
+
+        bool isMyCourse =
+            myCourseTitles.contains(entry) ||
+            myCourseTitles.contains(courseTitleOnly);
+
         // Fallback: check if any of our course identifiers is a substring or vice versa
         if (!isMyCourse) {
-          isMyCourse = myCourseTitles.any((id) => 
-            id.length > 3 && (entry.contains(id) || id.contains(entry))
+          isMyCourse = myCourseTitles.any(
+            (id) => id.length > 3 && (entry.contains(id) || id.contains(entry)),
           );
         }
 
@@ -158,24 +172,29 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 'dayIdx': dayIdx,
                 'slotIdx': slotIdx,
                 'course': value,
-                'schedule': schedule
+                'schedule': schedule,
               });
             } catch (e) {}
           }
         }
       });
-
     }
 
     if (slots.isEmpty) {
       // Check for uploaded files
-      final fileSchedules = _schedules.where((s) => s['file_path'] != 'DIGITAL_ENTRY').toList();
+      final fileSchedules = _schedules
+          .where((s) => s['file_path'] != 'DIGITAL_ENTRY')
+          .toList();
       if (fileSchedules.isNotEmpty) {
         setState(() {
           _upcomingClass = {
             'type': 'file',
             'title': fileSchedules.first['title'] ?? 'Class Schedule',
-            'fileName': fileSchedules.first['file_path'].split('\\').last.split('/').last,
+            'fileName': fileSchedules.first['file_path']
+                .split('\\')
+                .last
+                .split('/')
+                .last,
           };
         });
       } else {
@@ -200,7 +219,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
         break;
       }
     }
-    
+
     // If none found for the rest of the week, pick first one next week
     nextSlot ??= slots.first;
 
@@ -209,14 +228,17 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       "02:00 - 03:45",
       "03:50 - 06:20",
       "07:35 - 09:20",
-      "09:25 - 12:05"
-    ]; 
+      "09:25 - 12:05",
+    ];
 
     setState(() {
       _upcomingClass = {
         'type': 'digital',
         'day': dayNames[nextSlot!['dayIdx']],
-        'time': DateHelper.formatTimeSlot(slotTimes[nextSlot['slotIdx'] % slotTimes.length], startOnly: true),
+        'time': DateHelper.formatTimeSlot(
+          slotTimes[nextSlot['slotIdx'] % slotTimes.length],
+          startOnly: true,
+        ),
         'course': nextSlot['course'],
       };
     });
@@ -249,13 +271,13 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       // Professional light grayish blue background
+      // Professional light grayish blue background
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Header Section with our primary gradient
             _buildHeader(),
-            
+
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: Column(
@@ -263,26 +285,62 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 children: [
                   // Horizontal Scrollable Cards
                   _buildHorizontalCards(context),
-                  
+
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 25.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 25.0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Grid Menu
-                        Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
+                        Text(
+                          "Main Menu",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                         SizedBox(height: 15),
                         _buildMenuGrid(),
-                        
+
                         SizedBox(height: 25),
-                        Text("Quick Actions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
+                        Text(
+                          "Quick Actions",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
                         SizedBox(height: 15),
-                        _buildQuickAction(Icons.send_rounded, "Post Announcement", "Notify all students", () {
-                          _showPostAnnouncementDialog(context);
-                        }),
-                        _buildQuickAction(Icons.download_rounded, "Downloads", "Access offline materials", () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorFilesScreen(showToggle: false, startInDownloads: true)));
-                        }),
+                        _buildQuickAction(
+                          Icons.send_rounded,
+                          "Post Announcement",
+                          "Notify all students",
+                          () {
+                            _showPostAnnouncementDialog(context);
+                          },
+                        ),
+                        _buildQuickAction(
+                          Icons.download_rounded,
+                          "Downloads",
+                          "Access offline materials",
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const InstructorFilesScreen(
+                                      showToggle: false,
+                                      startInDownloads: true,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
@@ -297,13 +355,19 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
 
   void _showPostAnnouncementDialog(BuildContext context) {
     if (_courses.isEmpty && !_isLoadingCourses) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("No courses found to post announcements to.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No courses found to post announcements to."),
+        ),
+      );
       return;
     }
 
     final titleController = TextEditingController();
     final contentController = TextEditingController();
-    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'] : null;
+    String? selectedCourseId = _courses.isNotEmpty
+        ? _courses.first['id']
+        : null;
     String? selectedSection;
     List<dynamic> sections = [];
     bool isModalLoading = false;
@@ -318,187 +382,263 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           // If we have courses but haven't loaded sections for the first one yet
           if (selectedCourseId != null && sections.isEmpty && !isModalLoading) {
             isModalLoading = true;
-            _apiService.getCourseEnrollmentStats(selectedCourseId!).then((stats) {
-              setModalState(() {
-                sections = stats;
-                isModalLoading = false;
-              });
-            }).catchError((e) {
-              setModalState(() => isModalLoading = false);
-            });
+            _apiService
+                .getCourseEnrollmentStats(selectedCourseId!)
+                .then((stats) {
+                  setModalState(() {
+                    sections = stats;
+                    isModalLoading = false;
+                  });
+                })
+                .catchError((e) {
+                  setModalState(() => isModalLoading = false);
+                });
           }
 
           return Container(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
-              top: 30, left: 24, right: 24
+              top: 30,
+              left: 24,
+              right: 24,
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
             ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                   SizedBox(height: 25),
-                   
-                   DropdownButtonFormField<String>(
-                     decoration: InputDecoration(
-                       labelText: "Select Course",
-                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                     ),
-                     value: selectedCourseId,
-                     items: _courses.map<DropdownMenuItem<String>>((course) {
-                       return DropdownMenuItem<String>(
-                         value: course['id'].toString(),
-                         child: Text(course['title'] ?? 'No Title'),
-                       );
-                     }).toList(),
-                     onChanged: (value) async {
-                       setModalState(() {
-                         selectedCourseId = value;
-                         selectedSection = null;
-                         sections = [];
-                         isModalLoading = true;
-                       });
-                       try {
-                         final stats = await _apiService.getCourseEnrollmentStats(value!);
-                         setModalState(() {
-                           sections = stats;
-                           isModalLoading = false;
-                         });
-                       } catch (e) {
-                         setModalState(() => isModalLoading = false);
-                       }
-                     },
-                   ),
-                   SizedBox(height: 15),
-                   
-                   if (selectedCourseId != null)
-                     DropdownButtonFormField<String>(
-                       decoration: InputDecoration(
-                         labelText: "Select Section (Optional)",
-                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                       ),
-                       value: selectedSection,
-                       items: [
-                         const DropdownMenuItem<String>(value: null, child: Text("All Sections")),
-                         ...sections.map<DropdownMenuItem<String>>((s) {
-                           return DropdownMenuItem<String>(
-                             value: s['section'],
-                             child: Text("Section ${s['section']} (${s['department_name']})"),
-                           );
-                         }).toList(),
-                       ],
-                       onChanged: (value) => setModalState(() => selectedSection = value),
-                     ),
-                   SizedBox(height: 15),
-                   
-                   TextField(
-                     controller: titleController,
-                     decoration: InputDecoration(
-                       labelText: "Title",
-                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                     ),
-                   ),
-                   SizedBox(height: 15),
-                   
-                   TextField(
-                     controller: contentController,
-                     maxLines: 4,
-                     decoration: InputDecoration(
-                       labelText: "Content",
-                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
-                     ),
-                   ),
-                   SizedBox(height: 15),
-                   
-                   // Attach Files Section
-                   const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                   SizedBox(height: 8),
-                   if (selectedAttachments.isNotEmpty)
-                     Wrap(
-                       spacing: 8,
-                       children: selectedAttachments.map((item) => Chip(
-                         label: Text(item['name'], style: const TextStyle(fontSize: 12)),
-                         onDeleted: () => setModalState(() => selectedAttachments.remove(item)),
-                       )).toList(),
-                     ),
-                   TextButton.icon(
-                     onPressed: () async {
-                       final result = await Navigator.push(
-                         context, 
-                         MaterialPageRoute(builder: (context) => InstructorStorageExplorerScreen(isPicker: true))
-                       );
-                       if (result != null && result is List) {
-                         setModalState(() {
-                           for (var item in result) {
-                             if (item['type'] == 'file' && !selectedAttachments.any((a) => a['id'] == item['id'])) {
-                               selectedAttachments.add(item);
-                             }
-                           }
-                         });
-                       }
-                     }, 
-                     icon: const Icon(Icons.attach_file_rounded), 
-                     label: const Text("Attach from Storage")
-                   ),
+                  Text(
+                    "New Announcement",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  SizedBox(height: 25),
 
-                   SizedBox(height: 25),
-                   
-                   if (isModalLoading)
-                     Center(child: CircularProgressIndicator())
-                   else
-                     SizedBox(
-                       width: double.infinity,
-                       height: 55,
-                       child: ElevatedButton(
-                         onPressed: () async {
-                           if (selectedCourseId != null && titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
-                              try {
-                                final attachmentIds = selectedAttachments.map((a) => a['id'].toString()).toList();
-                                await _apiService.createAnnouncement(
-                                  selectedCourseId!, 
-                                  titleController.text, 
-                                  contentController.text,
-                                  section: selectedSection,
-                                  attachments: attachmentIds,
-                                );
-                                
-                                if (mounted) {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Announcement published successfully!"), backgroundColor: Colors.green)
-                                  );
-                                }
-                              } catch (e) {
+                  DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: "Select Course",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    value: selectedCourseId,
+                    items: _courses.map<DropdownMenuItem<String>>((course) {
+                      return DropdownMenuItem<String>(
+                        value: course['id'].toString(),
+                        child: Text(course['title'] ?? 'No Title'),
+                      );
+                    }).toList(),
+                    onChanged: (value) async {
+                      setModalState(() {
+                        selectedCourseId = value;
+                        selectedSection = null;
+                        sections = [];
+                        isModalLoading = true;
+                      });
+                      try {
+                        final stats = await _apiService
+                            .getCourseEnrollmentStats(value!);
+                        setModalState(() {
+                          sections = stats;
+                          isModalLoading = false;
+                        });
+                      } catch (e) {
+                        setModalState(() => isModalLoading = false);
+                      }
+                    },
+                  ),
+                  SizedBox(height: 15),
+
+                  if (selectedCourseId != null)
+                    DropdownButtonFormField<String>(
+                      decoration: InputDecoration(
+                        labelText: "Select Section (Optional)",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      value: selectedSection,
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text("All Sections"),
+                        ),
+                        ...sections.map<DropdownMenuItem<String>>((s) {
+                          return DropdownMenuItem<String>(
+                            value: s['section'],
+                            child: Text(
+                              "Section ${s['section']} (${s['department_name']})",
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                      onChanged: (value) =>
+                          setModalState(() => selectedSection = value),
+                    ),
+                  SizedBox(height: 15),
+
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      labelText: "Title",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+
+                  TextField(
+                    controller: contentController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      labelText: "Content",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+
+                  // Attach Files Section
+                  const Text(
+                    "Attachments",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  if (selectedAttachments.isNotEmpty)
+                    Wrap(
+                      spacing: 8,
+                      children: selectedAttachments
+                          .map(
+                            (item) => Chip(
+                              label: Text(
+                                item['name'],
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              onDeleted: () => setModalState(
+                                () => selectedAttachments.remove(item),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  TextButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              InstructorStorageExplorerScreen(isPicker: true),
+                        ),
+                      );
+                      if (result != null && result is List) {
+                        setModalState(() {
+                          for (var item in result) {
+                            if (item['type'] == 'file' &&
+                                !selectedAttachments.any(
+                                  (a) => a['id'] == item['id'],
+                                )) {
+                              selectedAttachments.add(item);
+                            }
+                          }
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.attach_file_rounded),
+                    label: const Text("Attach from Storage"),
+                  ),
+
+                  SizedBox(height: 25),
+
+                  if (isModalLoading)
+                    Center(child: CircularProgressIndicator())
+                  else
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (selectedCourseId != null &&
+                              titleController.text.isNotEmpty &&
+                              contentController.text.isNotEmpty) {
+                            try {
+                              final attachmentIds = selectedAttachments
+                                  .map((a) => a['id'].toString())
+                                  .toList();
+                              await _apiService.createAnnouncement(
+                                selectedCourseId!,
+                                titleController.text,
+                                contentController.text,
+                                section: selectedSection,
+                                attachments: attachmentIds,
+                              );
+
+                              if (mounted) {
+                                Navigator.pop(context);
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red)
+                                  const SnackBar(
+                                    content: Text(
+                                      "Announcement published successfully!",
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               }
-                           } else {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                               const SnackBar(content: Text("Please fill all fields and select a course"), backgroundColor: Colors.orange)
-                             );
-                           }
-                         },
-                         style: ElevatedButton.styleFrom(
-                           backgroundColor: Theme.of(context).primaryColor,
-                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
-                         ),
-                         child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                       ),
-                     ),
-                   SizedBox(height: 30),
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text("Error: $e"),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Please fill all fields and select a course",
+                                ),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          "Post Announcement",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
           );
         },
-      )
+      ),
     );
   }
 
@@ -508,38 +648,73 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       if (result != null) {
         if (!mounted) return;
         PlatformFile selectedFile = result.files.first;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploading...")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Uploading..."),
+          ),
+        );
         try {
-          await _apiService.uploadMaterial(null, selectedFile.name, selectedFile.path!);
+          await _apiService.uploadMaterial(
+            null,
+            selectedFile.name,
+            selectedFile.path!,
+          );
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Uploaded Successfully", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(
+                "Uploaded Successfully",
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(e.toString()), backgroundColor: Colors.red));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                behavior: SnackBarBehavior.floating,
+                content: Text(e.toString()),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text("Error picking file: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Error picking file: $e"),
+        ),
+      );
     }
   }
-
 
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 35),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.secondary,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30), 
+          bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
         boxShadow: [
-           BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
         ],
       ),
       child: Row(
@@ -560,19 +735,33 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                   )
                 else
                   Text(
-                    "Hello, ${_title.isNotEmpty ? '$_title ' : ''}$_firstName".trim(),
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
+                    "Hello, ${_title.isNotEmpty ? '$_title ' : ''}$_firstName"
+                        .trim(),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
                 SizedBox(height: 4),
-                const Text("Welcome to BDU ELMS", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                const Text(
+                  "Welcome to BDU ELMS",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
               ],
             ),
           ),
           GestureDetector(
             onTap: () async {
-              await Navigator.push(context, MaterialPageRoute(builder: (context) => const SystemNotificationsScreen()));
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SystemNotificationsScreen(),
+                ),
+              );
               _fetchSystemUnread();
             },
             child: Stack(
@@ -581,13 +770,16 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                     color: Colors.white24,
-                     shape: BoxShape.circle,
+                    color: Colors.white24,
+                    shape: BoxShape.circle,
                   ),
                   child: CircleAvatar(
-                    
                     radius: 22,
-                    child: Icon(Icons.notifications_none_rounded, color: Theme.of(context).colorScheme.secondary, size: 24),
+                    child: Icon(
+                      Icons.notifications_none_rounded,
+                      color: Theme.of(context).colorScheme.secondary,
+                      size: 24,
+                    ),
                   ),
                 ),
                 if (_systemUnread > 0)
@@ -596,11 +788,21 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(3),
-                      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                      decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
                       child: Text(
                         _systemUnread > 99 ? '99+' : '$_systemUnread',
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -608,7 +810,6 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               ],
             ),
           ),
-
         ],
       ),
     );
@@ -632,132 +833,223 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 });
               },
               children: [
-          // Blue Upcoming Class Card
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 7.5),
-            child: GestureDetector(
-              onTap: () {
-                _carouselTimer?.cancel();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()),
-                ).then((_) {
-                  _startCarouselTimer();
-                });
-              },
-              child: _buildBaseCard(
-                width: double.infinity,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text("Upcoming Class", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                      ],
-                    ),
-                    SizedBox(height: 12),
-                    if (_isLoadingSchedules)
-                      SizedBox(height: 30, width: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    else if (_upcomingClass != null) ...[
-                      if (_upcomingClass!['type'] == 'digital')
-                        Text("${_upcomingClass!['day']} ${_upcomingClass!['time']}", style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))
-                      else
-                        const Text("Upload Available", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      
-                      const Spacer(),
-                      Text(_upcomingClass!['type'] == 'digital' ? _upcomingClass!['course'] : _upcomingClass!['title'], 
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
+                // Blue Upcoming Class Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 7.5),
+                  child: GestureDetector(
+                    onTap: () {
+                      _carouselTimer?.cancel();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const InstructorScheduleScreen(),
+                        ),
+                      ).then((_) {
+                        _startCarouselTimer();
+                      });
+                    },
+                    child: _buildBaseCard(
+                      width: double.infinity,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                    ] else ...[
-                      const Text("Not Available", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      const Text("Schedule is not available", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
-                    ],
-                    SizedBox(height: 2),
-                    const Text("Tap to view details ›", style: TextStyle(color: Colors.white60, fontSize: 12)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Action Card for materials
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 7.5),
-            child: GestureDetector(
-              onTap: () async {
-                _carouselTimer?.cancel();
-                await _handleDirectUpload();
-                _startCarouselTimer();
-              },
-              child: _buildBaseCard(
-                width: double.infinity,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF26A69A), Color(0xFF00695C)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("Quick Action", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                          SizedBox(height: 8),
-                          Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 24)),
-                          Text("Files", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: const [
+                              Text(
+                                "Upcoming Class",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+                          if (_isLoadingSchedules)
+                            SizedBox(
+                              height: 30,
+                              width: 30,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          else if (_upcomingClass != null) ...[
+                            if (_upcomingClass!['type'] == 'digital')
+                              Text(
+                                "${_upcomingClass!['day']} ${_upcomingClass!['time']}",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            else
+                              const Text(
+                                "Upload Available",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                            const Spacer(),
+                            Text(
+                              _upcomingClass!['type'] == 'digital'
+                                  ? _upcomingClass!['course']
+                                  : _upcomingClass!['title'],
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ] else ...[
+                            const Text(
+                              "Not Available",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            const Text(
+                              "Schedule is not available",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                          SizedBox(height: 2),
+                          const Text(
+                            "Tap to view details ›",
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).cardColor.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 36),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+
+                // Action Card for materials
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 7.5),
+                  child: GestureDetector(
+                    onTap: () async {
+                      _carouselTimer?.cancel();
+                      await _handleDirectUpload();
+                      _startCarouselTimer();
+                    },
+                    child: _buildBaseCard(
+                      width: double.infinity,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF26A69A), Color(0xFF00695C)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  "Quick Action",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  "Upload",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24,
+                                  ),
+                                ),
+                                Text(
+                                  "Files",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Theme.of(
+                                context,
+                              ).cardColor.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.cloud_upload_rounded,
+                              color: Colors.white,
+                              size: 36,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-     ),
-    ),
-    SizedBox(height: 15),
-    Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(2, (index) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          height: 6,
-          width: _currentCardIndex == index ? 24 : 8,
-          decoration: BoxDecoration(
-            color: _currentCardIndex == index ? Theme.of(context).primaryColor : Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        );
-      }),
-    ),
-  ],
-);
-}
+        ),
+        SizedBox(height: 15),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(2, (index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 6,
+              width: _currentCardIndex == index ? 24 : 8,
+              decoration: BoxDecoration(
+                color: _currentCardIndex == index
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
 
-  Widget _buildBaseCard({required double width, Gradient? gradient, required Widget child}) {
+  Widget _buildBaseCard({
+    required double width,
+    Gradient? gradient,
+    required Widget child,
+  }) {
     return Container(
       width: width,
       height: 150,
@@ -770,7 +1062,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: child,
@@ -785,41 +1077,135 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       mainAxisSpacing: 25,
       crossAxisSpacing: 10,
       children: [
-        _buildIconBtn(Icons.folder_shared_rounded, "Materials", const Color(0xFFFFF3E0), Colors.orange, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorMaterialsScreen()));
-        }),
-        _buildIconBtn(Icons.cloud_upload_rounded, "Upload", const Color(0xFFE3F2FD), Colors.blue, _handleDirectUpload),
-        _buildIconBtn(Icons.book_rounded, "Courses", const Color(0xFFE8F5E9), Colors.green, () {
-          if (_courses.isNotEmpty) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CourseDetailsScreen(
-              course: _courses.first,
-              allCourses: _courses,
-              themeColor: Colors.blue,
-            )));
-          } else {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorCoursesScreen()));
-          }
-        }),
-        _buildIconBtn(Icons.schedule_rounded, "Schedule", const Color(0xFFF3E5F5), Colors.purple, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorScheduleScreen()));
-        }),
-        _buildIconBtn(Icons.assessment_rounded, "Grades", const Color(0xFFFFEBEE), Colors.red, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorGradesScreen()));
-        }),
-        _buildIconBtn(Icons.groups_rounded, "Groups", const Color(0xFFE0F7FA), Colors.cyan, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorGroupsScreen()));
-        }),
-        _buildIconBtn(Icons.calendar_month_rounded, "Calendar", const Color(0xFFFFFDE7), Colors.amber, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const AcademicCalendarScreen()));
-        }),
-        _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700, () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorMenuScreen(courses: _courses)));
-        }),
+        _buildIconBtn(
+          Icons.folder_shared_rounded,
+          "Materials",
+          const Color(0xFFFFF3E0),
+          Colors.orange,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const InstructorMaterialsScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.cloud_upload_rounded,
+          "Upload",
+          const Color(0xFFE3F2FD),
+          Colors.blue,
+          _handleDirectUpload,
+        ),
+        _buildIconBtn(
+          Icons.book_rounded,
+          "Courses",
+          const Color(0xFFE8F5E9),
+          Colors.green,
+          () {
+            if (_courses.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CourseDetailsScreen(
+                    course: _courses.first,
+                    allCourses: _courses,
+                    themeColor: Colors.blue,
+                  ),
+                ),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const InstructorCoursesScreen(),
+                ),
+              );
+            }
+          },
+        ),
+        _buildIconBtn(
+          Icons.schedule_rounded,
+          "Schedule",
+          const Color(0xFFF3E5F5),
+          Colors.purple,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const InstructorScheduleScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.assessment_rounded,
+          "Grades",
+          const Color(0xFFFFEBEE),
+          Colors.red,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const InstructorGradesScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.groups_rounded,
+          "Groups",
+          const Color(0xFFE0F7FA),
+          Colors.cyan,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const InstructorGroupsScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.calendar_month_rounded,
+          "Calendar",
+          const Color(0xFFFFFDE7),
+          Colors.amber,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AcademicCalendarScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.more_horiz_rounded,
+          "More",
+          Colors.grey.shade200,
+          Colors.grey.shade700,
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => InstructorMenuScreen(courses: _courses),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildIconBtn(IconData icon, String label, Color bgColor, Color iconColor, VoidCallback onTap) {
+  Widget _buildIconBtn(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color iconColor,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -833,11 +1219,11 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04), 
+                  color: Colors.black.withOpacity(0.04),
                   blurRadius: 10,
-                  offset: const Offset(0, 4)
-                )
-              ]
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Container(
@@ -852,8 +1238,12 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            label, 
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -864,29 +1254,63 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
   void _showMoreOptions(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("More Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
+            Text(
+              "More Options",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
             SizedBox(height: 20),
-            _buildQuickAction(Icons.help_outline_rounded, "Help & Support", "Get assistance", () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
-            }),
-            _buildQuickAction(Icons.settings_outlined, "Settings", "Account & app settings", () {
-              Navigator.pop(context);
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const AccountSettingsScreen()));
-            }),
+            _buildQuickAction(
+              Icons.help_outline_rounded,
+              "Help & Support",
+              "Get assistance",
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HelpSupportScreen(),
+                  ),
+                );
+              },
+            ),
+            _buildQuickAction(
+              Icons.settings_outlined,
+              "Settings",
+              "Account & app settings",
+              () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AccountSettingsScreen(),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickAction(IconData icon, String title, String sub, VoidCallback onTap) {
+  Widget _buildQuickAction(
+    IconData icon,
+    String title,
+    String sub,
+    VoidCallback onTap,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -897,8 +1321,8 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
-        ]
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -906,7 +1330,10 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 16.0,
+            ),
             child: Row(
               children: [
                 Container(
@@ -915,16 +1342,33 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     color: const Color(0xFFE3F2FD),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
+                  ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                       SizedBox(height: 4),
-                      Text(sub, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      Text(
+                        sub,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
                     ],
                   ),
                 ),

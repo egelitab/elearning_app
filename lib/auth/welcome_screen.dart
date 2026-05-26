@@ -34,7 +34,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
             ),
           ),
-          
+
           // 2. Blue Gradient Overlay (to match the screenshot's tint)
           Container(
             decoration: BoxDecoration(
@@ -56,13 +56,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               child: Column(
                 children: [
                   const Spacer(flex: 2),
-                  
+
                   // Central Logo
-                  Image.asset(
-                    'assets/logo.png', 
-                    height: 180,
-                  ),
-                  
+                  Image.asset('assets/logo.png', height: 180),
+
                   const Spacer(flex: 2),
 
                   // Step 1 Content: Welcome Text & Get Started
@@ -98,7 +95,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       showArrow: false,
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const RegisterScreen(),
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),
@@ -108,11 +107,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       showArrow: true,
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
                       ),
                     ),
                   ],
-                  
+
                   SizedBox(height: 50),
                 ],
               ),
@@ -137,12 +138,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
           color: isPrimary ? null : Colors.white,
-          gradient: isPrimary 
-              ? const LinearGradient(colors: [Color(0xFF64B5F6), Color(0xFF1976D2)]) 
+          gradient: isPrimary
+              ? const LinearGradient(
+                  colors: [Color(0xFF64B5F6), Color(0xFF1976D2)],
+                )
               : null,
           borderRadius: BorderRadius.circular(30),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -166,7 +173,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   color: Color(0xFF1976D2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
           ],
         ),

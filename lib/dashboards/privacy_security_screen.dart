@@ -16,7 +16,10 @@ class PrivacySecurityScreen extends StatelessWidget {
           backgroundColor: AppColors.appBar,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.appBarForeground),
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: AppColors.appBarForeground,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
@@ -40,7 +43,9 @@ class PrivacySecurityScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TermsConditionsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const TermsConditionsScreen(),
+                  ),
                 );
               },
             ),
@@ -50,7 +55,13 @@ class PrivacySecurityScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOption(IconData icon, String title, String subtitle, Color color, {required VoidCallback onTap}) {
+  Widget _buildOption(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color, {
+    required VoidCallback onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -61,7 +72,7 @@ class PrivacySecurityScreen extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -105,7 +116,10 @@ class PrivacySecurityScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right_rounded, color: AppColors.secondaryText.withValues(alpha: 0.3)),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.secondaryText.withValues(alpha: 0.3),
+                ),
               ],
             ),
           ),

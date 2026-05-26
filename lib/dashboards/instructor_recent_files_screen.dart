@@ -12,9 +12,7 @@ class InstructorRecentFilesScreen extends StatelessWidget {
     Map<String, List<dynamic>> groupedFiles = _groupFilesByTime(recentFiles);
 
     return Scaffold(
-      
       appBar: AppBar(
-        
         elevation: 0,
         title: Text(
           "Recent Files",
@@ -25,7 +23,10 @@ class InstructorRecentFilesScreen extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -39,7 +40,9 @@ class InstructorRecentFilesScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10).copyWith(top: 15),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                      ).copyWith(top: 15),
                       child: Text(
                         entry.key,
                         style: const TextStyle(
@@ -49,7 +52,9 @@ class InstructorRecentFilesScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    ...entry.value.map((file) => _buildFileTile(context, file)).toList(),
+                    ...entry.value
+                        .map((file) => _buildFileTile(context, file))
+                        .toList(),
                   ],
                 );
               }).toList(),
@@ -62,7 +67,7 @@ class InstructorRecentFilesScreen extends StatelessWidget {
       'Today': [],
       'This week': [],
       'This month': [],
-      'Older': []
+      'Older': [],
     };
 
     final now = DateTime.now();
@@ -72,7 +77,9 @@ class InstructorRecentFilesScreen extends StatelessWidget {
       final date = DateTime.parse(file['created_at']);
       final diff = now.difference(date);
 
-      if (date.year == now.year && date.month == now.month && date.day == now.day) {
+      if (date.year == now.year &&
+          date.month == now.month &&
+          date.day == now.day) {
         grouped['Today']!.add(file);
       } else if (diff.inDays < 7) {
         grouped['This week']!.add(file);
@@ -101,49 +108,52 @@ class InstructorRecentFilesScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => _openRemoteFile(context, file),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
-              shape: BoxShape.circle,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: iconColor, size: 24),
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  formattedDate,
-                  style: const TextStyle(color: Colors.black38, fontSize: 12),
-                ),
-              ],
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
             ),
-          ),
-          const Icon(Icons.more_vert_rounded, color: Colors.black26),
-        ],
-      ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(color: Colors.black38, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.more_vert_rounded, color: Colors.black26),
+          ],
+        ),
       ),
     );
   }
@@ -177,16 +187,28 @@ class InstructorRecentFilesScreen extends StatelessWidget {
     final ApiService apiService = ApiService();
     final urlStr = fileItem['file_path'] ?? fileItem['url'];
     if (urlStr == null) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      if (context.mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("File not found")));
       return;
     }
-    
-    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening file...")));
+
+    if (context.mounted)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Downloading and opening file...")),
+      );
     try {
-      await apiService.downloadAndOpenFile(urlStr, context: context, fileName: fileItem['name']);
+      await apiService.downloadAndOpenFile(
+        urlStr,
+        context: context,
+        fileName: fileItem['name'],
+      );
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (context.mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 }
-

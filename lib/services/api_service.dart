@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import '../dashboards/file_viewer_screen.dart';
 
 class ApiService {
-  
   static String get baseUrl {
     if (kIsWeb) return "http://localhost:5000/api";
     try {
@@ -45,7 +44,7 @@ class ApiService {
       throw Exception(e.toString().replaceAll('Exception: ', ''));
     }
   }
- 
+
   Future<Map<String, dynamic>> register(Map<String, dynamic> userData) async {
     try {
       final response = await http.post(
@@ -88,7 +87,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> verifyResetCode(String email, String code) async {
+  Future<Map<String, dynamic>> verifyResetCode(
+    String email,
+    String code,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/verify-reset-code'),
@@ -107,12 +109,18 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> resetPassword(String confirmToken, String newPassword) async {
+  Future<Map<String, dynamic>> resetPassword(
+    String confirmToken,
+    String newPassword,
+  ) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/reset-password'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"confirmToken": confirmToken, "newPassword": newPassword}),
+        body: jsonEncode({
+          "confirmToken": confirmToken,
+          "newPassword": newPassword,
+        }),
       );
 
       final data = jsonDecode(response.body);
@@ -202,14 +210,21 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> uploadMaterial(String? courseId, String title, String filePath) async {
+  Future<Map<String, dynamic>> uploadMaterial(
+    String? courseId,
+    String title,
+    String filePath,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
       if (token == null) throw Exception("You are not logged in");
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/materials'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/materials'),
+      );
       request.headers['Authorization'] = 'Bearer $token';
       if (courseId != null) {
         request.fields['course_id'] = courseId;
@@ -233,7 +248,9 @@ class ApiService {
   }
 
   Future<List<dynamic>> getCourseEnrollmentStats(String courseId) async {
-    print("Fetching Enrollment Stats from: $baseUrl/courses/$courseId/enrollment-stats");
+    print(
+      "Fetching Enrollment Stats from: $baseUrl/courses/$courseId/enrollment-stats",
+    );
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -303,7 +320,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> renameMaterial(String id, String newTitle) async {
+  Future<Map<String, dynamic>> renameMaterial(
+    String id,
+    String newTitle,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -311,7 +331,10 @@ class ApiService {
 
       final response = await http.patch(
         Uri.parse('$baseUrl/materials/$id/rename'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"title": newTitle}),
       );
       final data = jsonDecode(response.body);
@@ -340,7 +363,13 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> shareMaterials(List<String> materialIds, String? courseId, String? departmentId, String? section, {String? chapterId}) async {
+  Future<Map<String, dynamic>> shareMaterials(
+    List<String> materialIds,
+    String? courseId,
+    String? departmentId,
+    String? section, {
+    String? chapterId,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -356,7 +385,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/materials/share'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode(body),
       );
       final data = jsonDecode(response.body);
@@ -367,7 +399,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> unshareMaterials(List<String> materialIds, String courseId) async {
+  Future<Map<String, dynamic>> unshareMaterials(
+    List<String> materialIds,
+    String courseId,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -375,13 +410,13 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/materials/unshare'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-        body: jsonEncode({
-          "material_ids": materialIds,
-          "course_id": courseId,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({"material_ids": materialIds, "course_id": courseId}),
       );
-      
+
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) return data;
       throw Exception(data['message'] ?? 'Failed to unshare materials');
@@ -390,7 +425,10 @@ class ApiService {
     }
   }
 
-  Future<List<dynamic>> getMaterialsByCourse(String courseId, {String? chapterId}) async {
+  Future<List<dynamic>> getMaterialsByCourse(
+    String courseId, {
+    String? chapterId,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -440,7 +478,14 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> generateGroups(String courseId, int studentsPerGroup, {String? departmentId, String? section, String? method, String? title}) async {
+  Future<Map<String, dynamic>> generateGroups(
+    String courseId,
+    int studentsPerGroup, {
+    String? departmentId,
+    String? section,
+    String? method,
+    String? title,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -462,7 +507,8 @@ class ApiService {
       );
 
       final data = jsonDecode(response.body);
-      if ((response.statusCode == 200 || response.statusCode == 201) && data['success'] == true) {
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          data['success'] == true) {
         return data;
       } else {
         throw Exception(data['message'] ?? 'Failed to generate groups');
@@ -479,7 +525,9 @@ class ApiService {
       if (token == null) throw Exception("You are not logged in");
 
       final response = await http.delete(
-        Uri.parse('$baseUrl/groups/$courseId/batch?batchName=${Uri.encodeComponent(batchName)}'),
+        Uri.parse(
+          '$baseUrl/groups/$courseId/batch?batchName=${Uri.encodeComponent(batchName)}',
+        ),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -501,13 +549,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/groups/student/my-groups'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/groups/student/my-groups'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -554,13 +604,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/assignments/student/my-assignments'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/assignments/student/my-assignments'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -573,20 +625,27 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> submitAssignment(String assignmentId, String filePath, {String? groupId}) async {
+  Future<Map<String, dynamic>> submitAssignment(
+    String assignmentId,
+    String filePath, {
+    String? groupId,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/assignments/submit'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/assignments/submit'),
+      );
       request.headers['Authorization'] = 'Bearer $token';
-      
+
       request.fields['assignment_id'] = assignmentId;
       if (groupId != null) {
         request.fields['group_id'] = groupId;
       }
-      
+
       request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
       var streamedResponse = await request.send();
@@ -603,16 +662,21 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> createAssessment(Map<String, dynamic> assessmentData, {String? filePath}) async {
-
+  Future<Map<String, dynamic>> createAssessment(
+    Map<String, dynamic> assessmentData, {
+    String? filePath,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/assignments'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/assignments'),
+      );
       request.headers['Authorization'] = 'Bearer $token';
-      
+
       assessmentData.forEach((key, value) {
         request.fields[key] = value.toString();
       });
@@ -668,13 +732,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/assignments/grading-overview'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/assignments/grading-overview'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -693,13 +759,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/assignments/$assignmentId/submissions'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/assignments/$assignmentId/submissions'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -712,23 +780,26 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> gradeSubmission(String submissionId, double grade, String feedback) async {
+  Future<Map<String, dynamic>> gradeSubmission(
+    String submissionId,
+    double grade,
+    String feedback,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.put(
-        Uri.parse('$baseUrl/assignments/submissions/$submissionId/grade'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "grade": grade,
-          "feedback": feedback
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .put(
+            Uri.parse('$baseUrl/assignments/submissions/$submissionId/grade'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode({"grade": grade, "feedback": feedback}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -749,13 +820,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/messages/inbox'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/messages/inbox'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -774,13 +847,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/messages/history/$userId'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/messages/history/$userId'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -799,17 +874,16 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/messages'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "receiver_id": receiverId,
-          "content": content
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/messages'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode({"receiver_id": receiverId, "content": content}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 201 || data['success'] != true) {
@@ -828,13 +902,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/messages/group/inbox'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/messages/group/inbox'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -853,13 +929,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/messages/group/history/$groupId'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/messages/group/history/$groupId'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -878,17 +956,16 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/messages/group'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "group_id": groupId,
-          "content": content,
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/messages/group'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode({"group_id": groupId, "content": content}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 201 || data['success'] != true) {
@@ -905,13 +982,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/messages/instructor/groups'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/messages/instructor/groups'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -933,13 +1012,15 @@ class ApiService {
       if (token == null) throw Exception("You are not logged in");
 
       final endpoint = role == 'instructor' ? 'instructor' : 'student';
-      final response = await http.get(
-        Uri.parse('$baseUrl/announcements/$endpoint'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/announcements/$endpoint'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -952,7 +1033,13 @@ class ApiService {
     }
   }
 
-  Future<void> createAnnouncement(String courseId, String title, String content, {String? section, List<String>? attachments}) async {
+  Future<void> createAnnouncement(
+    String courseId,
+    String title,
+    String content, {
+    String? section,
+    List<String>? attachments,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -961,19 +1048,21 @@ class ApiService {
       final Map<String, dynamic> body = {
         "course_id": courseId,
         "title": title,
-        "content": content
+        "content": content,
       };
       if (section != null) body["section"] = section;
       if (attachments != null) body["attachments"] = attachments;
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/announcements'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/announcements'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 201 || data['success'] != true) {
@@ -984,27 +1073,32 @@ class ApiService {
     }
   }
 
-  Future<void> updateAnnouncement(String id, String title, String content, {String? section, List<String>? attachments}) async {
+  Future<void> updateAnnouncement(
+    String id,
+    String title,
+    String content, {
+    String? section,
+    List<String>? attachments,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final Map<String, dynamic> body = {
-        "title": title,
-        "content": content
-      };
+      final Map<String, dynamic> body = {"title": title, "content": content};
       if (section != null) body["section"] = section;
       if (attachments != null) body["attachments"] = attachments;
 
-      final response = await http.put(
-        Uri.parse('$baseUrl/announcements/$id'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .put(
+            Uri.parse('$baseUrl/announcements/$id'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 200 || data['success'] != true) {
@@ -1021,13 +1115,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.delete(
-        Uri.parse('$baseUrl/announcements/$id'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .delete(
+            Uri.parse('$baseUrl/announcements/$id'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 200 || data['success'] != true) {
@@ -1046,17 +1142,19 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final url = folderId != null 
+      final url = folderId != null
           ? '$baseUrl/instructor-files?folder_id=$folderId'
           : '$baseUrl/instructor-files';
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -1075,17 +1173,16 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/instructor-files/folder'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "name": name,
-          "parent_id": parentId
-        }),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/instructor-files/folder'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+            body: jsonEncode({"name": name, "parent_id": parentId}),
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 201 || data['success'] != true) {
@@ -1102,10 +1199,13 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      var request = http.MultipartRequest('POST', Uri.parse('$baseUrl/instructor-files/upload'));
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/instructor-files/upload'),
+      );
       request.headers['Authorization'] = 'Bearer $token';
       if (folderId != null) request.fields['folder_id'] = folderId;
-      
+
       request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
       final response = await request.send();
@@ -1126,13 +1226,16 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final url = type == 'folder' 
+      final url = type == 'folder'
           ? '$baseUrl/instructor-files/folder/$id/rename'
           : '$baseUrl/instructor-files/file/$id/rename';
 
       final response = await http.patch(
         Uri.parse(url),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"name": newName}),
       );
       final data = jsonDecode(response.body);
@@ -1150,7 +1253,7 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final url = type == 'folder' 
+      final url = type == 'folder'
           ? '$baseUrl/instructor-files/folder/$id'
           : '$baseUrl/instructor-files/file/$id';
 
@@ -1175,11 +1278,14 @@ class ApiService {
 
       final response = await http.patch(
         Uri.parse('$baseUrl/instructor-files/move'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({
           "id": id,
           "type": type,
-          "target_folder_id": targetFolderId
+          "target_folder_id": targetFolderId,
         }),
       );
       final data = jsonDecode(response.body);
@@ -1191,7 +1297,12 @@ class ApiService {
     }
   }
 
-  Future<void> duplicateEntry(String id, String type, String? targetFolderId, {String? newName}) async {
+  Future<void> duplicateEntry(
+    String id,
+    String type,
+    String? targetFolderId, {
+    String? newName,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1199,12 +1310,15 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/instructor-files/duplicate'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({
           "id": id,
           "type": type,
           "target_folder_id": targetFolderId,
-          "new_name": newName
+          "new_name": newName,
         }),
       );
       final data = jsonDecode(response.body);
@@ -1245,7 +1359,10 @@ class ApiService {
 
       final response = await http.patch(
         Uri.parse('$baseUrl/instructor-files/restore'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"id": id, "type": type}),
       );
       final data = jsonDecode(response.body);
@@ -1269,14 +1386,18 @@ class ApiService {
       );
       final data = jsonDecode(response.body);
       if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['message'] ?? 'Failed to permanently delete $type');
+        throw Exception(
+          data['message'] ?? 'Failed to permanently delete $type',
+        );
       }
     } catch (e) {
       throw Exception('Server Error: $e');
     }
   }
 
-  Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> profileData) async {
+  Future<Map<String, dynamic>> updateProfile(
+    Map<String, dynamic> profileData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1295,12 +1416,17 @@ class ApiService {
       if (response.statusCode == 200 && data['success'] == true) {
         // Update local storage with new data
         final updated = data['data'];
-        if (updated['title'] != null) await prefs.setString('title', updated['title']);
-        if (updated['first_name'] != null) await prefs.setString('first_name', updated['first_name']);
-        if (updated['middle_name'] != null) await prefs.setString('middle_name', updated['middle_name']);
-        if (updated['last_name'] != null) await prefs.setString('last_name', updated['last_name']);
-        if (updated['email'] != null) await prefs.setString('email', updated['email']);
-        
+        if (updated['title'] != null)
+          await prefs.setString('title', updated['title']);
+        if (updated['first_name'] != null)
+          await prefs.setString('first_name', updated['first_name']);
+        if (updated['middle_name'] != null)
+          await prefs.setString('middle_name', updated['middle_name']);
+        if (updated['last_name'] != null)
+          await prefs.setString('last_name', updated['last_name']);
+        if (updated['email'] != null)
+          await prefs.setString('email', updated['email']);
+
         return data;
       } else {
         throw Exception(data['message'] ?? 'Failed to update profile');
@@ -1309,19 +1435,22 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
+
   Future<List<dynamic>> getCalendars() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/calendars'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/calendars'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -1340,13 +1469,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/schedules/my-schedule'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/schedules/my-schedule'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -1365,13 +1496,15 @@ class ApiService {
       final token = prefs.getString('auth_token');
       if (token == null) throw Exception("You are not logged in");
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/system-messages/my-messages'),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/system-messages/my-messages'),
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer $token",
+            },
+          )
+          .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 && data['success'] == true) {
@@ -1391,15 +1524,17 @@ class ApiService {
       if (Platform.isAndroid) {
         dir = Directory('/storage/emulated/0/Download/ELMS');
       } else {
-        dir = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+        dir = Directory(
+          '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+        );
       }
-      
+
       String finalFileName = fileName ?? filePath.split('/').last;
       if (!finalFileName.contains('.') && filePath.contains('.')) {
         final ext = filePath.split('.').last;
         finalFileName = "$finalFileName.$ext";
       }
-      
+
       if (finalFileName.isEmpty || !finalFileName.contains('.')) return false;
       final file = File('${dir.path}/$finalFileName');
       return await file.exists();
@@ -1408,21 +1543,24 @@ class ApiService {
     }
   }
 
-
-  Future<void> downloadAndOpenFile(String filePath, {BuildContext? context, String? fileName}) async {
+  Future<void> downloadAndOpenFile(
+    String filePath, {
+    BuildContext? context,
+    String? fileName,
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
 
       // Normalize backslashes (common in Windows paths from backend)
       String normalizedPath = filePath.replaceAll('\\', '/');
-      
+
       String url;
       if (normalizedPath.startsWith('http')) {
         url = normalizedPath;
       } else {
         String cleanBaseUrl = baseUrl.replaceAll('/api', '');
-        
+
         // Handle cases where the path might contain an absolute Windows path (C:\...)
         if (normalizedPath.contains(':/')) {
           int uploadsIdx = normalizedPath.indexOf('/uploads/');
@@ -1434,30 +1572,35 @@ class ApiService {
         // Ensure proper slash formatting between base and path
         if (!normalizedPath.startsWith('/') && !cleanBaseUrl.endsWith('/')) {
           url = '$cleanBaseUrl/$normalizedPath';
-        } else if (normalizedPath.startsWith('/') && cleanBaseUrl.endsWith('/')) {
-           url = cleanBaseUrl + normalizedPath.substring(1);
+        } else if (normalizedPath.startsWith('/') &&
+            cleanBaseUrl.endsWith('/')) {
+          url = cleanBaseUrl + normalizedPath.substring(1);
         } else {
           url = '$cleanBaseUrl$normalizedPath';
         }
       }
-      
-      final response = await http.get(
-        Uri.parse(Uri.encodeFull(url)),
-        headers: token != null ? {"Authorization": "Bearer $token"} : {},
-      ).timeout(const Duration(seconds: 60));
+
+      final response = await http
+          .get(
+            Uri.parse(Uri.encodeFull(url)),
+            headers: token != null ? {"Authorization": "Bearer $token"} : {},
+          )
+          .timeout(const Duration(seconds: 60));
 
       if (response.statusCode == 200) {
         Directory dir;
         if (Platform.isAndroid) {
           dir = Directory('/storage/emulated/0/Download/ELMS');
         } else {
-          dir = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+          dir = Directory(
+            '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+          );
         }
-        
+
         if (!await dir.exists()) {
           await dir.create(recursive: true);
         }
-        
+
         String finalFileName = fileName ?? filePath.split('/').last;
         // Ensure extension is preserved if missing from fileName but present in filePath
         if (!finalFileName.contains('.') && filePath.contains('.')) {
@@ -1468,16 +1611,34 @@ class ApiService {
         if (finalFileName.isEmpty || !finalFileName.contains('.')) {
           finalFileName = "file_${DateTime.now().millisecondsSinceEpoch}.bin";
         }
-        
+
         final File file = File('${dir.path}/$finalFileName');
         await file.writeAsBytes(response.bodyBytes);
-        
-        if (context != null && ['txt', 'docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls', 'pdf', 'jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(finalFileName.split('.').last.toLowerCase())) {
+
+        if (context != null &&
+            [
+              'txt',
+              'docx',
+              'pptx',
+              'xlsx',
+              'doc',
+              'ppt',
+              'xls',
+              'pdf',
+              'jpg',
+              'jpeg',
+              'png',
+              'gif',
+              'bmp',
+            ].contains(finalFileName.split('.').last.toLowerCase())) {
           if (!context.mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FileViewerScreen(filePath: file.path, fileName: finalFileName)
+              builder: (context) => FileViewerScreen(
+                filePath: file.path,
+                fileName: finalFileName,
+              ),
             ),
           );
         } else {
@@ -1517,7 +1678,9 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> updateNotificationSettings(Map<String, bool> settings) async {
+  Future<Map<String, dynamic>> updateNotificationSettings(
+    Map<String, bool> settings,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1578,24 +1741,13 @@ class ApiService {
 
       final data = jsonDecode(response.body);
       if (response.statusCode != 200 || data['success'] != true) {
-        throw Exception(data['message'] ?? 'Failed to mark notification as read');
+        throw Exception(
+          data['message'] ?? 'Failed to mark notification as read',
+        );
       }
     } catch (e) {
       throw Exception('Server Error: $e');
     }
-  }
-
-  Future<void> markNotificationsAsReadByTypes(List<String> types) async {
-    try {
-      final notifications = await getNotifications();
-      for (final n in notifications) {
-        if (n['is_read'] != true && types.contains((n['type'] ?? '').toString())) {
-          try {
-            await markNotificationAsRead(n['id'].toString());
-          } catch (_) {}
-        }
-      }
-    } catch (_) {}
   }
 
   Future<Map<String, int>> getUnreadNotificationCounts() async {
@@ -1636,10 +1788,15 @@ class ApiService {
 
       return counts;
     } catch (e) {
-      return {'chat': 0, 'announcement': 0, 'material': 0, 'system': 0, 'total': 0};
+      return {
+        'chat': 0,
+        'announcement': 0,
+        'material': 0,
+        'system': 0,
+        'total': 0,
+      };
     }
   }
-
 
   /// Returns the user-specific SharedPreferences key for opened system notifications
   static Future<String> _getOpenedIdsKey() async {
@@ -1681,12 +1838,15 @@ class ApiService {
     } catch (_) {}
   }
 
-
   // ========================
   // Support Tickets
   // ========================
 
-  Future<Map<String, dynamic>> createSupportTicket(String subject, String description, {String priority = 'Medium'}) async {
+  Future<Map<String, dynamic>> createSupportTicket(
+    String subject,
+    String description, {
+    String priority = 'Medium',
+  }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1694,8 +1854,15 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/tickets'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-        body: jsonEncode({"subject": subject, "description": description, "priority": priority}),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "subject": subject,
+          "description": description,
+          "priority": priority,
+        }),
       );
 
       final data = jsonDecode(response.body);
@@ -1757,7 +1924,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> enrollStudent(String courseId, String userId) async {
+  Future<Map<String, dynamic>> enrollStudent(
+    String courseId,
+    String userId,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1765,7 +1935,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/enrollments'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"course_id": courseId, "user_id": userId}),
       );
 
@@ -1780,7 +1953,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> updateAssignment(String id, Map<String, dynamic> updates) async {
+  Future<Map<String, dynamic>> updateAssignment(
+    String id,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1788,7 +1964,10 @@ class ApiService {
 
       final response = await http.put(
         Uri.parse('$baseUrl/assignments/$id'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode(updates),
       );
 
@@ -1827,7 +2006,11 @@ class ApiService {
   // Attendance
   // ========================
 
-  Future<Map<String, dynamic>> createAttendanceSession(String courseId, String title, String sessionDate) async {
+  Future<Map<String, dynamic>> createAttendanceSession(
+    String courseId,
+    String title,
+    String sessionDate,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1835,8 +2018,15 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/attendance/sessions'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
-        body: jsonEncode({"course_id": courseId, "title": title, "session_date": sessionDate}),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+        body: jsonEncode({
+          "course_id": courseId,
+          "title": title,
+          "session_date": sessionDate,
+        }),
       );
 
       final data = jsonDecode(response.body);
@@ -1872,7 +2062,9 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getAttendanceSessionDetail(String sessionId) async {
+  Future<Map<String, dynamic>> getAttendanceSessionDetail(
+    String sessionId,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1894,7 +2086,10 @@ class ApiService {
     }
   }
 
-  Future<void> markAttendance(String sessionId, List<Map<String, String>> records) async {
+  Future<void> markAttendance(
+    String sessionId,
+    List<Map<String, String>> records,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1902,7 +2097,10 @@ class ApiService {
 
       final response = await http.put(
         Uri.parse('$baseUrl/attendance/sessions/$sessionId/mark'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"records": records}),
       );
 
@@ -1919,7 +2117,10 @@ class ApiService {
   // Document Conversion
   // ========================
 
-  Future<Map<String, dynamic>> convertTextToPdf(String title, String content) async {
+  Future<Map<String, dynamic>> convertTextToPdf(
+    String title,
+    String content,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1927,7 +2128,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/convert/text-to-pdf'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"title": title, "content": content}),
       );
 
@@ -1954,7 +2158,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/quizzes'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode(quizData),
       );
 
@@ -1969,7 +2176,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> addQuizQuestion(String quizId, Map<String, dynamic> questionData) async {
+  Future<Map<String, dynamic>> addQuizQuestion(
+    String quizId,
+    Map<String, dynamic> questionData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -1977,7 +2187,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/quizzes/$quizId/questions'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode(questionData),
       );
 
@@ -2068,7 +2281,8 @@ class ApiService {
       );
 
       final data = jsonDecode(response.body);
-      if ((response.statusCode == 201 || response.statusCode == 200) && data['success'] == true) {
+      if ((response.statusCode == 201 || response.statusCode == 200) &&
+          data['success'] == true) {
         return data['data'];
       } else {
         throw Exception(data['message'] ?? 'Failed to start quiz');
@@ -2078,7 +2292,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> submitQuizAttempt(String attemptId, List<Map<String, dynamic>> answers) async {
+  Future<Map<String, dynamic>> submitQuizAttempt(
+    String attemptId,
+    List<Map<String, dynamic>> answers,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -2086,7 +2303,10 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/quizzes/attempts/$attemptId/submit'),
-        headers: {"Content-Type": "application/json", "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
         body: jsonEncode({"answers": answers}),
       );
 
@@ -2187,7 +2407,7 @@ class ApiService {
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        return data; 
+        return data;
       } else {
         throw Exception(data['message'] ?? 'Failed to load goals');
       }
@@ -2196,7 +2416,10 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>> createCourseGoal(String courseId, Map<String, dynamic> goalData) async {
+  Future<Map<String, dynamic>> createCourseGoal(
+    String courseId,
+    Map<String, dynamic> goalData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -2204,8 +2427,11 @@ class ApiService {
 
       final response = await http.post(
         Uri.parse('$baseUrl/goals/$courseId'),
-        headers: {"Authorization": "Bearer $token", "Content-Type": "application/json"},
-        body: jsonEncode(goalData)
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(goalData),
       );
 
       final data = jsonDecode(response.body);
@@ -2218,7 +2444,11 @@ class ApiService {
       throw Exception('Server Error: $e');
     }
   }
-  Future<Map<String, dynamic>> updateCourseGoal(String goalId, Map<String, dynamic> goalData) async {
+
+  Future<Map<String, dynamic>> updateCourseGoal(
+    String goalId,
+    Map<String, dynamic> goalData,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -2226,8 +2456,11 @@ class ApiService {
 
       final response = await http.put(
         Uri.parse('$baseUrl/goals/$goalId'),
-        headers: {"Authorization": "Bearer $token", "Content-Type": "application/json"},
-        body: jsonEncode(goalData)
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(goalData),
       );
 
       final data = jsonDecode(response.body);
@@ -2254,7 +2487,7 @@ class ApiService {
 
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        return data; 
+        return data;
       } else {
         throw Exception(data['message'] ?? 'Failed to load goals');
       }
@@ -2263,7 +2496,11 @@ class ApiService {
     }
   }
 
-  Future<void> logReadingDuration(String courseId, String materialId, int durationSeconds) async {
+  Future<void> logReadingDuration(
+    String courseId,
+    String materialId,
+    int durationSeconds,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -2271,12 +2508,15 @@ class ApiService {
 
       await http.post(
         Uri.parse('$baseUrl/goals/log-reading'),
-        headers: {"Authorization": "Bearer $token", "Content-Type": "application/json"},
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
         body: jsonEncode({
           "courseId": courseId,
           "materialId": materialId,
-          "durationSeconds": durationSeconds
-        })
+          "durationSeconds": durationSeconds,
+        }),
       );
     } catch (e) {
       print("Failed to log reading duration: $e");

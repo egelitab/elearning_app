@@ -24,12 +24,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "last_name": _lname.text,
         "email": _email.text,
         "password": _pass.text,
-        "role": _role
+        "role": _role,
       });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Success! Please Login.")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Success! Please Login.")));
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -43,22 +47,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
           children: [
             DropdownButton<String>(
               value: _title,
-              items: ['Mr.', 'Ms.', 'Dr.', 'Prof.'].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              items: [
+                'Mr.',
+                'Ms.',
+                'Dr.',
+                'Prof.',
+              ].map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
               onChanged: (v) => setState(() => _title = v!),
             ),
-            TextField(controller: _fname, decoration: const InputDecoration(labelText: "First Name")),
-            TextField(controller: _lname, decoration: const InputDecoration(labelText: "Last Name")),
-            TextField(controller: _email, decoration: const InputDecoration(labelText: "Email")),
-            TextField(controller: _pass, obscureText: true, decoration: const InputDecoration(labelText: "Password")),
+            TextField(
+              controller: _fname,
+              decoration: const InputDecoration(labelText: "First Name"),
+            ),
+            TextField(
+              controller: _lname,
+              decoration: const InputDecoration(labelText: "Last Name"),
+            ),
+            TextField(
+              controller: _email,
+              decoration: const InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: _pass,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: "Password"),
+            ),
             const SizedBox(height: 15),
             const Text("Role:"),
             Row(
               children: [
-                Radio(value: 'student', groupValue: _role, onChanged: (v) => setState(() => _role = v!)), const Text("Student"),
-                Radio(value: 'instructor', groupValue: _role, onChanged: (v) => setState(() => _role = v!)), const Text("Instructor"),
+                Radio(
+                  value: 'student',
+                  groupValue: _role,
+                  onChanged: (v) => setState(() => _role = v!),
+                ),
+                const Text("Student"),
+                Radio(
+                  value: 'instructor',
+                  groupValue: _role,
+                  onChanged: (v) => setState(() => _role = v!),
+                ),
+                const Text("Instructor"),
               ],
             ),
-            ElevatedButton(onPressed: _register, child: const Text("SUBMIT"))
+            ElevatedButton(onPressed: _register, child: const Text("SUBMIT")),
           ],
         ),
       ),

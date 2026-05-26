@@ -8,10 +8,12 @@ class StudentProfileDownloadsScreen extends StatefulWidget {
   const StudentProfileDownloadsScreen({super.key});
 
   @override
-  State<StudentProfileDownloadsScreen> createState() => _StudentProfileDownloadsScreenState();
+  State<StudentProfileDownloadsScreen> createState() =>
+      _StudentProfileDownloadsScreenState();
 }
 
-class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsScreen> {
+class _StudentProfileDownloadsScreenState
+    extends State<StudentProfileDownloadsScreen> {
   // Mock data
   double _currentUsageGB = 0.0;
   double _limitGB = 5.0;
@@ -30,7 +32,9 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
       if (Platform.isAndroid) {
         directory = Directory('/storage/emulated/0/Download/ELMS');
       } else {
-        directory = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+        directory = Directory(
+          '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+        );
       }
 
       if (await directory.exists()) {
@@ -66,7 +70,13 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
       builder: (context, isDark, _) => Scaffold(
         backgroundColor: AppColors.scaffold,
         appBar: AppBar(
-          title: Text('Downloads Storage', style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold)),
+          title: Text(
+            'Downloads Storage',
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           backgroundColor: AppColors.appBar,
           elevation: 0,
           iconTheme: IconThemeData(color: AppColors.appBarForeground),
@@ -78,7 +88,11 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
             children: [
               Text(
                 "Memory Usage",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primaryText),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
               ),
               const SizedBox(height: 20),
               Container(
@@ -87,7 +101,11 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -95,8 +113,21 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("${_currentUsageGB.toStringAsFixed(1)} GB Used", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primaryText)),
-                        Text("${_limitGB.toStringAsFixed(1)} GB Limit", style: TextStyle(color: AppColors.secondaryText, fontWeight: FontWeight.w600)),
+                        Text(
+                          "${_currentUsageGB.toStringAsFixed(1)} GB Used",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.primaryText,
+                          ),
+                        ),
+                        Text(
+                          "${_limitGB.toStringAsFixed(1)} GB Limit",
+                          style: TextStyle(
+                            color: AppColors.secondaryText,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 15),
@@ -106,7 +137,11 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
                         value: usagePercentage,
                         minHeight: 12,
                         backgroundColor: AppColors.divider,
-                        valueColor: AlwaysStoppedAnimation<Color>((usagePercentage > 0.8) ? Colors.red : AppColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          (usagePercentage > 0.8)
+                              ? Colors.red
+                              : AppColors.primary,
+                        ),
                       ),
                     ),
                   ],
@@ -115,7 +150,11 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
               const SizedBox(height: 40),
               Text(
                 "Set Download Limit",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryText),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
               ),
               const SizedBox(height: 10),
               Text(
@@ -140,16 +179,23 @@ class _StudentProfileDownloadsScreenState extends State<StudentProfileDownloadsS
               const Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Storage limit saved.')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Storage limit saved.')),
+                  );
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                child: const Text("Save Limit", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                child: const Text(
+                  "Save Limit",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 20),
             ],

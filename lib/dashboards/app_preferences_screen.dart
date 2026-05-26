@@ -45,7 +45,13 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
       builder: (context, isDark, _) => Scaffold(
         backgroundColor: AppColors.scaffold,
         appBar: AppBar(
-          title: Text('App Preferences', style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold)),
+          title: Text(
+            'App Preferences',
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           backgroundColor: AppColors.appBar,
           elevation: 0,
           iconTheme: IconThemeData(color: AppColors.appBarForeground),
@@ -56,13 +62,34 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Theme Mode
-              Text("Appearance", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryText)),
+              Text(
+                "Appearance",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
+              ),
               const SizedBox(height: 15),
               _buildPreferenceCard(
                 child: SwitchListTile(
-                  secondary: Icon(Icons.dark_mode_rounded, color: isDark ? Theme.of(context).primaryColor : Colors.indigo.shade700),
-                  title: Text("Dark Theme", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryText)),
-                  subtitle: Text("Enable dark interface", style: TextStyle(color: AppColors.secondaryText)),
+                  secondary: Icon(
+                    Icons.dark_mode_rounded,
+                    color: isDark
+                        ? Theme.of(context).primaryColor
+                        : Colors.indigo.shade700,
+                  ),
+                  title: Text(
+                    "Dark Theme",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryText,
+                    ),
+                  ),
+                  subtitle: Text(
+                    "Enable dark interface",
+                    style: TextStyle(color: AppColors.secondaryText),
+                  ),
                   value: _darkMode,
                   activeColor: Theme.of(context).primaryColor,
                   onChanged: (val) {
@@ -73,20 +100,42 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
                 ),
               ),
               const SizedBox(height: 30),
-  
+
               // Regional Settings
-              Text("Regional Settings", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryText)),
+              Text(
+                "Regional Settings",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryText,
+                ),
+              ),
               const SizedBox(height: 15),
               _buildPreferenceCard(
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.calendar_month_rounded, color: Colors.orange),
-                      title: Text("Date & Time Format", style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.primaryText)),
-                      subtitle: Text("Switch between Global and Ethiopian calendars", style: TextStyle(color: AppColors.secondaryText)),
+                      leading: const Icon(
+                        Icons.calendar_month_rounded,
+                        color: Colors.orange,
+                      ),
+                      title: Text(
+                        "Date & Time Format",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryText,
+                        ),
+                      ),
+                      subtitle: Text(
+                        "Switch between Global and Ethiopian calendars",
+                        style: TextStyle(color: AppColors.secondaryText),
+                      ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: ['Global', 'Ethiopian'].map((format) {
@@ -97,15 +146,24 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
                             onSelected: (selected) {
                               if (selected) {
                                 setState(() => _calendarFormat = format);
-                                _savePreference('pref_calendar_format', format).then((_) {
+                                _savePreference(
+                                  'pref_calendar_format',
+                                  format,
+                                ).then((_) {
                                   DateHelper.refresh();
                                 });
                               }
                             },
-                            selectedColor: const Color(0xFFF57C00).withOpacity(0.2),
+                            selectedColor: const Color(
+                              0xFFF57C00,
+                            ).withOpacity(0.2),
                             labelStyle: TextStyle(
-                              color: isSelected ? const Color(0xFFF57C00) : AppColors.primaryText,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected
+                                  ? const Color(0xFFF57C00)
+                                  : AppColors.primaryText,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           );
                         }).toList(),
@@ -129,7 +187,11 @@ class _AppPreferencesScreenState extends State<AppPreferencesScreen> {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: child,

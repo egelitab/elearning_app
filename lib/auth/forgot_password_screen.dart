@@ -115,11 +115,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
-        title: const Text("Reset Password", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Reset Password",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
-        
+
         foregroundColor: Colors.black,
       ),
       body: Padding(
@@ -165,12 +167,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             backgroundColor: isActive ? Colors.blue : Colors.grey.shade300,
             child: isActive
                 ? (_step > step
-                    ? const Icon(Icons.check, size: 16, color: Colors.white)
-                    : Text("${step + 1}", style: const TextStyle(color: Colors.white, fontSize: 13)))
-                : Text("${step + 1}", style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                      ? const Icon(Icons.check, size: 16, color: Colors.white)
+                      : Text(
+                          "${step + 1}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                          ),
+                        ))
+                : Text(
+                    "${step + 1}",
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                  ),
           ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 11, color: isActive ? Colors.blue : Colors.grey)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isActive ? Colors.blue : Colors.grey,
+            ),
+          ),
         ],
       ),
     );
@@ -193,10 +210,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       children: [
         const Icon(Icons.email_outlined, size: 48, color: Colors.blue),
         const SizedBox(height: 16),
-        const Text("Forgot your password?", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        const Text(
+          "Forgot your password?",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
-        Text("Enter your email address and we'll send you a reset code.",
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+        Text(
+          "Enter your email address and we'll send you a reset code.",
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
         const SizedBox(height: 30),
         TextField(
           controller: _emailController,
@@ -219,10 +241,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       children: [
         const Icon(Icons.lock_clock, size: 48, color: Colors.blue),
         const SizedBox(height: 16),
-        const Text("Enter verification code", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        const Text(
+          "Enter verification code",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
-        Text("We sent a 6-digit code to ${_emailController.text.trim()}",
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+        Text(
+          "We sent a 6-digit code to ${_emailController.text.trim()}",
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
         // Dev mode hint
         if (_devResetCode != null) ...[
           const SizedBox(height: 8),
@@ -237,7 +264,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               children: [
                 const Icon(Icons.developer_mode, size: 18, color: Colors.amber),
                 const SizedBox(width: 8),
-                Text("Dev code: $_devResetCode", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(
+                  "Dev code: $_devResetCode",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
               ],
             ),
           ),
@@ -272,10 +305,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       children: [
         const Icon(Icons.lock_reset, size: 48, color: Colors.blue),
         const SizedBox(height: 16),
-        const Text("Create new password", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        const Text(
+          "Create new password",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
-        Text("Your new password must be at least 6 characters long.",
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+        Text(
+          "Your new password must be at least 6 characters long.",
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
         const SizedBox(height: 30),
         TextField(
           controller: _passwordController,
@@ -285,8 +323,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             prefixIcon: const Icon(Icons.lock_outline),
             suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
             ),
           ),
         ),
@@ -299,8 +340,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             prefixIcon: const Icon(Icons.lock_outline),
             suffixIcon: IconButton(
-              icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+              icon: Icon(
+                _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
             ),
           ),
         ),
@@ -320,11 +364,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
                 label,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
           );

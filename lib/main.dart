@@ -69,7 +69,12 @@ class ELearningApp extends StatelessWidget {
             ),
           ),
           scrollBehavior: const MaterialScrollBehavior().copyWith(
-            dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
+            dragDevices: {
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.touch,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.unknown,
+            },
           ),
           home: const AuthWrapper(),
           debugShowCheckedModeBanner: false,
@@ -100,7 +105,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   // Logic to read from device storage
   Future<void> _checkLoginStatus() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    
+
     // Slight delay to ensure smooth transition or to show a splash logo
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -132,15 +137,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
               child: Column(
                 children: [
                   const Spacer(flex: 3),
-                  
+
                   // Central Logo lowered only on the loading screen
-                  Image.asset(
-                    'assets/logo.png',
-                    height: 180,
-                  ),
-                  
+                  Image.asset('assets/logo.png', height: 180),
+
                   const Spacer(flex: 1),
-                  
+
                   // This invisible layout mimics the element heights of the Welcome screen
                   // locking the logo in the exact same pixel position during transition
                   Opacity(
@@ -150,7 +152,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
                         const Text(
                           "Welcome to BDU E-Learning App",
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         const Text(
@@ -162,7 +167,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 50),
                 ],
               ),

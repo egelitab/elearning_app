@@ -58,7 +58,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     if (index != null) {
       textCtrl.text = _questions[index].text;
       pointsCtrl.text = _questions[index].points.toString();
-      options = _questions[index].options.map((o) => Map<String, dynamic>.from(o)).toList();
+      options = _questions[index].options
+          .map((o) => Map<String, dynamic>.from(o))
+          .toList();
     }
 
     bool isFormValid() {
@@ -76,20 +78,28 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                    controller: textCtrl,
-                    onChanged: (val) => setDialogState(() {}),
-                    decoration: const InputDecoration(
-                        labelText: "Question*", border: OutlineInputBorder()),
-                    maxLines: 3),
+                  controller: textCtrl,
+                  onChanged: (val) => setDialogState(() {}),
+                  decoration: const InputDecoration(
+                    labelText: "Question*",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
                 const SizedBox(height: 12),
                 TextField(
-                    controller: pointsCtrl,
-                    decoration: const InputDecoration(
-                        labelText: "Points", border: OutlineInputBorder()),
-                    keyboardType: TextInputType.number),
+                  controller: pointsCtrl,
+                  decoration: const InputDecoration(
+                    labelText: "Points",
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
                 const SizedBox(height: 16),
-                const Text("Options (tap radio to mark correct):",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Options (tap radio to mark correct):",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 8),
                 ...List.generate(options.length, (i) {
                   final ctrl = TextEditingController(text: options[i]["text"]);
@@ -99,8 +109,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       children: [
                         Radio<int>(
                           value: i,
-                          groupValue:
-                              options.indexWhere((o) => o["correct"] == true),
+                          groupValue: options.indexWhere(
+                            (o) => o["correct"] == true,
+                          ),
                           onChanged: (v) {
                             setDialogState(() {
                               for (var o in options) {
@@ -114,9 +125,10 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                           child: TextField(
                             controller: ctrl,
                             decoration: InputDecoration(
-                                hintText: "Option ${i + 1}",
-                                isDense: true,
-                                border: const OutlineInputBorder()),
+                              hintText: "Option ${i + 1}",
+                              isDense: true,
+                              border: const OutlineInputBorder(),
+                            ),
                             onChanged: (val) {
                               options[i]["text"] = val;
                               setDialogState(() {});
@@ -132,27 +144,29 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text("Cancel")),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Cancel"),
+            ),
             ElevatedButton(
-                onPressed: isFormValid()
-                    ? () {
-                        final validOptions = options
-                            .where((o) => (o["text"] as String).trim().isNotEmpty)
-                            .toList();
-                        if (validOptions.isEmpty) return;
+              onPressed: isFormValid()
+                  ? () {
+                      final validOptions = options
+                          .where((o) => (o["text"] as String).trim().isNotEmpty)
+                          .toList();
+                      if (validOptions.isEmpty) return;
 
-                        Navigator.pop(
-                          ctx,
-                          QuestionModel(
-                            text: textCtrl.text.trim(),
-                            points: int.tryParse(pointsCtrl.text) ?? 1,
-                            options: options,
-                          ),
-                        );
-                      }
-                    : null,
-                child: Text(index == null ? "Add" : "Save")),
+                      Navigator.pop(
+                        ctx,
+                        QuestionModel(
+                          text: textCtrl.text.trim(),
+                          points: int.tryParse(pointsCtrl.text) ?? 1,
+                          options: options,
+                        ),
+                      );
+                    }
+                  : null,
+              child: Text(index == null ? "Add" : "Save"),
+            ),
           ],
         ),
       ),
@@ -172,7 +186,11 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
   Future<void> _saveQuiz() async {
     if (_titleCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Title is required"), backgroundColor: Colors.red));
+        const SnackBar(
+          content: Text("Title is required"),
+          backgroundColor: Colors.red,
+        ),
+      );
       return;
     }
 
@@ -200,20 +218,27 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           "points": q.points,
           "order_index": i,
           "options": validOptions
-              .map((o) => {"option_text": o["text"], "is_correct": o["correct"]})
+              .map(
+                (o) => {"option_text": o["text"], "is_correct": o["correct"]},
+              )
               .toList(),
         });
       }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Quiz created successfully!"), backgroundColor: Colors.green));
+          const SnackBar(
+            content: Text("Quiz created successfully!"),
+            backgroundColor: Colors.green,
+          ),
+        );
         Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
+          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        );
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -223,10 +248,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         title: const Text("Create Quiz"),
-        
+
         elevation: 0,
         foregroundColor: Colors.black87,
       ),
@@ -246,7 +270,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       return DropdownMenuItem<String>(
                         value: course['id'].toString(),
                         child: Text(
-                          course['title'] ?? course['course_code'] ?? 'Unknown Course',
+                          course['title'] ??
+                              course['course_code'] ??
+                              'Unknown Course',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -262,15 +288,21 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                   ),
                 const SizedBox(height: 16),
                 TextField(
-                    controller: _titleCtrl,
-                    decoration: const InputDecoration(
-                        labelText: "Quiz Title*", border: OutlineInputBorder())),
+                  controller: _titleCtrl,
+                  decoration: const InputDecoration(
+                    labelText: "Quiz Title*",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 TextField(
-                    controller: _descCtrl,
-                    decoration: const InputDecoration(
-                        labelText: "Description", border: OutlineInputBorder()),
-                    maxLines: 3),
+                  controller: _descCtrl,
+                  decoration: const InputDecoration(
+                    labelText: "Description",
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -278,8 +310,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       child: TextField(
                         controller: _durationCtrl,
                         decoration: const InputDecoration(
-                            labelText: "Duration (min)",
-                            border: OutlineInputBorder()),
+                          labelText: "Duration (min)",
+                          border: OutlineInputBorder(),
+                        ),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -288,8 +321,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       child: TextField(
                         controller: _attemptsCtrl,
                         decoration: const InputDecoration(
-                            labelText: "Max Attempts",
-                            border: OutlineInputBorder()),
+                          labelText: "Max Attempts",
+                          border: OutlineInputBorder(),
+                        ),
                         keyboardType: TextInputType.number,
                       ),
                     ),
@@ -299,9 +333,13 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("Questions",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "Questions",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     ElevatedButton.icon(
                       onPressed: () => _showQuestionDialog(),
                       icon: const Icon(Icons.add),
@@ -314,8 +352,11 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                   const Padding(
                     padding: EdgeInsets.all(20.0),
                     child: Center(
-                        child: Text("No questions added yet.",
-                            style: TextStyle(color: Colors.grey))),
+                      child: Text(
+                        "No questions added yet.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
                   )
                 else
                   ...List.generate(_questions.length, (index) {
@@ -325,7 +366,9 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       child: ListTile(
                         onTap: () => _showQuestionDialog(index: index),
                         title: Text(q.text),
-                        subtitle: Text("${q.points} Points • ${q.options.where((o) => (o['text'] as String).trim().isNotEmpty).length} Options"),
+                        subtitle: Text(
+                          "${q.points} Points • ${q.options.where((o) => (o['text'] as String).trim().isNotEmpty).length} Options",
+                        ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
@@ -348,8 +391,13 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text("Save Quiz",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Save Quiz",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

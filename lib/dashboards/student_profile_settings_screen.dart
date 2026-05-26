@@ -14,10 +14,12 @@ class StudentProfileSettingsScreen extends StatefulWidget {
   const StudentProfileSettingsScreen({super.key});
 
   @override
-  State<StudentProfileSettingsScreen> createState() => _StudentProfileSettingsScreenState();
+  State<StudentProfileSettingsScreen> createState() =>
+      _StudentProfileSettingsScreenState();
 }
 
-class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScreen> {
+class _StudentProfileSettingsScreenState
+    extends State<StudentProfileSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
@@ -27,7 +29,11 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
         appBar: AppBar(
           title: Text(
             'Settings',
-            style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold, fontSize: 22),
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+              fontSize: 22,
+            ),
           ),
           backgroundColor: AppColors.appBar,
           elevation: 0,
@@ -41,7 +47,7 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 10),
-              
+
               // Primary Categories
               _buildSettingsGroup([
                 _buildSettingsTile(
@@ -52,7 +58,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const AccountSettingsScreen(),
+                      ),
                     );
                   },
                 ),
@@ -64,7 +72,10 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const NotificationSettingsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const NotificationSettingsScreen(),
+                      ),
                     );
                   },
                 ),
@@ -76,7 +87,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AppPreferencesScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const AppPreferencesScreen(),
+                      ),
                     );
                   },
                 ),
@@ -88,12 +101,15 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const StudentProfileDownloadsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const StudentProfileDownloadsScreen(),
+                      ),
                     );
                   },
                 ),
               ]),
-  
+
               const SizedBox(height: 24),
               _buildSectionHeader("Privacy & Support"),
               _buildSettingsGroup([
@@ -105,7 +121,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const PrivacySecurityScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const PrivacySecurityScreen(),
+                      ),
                     );
                   },
                 ),
@@ -117,7 +135,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const HelpSupportScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const HelpSupportScreen(),
+                      ),
                     );
                   },
                 ),
@@ -129,7 +149,9 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const SendFeedbackScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const SendFeedbackScreen(),
+                      ),
                     );
                   },
                 ),
@@ -146,14 +168,16 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const AboutLmsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const AboutLmsScreen(),
+                      ),
                     );
                   },
                 ),
               ]),
-  
+
               const SizedBox(height: 32),
-              
+
               const SizedBox(height: 20),
             ],
           ),
@@ -168,8 +192,8 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
       child: Text(
         title.toUpperCase(),
         style: const TextStyle(
-          fontSize: 13, 
-          fontWeight: FontWeight.w700, 
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
           color: Colors.blueGrey,
           letterSpacing: 1.2,
         ),
@@ -184,10 +208,10 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-          color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -225,17 +249,26 @@ class _StudentProfileSettingsScreenState extends State<StudentProfileSettingsScr
       ),
       title: Text(
         title,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryText),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryText,
+        ),
       ),
-      subtitle: subtitle != null 
-          ? Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.secondaryText))
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+            )
           : null,
-      trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey, size: 14),
+      trailing: const Icon(
+        Icons.arrow_forward_ios_rounded,
+        color: Colors.grey,
+        size: 14,
+      ),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
   }
 }
-
-

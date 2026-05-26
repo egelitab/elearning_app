@@ -7,13 +7,15 @@ class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
-  
+
   bool _notifyChat = true;
   bool _notifyAnnouncement = true;
   bool _notifyMaterialTask = true;
@@ -37,9 +39,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load settings: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to load settings: $e")));
       }
       setState(() => _isLoading = false);
     }
@@ -58,9 +60,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       await _apiService.updateNotificationSettings({key: value});
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to update setting: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to update setting: $e")));
       }
       // Revert if failed
       setState(() {
@@ -79,75 +81,95 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       builder: (context, isDark, _) => Scaffold(
         backgroundColor: AppColors.scaffold,
         appBar: AppBar(
-          title: Text('Notification Settings', style: TextStyle(color: AppColors.appBarForeground, fontWeight: FontWeight.bold)),
+          title: Text(
+            'Notification Settings',
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           backgroundColor: AppColors.appBar,
           elevation: 0,
           iconTheme: IconThemeData(color: AppColors.appBarForeground),
         ),
-        body: _isLoading 
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Preferences",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primaryText),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    "Choose which notifications you'd like to receive on this device.",
-                    style: TextStyle(fontSize: 14, color: AppColors.secondaryText),
-                  ),
-                  const SizedBox(height: 25),
-                  
-                  _buildToggleCard(
-                    title: "Chat Messages",
-                    subtitle: "Direct and group chat notifications",
-                    icon: Icons.chat_bubble_outline_rounded,
-                    iconColor: Colors.blue,
-                    value: _notifyChat,
-                    onChanged: (val) => _updateSetting('notify_chat', val),
-                  ),
-                  
-                  _buildToggleCard(
-                    title: "Announcements",
-                    subtitle: "Important updates from your instructors",
-                    icon: Icons.campaign_outlined,
-                    iconColor: Colors.orange,
-                    value: _notifyAnnouncement,
-                    onChanged: (val) => _updateSetting('notify_announcement', val),
-                  ),
-                  
-                  _buildToggleCard(
-                    title: "New Material & Tasks",
-                    subtitle: "Notifications for new course materials and assignments",
-                    icon: Icons.assignment_outlined,
-                    iconColor: Colors.green,
-                    value: _notifyMaterialTask,
-                    onChanged: (val) => _updateSetting('notify_material_task', val),
-                  ),
-                  
-                  _buildToggleCard(
-                    title: "System Notifications",
-                    subtitle: "Security alerts and system updates",
-                    icon: Icons.notifications_none_rounded,
-                    iconColor: Colors.redAccent,
-                    value: _notifySystem,
-                    onChanged: (val) => _updateSetting('notify_system', val),
-                  ),
-  
-                  const SizedBox(height: 40),
-                  Center(
-                    child: Text(
-                      "Settings are automatically saved",
-                      style: TextStyle(fontSize: 12, color: AppColors.secondaryText.withOpacity(0.5), fontStyle: FontStyle.italic),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Preferences",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryText,
+                      ),
                     ),
-                  )
-                ],
+                    const SizedBox(height: 10),
+                    Text(
+                      "Choose which notifications you'd like to receive on this device.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    _buildToggleCard(
+                      title: "Chat Messages",
+                      subtitle: "Direct and group chat notifications",
+                      icon: Icons.chat_bubble_outline_rounded,
+                      iconColor: Colors.blue,
+                      value: _notifyChat,
+                      onChanged: (val) => _updateSetting('notify_chat', val),
+                    ),
+
+                    _buildToggleCard(
+                      title: "Announcements",
+                      subtitle: "Important updates from your instructors",
+                      icon: Icons.campaign_outlined,
+                      iconColor: Colors.orange,
+                      value: _notifyAnnouncement,
+                      onChanged: (val) =>
+                          _updateSetting('notify_announcement', val),
+                    ),
+
+                    _buildToggleCard(
+                      title: "New Material & Tasks",
+                      subtitle:
+                          "Notifications for new course materials and assignments",
+                      icon: Icons.assignment_outlined,
+                      iconColor: Colors.green,
+                      value: _notifyMaterialTask,
+                      onChanged: (val) =>
+                          _updateSetting('notify_material_task', val),
+                    ),
+
+                    _buildToggleCard(
+                      title: "System Notifications",
+                      subtitle: "Security alerts and system updates",
+                      icon: Icons.notifications_none_rounded,
+                      iconColor: Colors.redAccent,
+                      value: _notifySystem,
+                      onChanged: (val) => _updateSetting('notify_system', val),
+                    ),
+
+                    const SizedBox(height: 40),
+                    Center(
+                      child: Text(
+                        "Settings are automatically saved",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.secondaryText.withOpacity(0.5),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }
@@ -170,7 +192,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             color: Colors.black.withOpacity(0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: SwitchListTile(
@@ -182,8 +204,18 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
           ),
           child: Icon(icon, color: iconColor, size: 24),
         ),
-        title: Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primaryText)),
-        subtitle: Text(subtitle, style: TextStyle(fontSize: 13, color: AppColors.secondaryText)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primaryText,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+        ),
         value: value,
         activeColor: Theme.of(context).primaryColor,
         onChanged: onChanged,

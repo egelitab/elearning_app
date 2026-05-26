@@ -22,9 +22,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final ApiService _apiService = ApiService();
 
   // Badge counts
-  int _chatUnread = 0;         // Inbox tab  ← new chat messages
+  int _chatUnread = 0; // Inbox tab  ← new chat messages
   int _announcementUnread = 0; // Home tab   ← course announcements
-  int _materialUnread = 0;     // Courses tab ← new materials/tasks
+  int _materialUnread = 0; // Courses tab ← new materials/tasks
 
   Timer? _pollTimer;
 
@@ -40,7 +40,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     _fetchBadges();
-    _pollTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchBadges());
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _fetchBadges(),
+    );
   }
 
   @override
@@ -81,8 +84,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
             ),
             child: Text(
               count > 99 ? '99+' : '$count',
-              style: TextStyle(
-                color: Theme.of(context).cardColor,
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
               ),
@@ -103,7 +106,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
           onWillPop: () async {
             DateTime now = DateTime.now();
             if (currentBackPressTime == null ||
-                now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+                now.difference(currentBackPressTime!) >
+                    const Duration(seconds: 2)) {
               currentBackPressTime = now;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Press back again to exit')),
@@ -124,7 +128,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                     color: AppColors.shadow.withOpacity(0.08),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
-                  )
+                  ),
                 ],
               ),
               child: BottomNavigationBar(
@@ -134,37 +138,55 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 currentIndex: _index,
                 selectedItemColor: AppColors.navSelected,
                 unselectedItemColor: AppColors.navUnselected,
-                selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
+                selectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 11,
+                ),
                 onTap: (i) {
                   setState(() => _index = i);
-                  if (i == 0 && _announcementUnread > 0) {
+                  if (i == 0 && _announcementUnread > 0)
                     setState(() => _announcementUnread = 0);
-                    _apiService.markNotificationsAsReadByTypes(['announcement']);
-                  }
-                  if (i == 1 && _materialUnread > 0) {
+                  if (i == 1 && _materialUnread > 0)
                     setState(() => _materialUnread = 0);
-                    _apiService.markNotificationsAsReadByTypes(['material', 'task']);
-                  }
-                  if (i == 2 && _chatUnread > 0) {
+                  if (i == 2 && _chatUnread > 0)
                     setState(() => _chatUnread = 0);
-                    _apiService.markNotificationsAsReadByTypes(['chat']);
-                  }
                 },
                 items: [
                   BottomNavigationBarItem(
-                    icon: _badgeIcon(const Icon(Icons.home_outlined), _announcementUnread),
-                    activeIcon: _badgeIcon(const Icon(Icons.home), _announcementUnread),
+                    icon: _badgeIcon(
+                      const Icon(Icons.home_outlined),
+                      _announcementUnread,
+                    ),
+                    activeIcon: _badgeIcon(
+                      const Icon(Icons.home),
+                      _announcementUnread,
+                    ),
                     label: 'Home',
                   ),
                   BottomNavigationBarItem(
-                    icon: _badgeIcon(const Icon(Icons.book_outlined), _materialUnread),
-                    activeIcon: _badgeIcon(const Icon(Icons.book), _materialUnread),
+                    icon: _badgeIcon(
+                      const Icon(Icons.book_outlined),
+                      _materialUnread,
+                    ),
+                    activeIcon: _badgeIcon(
+                      const Icon(Icons.book),
+                      _materialUnread,
+                    ),
                     label: 'Courses',
                   ),
                   BottomNavigationBarItem(
-                    icon: _badgeIcon(const Icon(Icons.chat_bubble_outline), _chatUnread),
-                    activeIcon: _badgeIcon(const Icon(Icons.chat_bubble), _chatUnread),
+                    icon: _badgeIcon(
+                      const Icon(Icons.chat_bubble_outline),
+                      _chatUnread,
+                    ),
+                    activeIcon: _badgeIcon(
+                      const Icon(Icons.chat_bubble),
+                      _chatUnread,
+                    ),
                     label: 'Inbox',
                   ),
                   const BottomNavigationBarItem(
