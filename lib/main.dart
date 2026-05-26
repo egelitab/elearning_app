@@ -32,15 +32,26 @@ class ELearningApp extends StatelessWidget {
           title: 'ELMS Project',
           themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF09AEF5),
+              primary: const Color(0xFF09AEF5),
+              secondary: const Color(0xFF05398F),
+              brightness: Brightness.light,
+            ),
+            primaryColor: const Color(0xFF09AEF5),
+            primaryColorDark: const Color(0xFF05398F),
             useMaterial3: true,
             brightness: Brightness.light,
           ),
           darkTheme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
               seedColor: const Color(0xFF09AEF5),
+              primary: const Color(0xFF09AEF5),
+              secondary: const Color(0xFF05398F),
               brightness: Brightness.dark,
             ),
+            primaryColor: const Color(0xFF09AEF5),
+            primaryColorDark: const Color(0xFF05398F),
             useMaterial3: true,
             brightness: Brightness.dark,
             scaffoldBackgroundColor: const Color(0xFF121212),
