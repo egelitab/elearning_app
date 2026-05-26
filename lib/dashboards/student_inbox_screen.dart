@@ -31,6 +31,18 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   Set<String> _openedChatIds = {};
   Set<String> _openedAnnouncementIds = {};
 
+  // ── Unread counts ──────────────────────────────────────────────────────────
+
+  int get _unreadChats => _chats.where((c) {
+        final id = c['group_id']?.toString() ?? '';
+        return id.isNotEmpty && !_openedChatIds.contains(id);
+      }).length;
+
+  int get _unreadAnnouncements => _announcements.where((a) {
+        final id = a['id']?.toString() ?? a['created_at']?.toString() ?? '';
+        return id.isNotEmpty && !_openedAnnouncementIds.contains(id);
+      }).length;
+
   @override
   void initState() {
     super.initState();
@@ -182,6 +194,9 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   // ── Toggle switch ──────────────────────────────────────────────────────────
 
   Widget _buildToggleSwitch() {
+    final annBadge = _unreadAnnouncements;
+    final chatBadge = _unreadChats;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       height: 50,
@@ -212,16 +227,26 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       : [],
                 ),
                 child: Center(
-                  child: Text(
-                    "Announcements",
-                    style: TextStyle(
-                      color: !isChatSelected
-                          ? AppColors.primary
-                          : AppColors.secondaryText,
-                      fontWeight: !isChatSelected
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Announcements",
+                        style: TextStyle(
+                          color: !isChatSelected
+                              ? AppColors.primary
+                              : AppColors.secondaryText,
+                          fontWeight: !isChatSelected
+                              ? FontWeight.bold
+                              : FontWeight.w600,
+                        ),
+                      ),
+                      if (annBadge > 0) ...
+                        [
+                          const SizedBox(width: 6),
+                          _buildBadge(annBadge),
+                        ],
+                    ],
                   ),
                 ),
               ),
@@ -248,16 +273,26 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                       : [],
                 ),
                 child: Center(
-                  child: Text(
-                    "Chats",
-                    style: TextStyle(
-                      color: isChatSelected
-                          ? AppColors.primary
-                          : AppColors.secondaryText,
-                      fontWeight: isChatSelected
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "Chats",
+                        style: TextStyle(
+                          color: isChatSelected
+                              ? AppColors.primary
+                              : AppColors.secondaryText,
+                          fontWeight: isChatSelected
+                              ? FontWeight.bold
+                              : FontWeight.w600,
+                        ),
+                      ),
+                      if (chatBadge > 0) ...
+                        [
+                          const SizedBox(width: 6),
+                          _buildBadge(chatBadge),
+                        ],
+                    ],
                   ),
                 ),
               ),
@@ -268,7 +303,33 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
     );
   }
 
-  // ── Announcements list ─────────────────────────────────────────────────────
+  // ── Badge helper ───────────────────────────────────────────────────────────
+
+  Widget _buildBadge(int count) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      child: Container(
+        key: ValueKey(count),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+        child: Text(
+          count > 99 ? '99+' : '$count',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            height: 1.2,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildAnnouncementsList() {
     var filtered = _announcements;
