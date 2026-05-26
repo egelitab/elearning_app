@@ -138,9 +138,18 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
                 onTap: (i) {
                   setState(() => _index = i);
-                  if (i == 0 && _announcementUnread > 0) setState(() => _announcementUnread = 0);
-                  if (i == 1 && _materialUnread > 0) setState(() => _materialUnread = 0);
-                  if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
+                  if (i == 0 && _announcementUnread > 0) {
+                    setState(() => _announcementUnread = 0);
+                    _apiService.markNotificationsAsReadByTypes(['announcement']);
+                  }
+                  if (i == 1 && _materialUnread > 0) {
+                    setState(() => _materialUnread = 0);
+                    _apiService.markNotificationsAsReadByTypes(['material', 'task']);
+                  }
+                  if (i == 2 && _chatUnread > 0) {
+                    setState(() => _chatUnread = 0);
+                    _apiService.markNotificationsAsReadByTypes(['chat']);
+                  }
                 },
                 items: [
                   BottomNavigationBarItem(

@@ -128,7 +128,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
             onTap: (i) {
               setState(() => _index = i);
-              if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
+              if (i == 2 && _chatUnread > 0) {
+                setState(() => _chatUnread = 0);
+                _apiService.markNotificationsAsReadByTypes(['chat']);
+              }
             },
             items: [
               const BottomNavigationBarItem(

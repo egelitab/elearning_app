@@ -1585,6 +1585,19 @@ class ApiService {
     }
   }
 
+  Future<void> markNotificationsAsReadByTypes(List<String> types) async {
+    try {
+      final notifications = await getNotifications();
+      for (final n in notifications) {
+        if (n['is_read'] != true && types.contains((n['type'] ?? '').toString())) {
+          try {
+            await markNotificationAsRead(n['id'].toString());
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
   Future<Map<String, int>> getUnreadNotificationCounts() async {
     try {
       // Count unread push-notifications by type.
