@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../services/api_service.dart';
 import 'instructor_materials_screen.dart';
 import 'create_quiz_screen.dart';
@@ -41,6 +42,21 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     if (_allCourses.isEmpty) {
       _fetchAllAvailableCourses();
     }
+    _saveRecentCourse();
+  }
+
+  Future<void> _saveRecentCourse() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final role = prefs.getString('user_role');
+      if (role != 'instructor') {
+        await prefs.setString(
+            'recent_course_json', jsonEncode(_currentCourse));
+        await prefs.setString(
+            'recent_course_title',
+            _currentCourse['title']?.toString() ?? '');
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchAllAvailableCourses() async {
@@ -672,6 +688,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       await prefs.setString(
         'recent_course_title',
         _currentCourse['title']?.toString() ?? '',
+      );
+      await prefs.setString(
+        'recent_course_json',
+        jsonEncode(_currentCourse),
       );
     }
 

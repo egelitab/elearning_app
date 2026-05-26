@@ -23,6 +23,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
   List<dynamic> _courses = [];
   List<dynamic> _myGoals = [];
   bool _isLoading = true;
+  String? _recentCourseId;
 
   final List<Color> _cardColors = [
     const Color(0xFF05398F),
@@ -48,10 +49,34 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
     try {
       final courses = await _apiService.getStudentCourses();
       final goals = await _apiService.getMyGoals();
+
+      // Determine recently accessed course
+      final prefs = await SharedPreferences.getInstance();
+      final recentJson = prefs.getString('recent_course_json');
+      String? recentId;
+      if (recentJson != null) {
+        try {
+          final decoded = jsonDecode(recentJson);
+          recentId = decoded['id']?.toString();
+        } catch (_) {}
+      }
+
+      // Sort: recently accessed course goes first
+      if (recentId != null) {
+        courses.sort((a, b) {
+          final aId = a['id']?.toString();
+          final bId = b['id']?.toString();
+          if (aId == recentId) return -1;
+          if (bId == recentId) return 1;
+          return 0;
+        });
+      }
+
       if (mounted) {
         setState(() {
           _courses = courses;
           _myGoals = goals;
+          _recentCourseId = recentId;
           _isLoading = false;
         });
       }
@@ -311,7 +336,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
               course['title']?.toString() ?? '',
             );
             if (!context.mounted) return;
-            Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => CourseDetailsScreen(
@@ -321,6 +346,20 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 ),
               ),
             );
+            // Re-sort courses so the just-accessed course appears first
+            if (mounted) {
+              final newRecentId = course['id']?.toString();
+              setState(() {
+                _recentCourseId = newRecentId;
+                _courses.sort((a, b) {
+                  final aId = a['id']?.toString();
+                  final bId = b['id']?.toString();
+                  if (aId == newRecentId) return -1;
+                  if (bId == newRecentId) return 1;
+                  return 0;
+                });
+              });
+            }
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -366,22 +405,30 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      course['course_code'] ?? '',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: lightColor,
-                        fontWeight: FontWeight.bold,
+                    Flexible(
+                      child: Text(
+                        course['course_code'] ?? '',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: lightColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text(
-                      courseGoals.isNotEmpty
-                          ? "${(progress * 100).toInt()}% (Goal Progress)"
-                          : "0%",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: darkColor,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        courseGoals.isNotEmpty
+                            ? "${(progress * 100).toInt()}% goal"
+                            : "0%",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: darkColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.end,
                       ),
                     ),
                   ],
