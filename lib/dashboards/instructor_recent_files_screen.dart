@@ -30,11 +30,11 @@ class InstructorRecentFilesScreen extends StatelessWidget {
         ),
       ),
       body: groupedFiles.isEmpty
-          ? const Center(child: Text("No recent files"))
+          ? Center(child: Text("No recent files"))
           : ListView(
               padding: const EdgeInsets.all(20),
               children: groupedFiles.entries.map((entry) {
-                if (entry.value.isEmpty) return const SizedBox.shrink();
+                if (entry.value.isEmpty) return SizedBox.shrink();
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -104,7 +104,7 @@ class InstructorRecentFilesScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -124,7 +124,7 @@ class InstructorRecentFilesScreen extends StatelessWidget {
             ),
             child: Icon(icon, color: iconColor, size: 24),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

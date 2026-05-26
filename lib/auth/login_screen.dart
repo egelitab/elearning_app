@@ -107,10 +107,10 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               // Logo Placeholder
               const Icon(Icons.school, size: 80, color: Colors.blue), 
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               
               // Email Field
               TextField(
@@ -122,7 +122,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.email_outlined),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               
               // Password Field
               TextField(
@@ -161,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               
               // Login Button
               _isLoading 
@@ -175,12 +175,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         backgroundColor: Colors.blue,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text(
+                      child: Text(
                         "LOGIN", 
                         style: TextStyle(
                           fontSize: 16, 
                           fontWeight: FontWeight.bold, 
-                          color: Colors.white
+                          color: Theme.of(context).cardColor
                         ),
                       ),
                     ),
@@ -226,17 +226,17 @@ class AdminRoleSelectionScreen extends StatelessWidget {
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text(
+                  child: Text(
                     "STUDENT",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white
+                      color: Theme.of(context).cardColor
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -251,12 +251,12 @@ class AdminRoleSelectionScreen extends StatelessWidget {
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text(
+                  child: Text(
                     "INSTRUCTOR",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white
+                      color: Theme.of(context).cardColor
                     ),
                   ),
                 ),

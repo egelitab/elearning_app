@@ -124,8 +124,8 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               left: 24,
               right: 24,
             ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
@@ -144,7 +144,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
 
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
@@ -171,7 +171,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     onChanged: (value) =>
                         setModalState(() => selectedSection = value),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   TextField(
                     controller: titleController,
                     decoration: InputDecoration(
@@ -181,7 +181,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   TextField(
                     controller: contentController,
                     maxLines: 4,
@@ -192,7 +192,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
 
                   const Text(
                     "Attachments",
@@ -201,7 +201,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       color: Colors.black54,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   if (selectedAttachments.isNotEmpty)
                     Wrap(
                       spacing: 8,
@@ -247,7 +247,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     label: const Text("Attach from Storage"),
                   ),
 
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -306,16 +306,16 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Update Announcement",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -380,12 +380,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   onPressed: _isDeleting ? null : _deleteAnnouncement,
                   tooltip: "Remove",
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
               ]
             : null,
       ),
       body: _isDeleting
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -401,7 +401,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         color: Colors.blueGrey,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -423,7 +423,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(
                     title,
                     style: TextStyle(
@@ -447,13 +447,13 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         radius: 20,
                         child: Text(
                           (instructor ?? 'A').substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).cardColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,7 +482,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
                   // Content
                   Text(
@@ -496,7 +496,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   ),
 
                   if (attachments.isNotEmpty) ...[
-                    const SizedBox(height: 48),
+                    SizedBox(height: 48),
                     Row(
                       children: [
                         Icon(
@@ -504,7 +504,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                           color: Theme.of(context).colorScheme.secondary,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           "Attachments (${attachments.length})",
                           style: TextStyle(
@@ -515,7 +515,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -524,7 +524,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                           _buildAttachmentTile(context, attachments[index]),
                     ),
                   ],
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                 ],
               ),
             ),
@@ -541,7 +541,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(

@@ -189,8 +189,8 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                 right: 20, 
                 bottom: MediaQuery.of(context).viewInsets.bottom + 30
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
@@ -208,15 +208,15 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Text(
                       "Form New Groups",
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: const Color(0xFF05398F)),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     
                     const Text("Group Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
@@ -231,10 +231,10 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
@@ -278,14 +278,14 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     ),
 
                     if (isFetchingStats) ...[
-                      const SizedBox(height: 10),
-                      const Center(child: LinearProgressIndicator(minHeight: 2)),
+                      SizedBox(height: 10),
+                      Center(child: LinearProgressIndicator(minHeight: 2)),
                     ],
 
                     if (selectedCourseId != null) ...[
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         decoration: BoxDecoration(
@@ -315,9 +315,9 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     ],
 
                     if (selectedDepartmentId != null) ...[
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         decoration: BoxDecoration(
@@ -345,7 +345,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                       ),
                       
                       if (selectedSection != null) ...[
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                           decoration: BoxDecoration(
@@ -354,8 +354,8 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.people_alt_rounded, color: Theme.of(context).primaryColor, size: 20),
-                              const SizedBox(width: 10),
+                              Icon(Icons.people_alt_rounded, color: const Color(0xFF09AEF5), size: 20),
+                              SizedBox(width: 10),
                               const Text(
                                 "Students in Section:", 
                                 style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)
@@ -363,14 +363,14 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                               const Spacer(),
                               Text(
                                 "$currentSegmentCount",
-                                style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold, fontSize: 16),
+                                style: TextStyle(color: const Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 16),
                               ),
                             ],
                           ),
                         ),
                       ],
                     ],
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     Row(
                       children: [
@@ -380,7 +380,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text("Students Per Group", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               TextField(
                                 controller: sizeController,
                                 keyboardType: TextInputType.number,
@@ -391,7 +391,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                                   contentPadding: EdgeInsets.zero,
                                   prefixIcon: IconButton(
-                                    icon: Icon(Icons.remove_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
+                                    icon: Icon(Icons.remove_rounded, color: const Color(0xFF05398F), size: 20),
                                     onPressed: () {
                                       if (groupSize > 1) {
                                         setSheetState(() {
@@ -403,7 +403,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                                     splashRadius: 20,
                                   ),
                                   suffixIcon: IconButton(
-                                    icon: Icon(Icons.add_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
+                                    icon: Icon(Icons.add_rounded, color: const Color(0xFF05398F), size: 20),
                                     onPressed: () {
                                       setSheetState(() {
                                         groupSize++;
@@ -424,14 +424,14 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         Expanded(
                           flex: 2,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text("Grouping Method", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
@@ -459,7 +459,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                       ],
                     ),
                     
-                    const SizedBox(height: 35),
+                    SizedBox(height: 35),
                     
                     SizedBox(
                       width: double.infinity,
@@ -491,7 +491,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                                       style: const TextStyle(color: Colors.black87, fontSize: 15, fontFamily: 'Inter'),
                                       children: [
                                         const TextSpan(text: "The group size does not evenly divide "),
-                                        TextSpan(text: "$totalStudents", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
+                                        TextSpan(text: "$totalStudents", style: TextStyle(fontWeight: FontWeight.bold, color: const Color(0xFF05398F))),
                                         const TextSpan(text: " students. One group will have "),
                                         TextSpan(text: "$remainder", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent)),
                                         const TextSpan(text: " students. Proceed?"),
@@ -517,7 +517,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                               }
                           } : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor: const Color(0xFF09AEF5),
                           disabledBackgroundColor: Colors.black12,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           elevation: (selectedCourseId != null && selectedDepartmentId != null && selectedSection != null && groupName != null && groupName!.isNotEmpty && groupSize > 0) ? 4 : 0,
@@ -597,7 +597,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
         
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: const Color(0xFF05398F), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: _isSearching 
@@ -609,16 +609,16 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                 border: InputBorder.none,
                 hintStyle: TextStyle(color: Colors.black38),
               ),
-              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 18),
+              style: TextStyle(color: const Color(0xFF05398F), fontSize: 18),
               onChanged: (val) => setState(() => _searchQuery = val),
             )
           : Text(
               "Manage Groups", 
-              style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 22, fontWeight: FontWeight.bold)
+              style: TextStyle(color: const Color(0xFF05398F), fontSize: 22, fontWeight: FontWeight.bold)
             ),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: Theme.of(context).colorScheme.secondary), 
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, color: const Color(0xFF05398F)), 
             onPressed: () {
               setState(() {
                 if (_isSearching) {
@@ -631,11 +631,11 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
               });
             }
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
         ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _error != null
           ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
           : SingleChildScrollView(
@@ -648,19 +648,19 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     _isSearching ? "Search Results" : "Active Course Groups",
                     style: const TextStyle(fontSize: 16, color: Colors.black54, fontWeight: FontWeight.w600),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
 
                   ..._filteredGroups.map((groupSet) => _buildGroupSetTile(groupSet)).toList(),
                   
                   if (_filteredGroups.isEmpty)
-                    const Center(
+                    Center(
                       child: Padding(
                         padding: EdgeInsets.only(top: 40.0),
                         child: Text("No groups found.", style: TextStyle(color: Colors.black38)),
                       )
                     ),
 
-                  const SizedBox(height: 100), // padding for FAB
+                  SizedBox(height: 100), // padding for FAB
                 ],
               ),
             ),
@@ -670,7 +670,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
           FloatingActionButton.extended(
             heroTag: "form_groups_btn",
             onPressed: _showCreateGroupBottomSheet,
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: const Color(0xFF09AEF5),
             elevation: 4,
             icon: const Icon(Icons.groups_rounded, color: Colors.white),
             label: const Text("Form New Groups", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -685,7 +685,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5))],
       ),
@@ -705,16 +705,16 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
-                      child: Icon(Icons.auto_awesome_motion_rounded, color: Theme.of(context).primaryColor),
+                      decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), borderRadius: BorderRadius.circular(15)),
+                      child: Icon(Icons.auto_awesome_motion_rounded, color: const Color(0xFF09AEF5)),
                     ),
-                    const SizedBox(width: 15),
+                    SizedBox(width: 15),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(batch["batch_name"] ?? "General Groups", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                          const SizedBox(height: 4),
+                          Text(batch["batch_name"] ?? "General Groups", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF05398F))),
+                          SizedBox(height: 4),
                           Text(batch["course_title"] ?? "Course", style: const TextStyle(fontSize: 13, color: Colors.black45)),
                         ],
                       ),
@@ -740,7 +740,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 Row(
                   children: [
                     Text("${(batch["groups"] as List).length} Groups formed", style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600, fontSize: 13)),
@@ -748,9 +748,9 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text("More Detail", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+                        Text("More Detail", style: TextStyle(fontWeight: FontWeight.bold, color: const Color(0xFF09AEF5))),
                         SizedBox(width: 5),
-                        Icon(Icons.arrow_forward_rounded, size: 16, color: Theme.of(context).primaryColor),
+                        Icon(Icons.arrow_forward_rounded, size: 16, color: const Color(0xFF09AEF5)),
                       ],
                     ),
                   ],
@@ -783,12 +783,12 @@ class GroupDetailScreen extends StatelessWidget {
         
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Theme.of(context).colorScheme.secondary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: const Color(0xFF05398F), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           batch["batch_name"] ?? "Group Details",
-          style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 20, fontWeight: FontWeight.bold)
+          style: TextStyle(color: const Color(0xFF05398F), fontSize: 20, fontWeight: FontWeight.bold)
         ),
       ),
       body: SingleChildScrollView(
@@ -801,7 +801,7 @@ class GroupDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
               ),
@@ -818,16 +818,16 @@ class GroupDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
 
             Row(
               children: [
-                Text("Formed Groups", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
+                Text("Formed Groups", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF05398F))),
                 const Spacer(),
                 Text("${groups.length} Groups", style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
               ],
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
 
             ...groups.map((group) => _buildGroupCard(group)).toList(),
           ],
@@ -840,9 +840,9 @@ class GroupDetailScreen extends StatelessWidget {
     return Row(
       children: [
         Icon(icon, color: const Color(0xFF09AEF5), size: 18),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Text(label, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
-        const SizedBox(width: 8),
+        SizedBox(width: 8),
         Expanded(
           child: Text(value, style: TextStyle(color: const Color(0xFF05398F), fontSize: 14, fontWeight: FontWeight.bold), textAlign: TextAlign.end, overflow: TextOverflow.ellipsis),
         ),
@@ -876,7 +876,7 @@ class GroupDetailScreen extends StatelessWidget {
             child: Row(
               children: [
                 const Icon(Icons.person_outline_rounded, size: 16, color: Colors.black38),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(child: Text(m["full_name"] ?? "Unnamed", style: const TextStyle(fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis)),
               ],
             ),

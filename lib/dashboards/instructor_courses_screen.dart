@@ -66,22 +66,22 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
             // 1. Sleek Category Grid (Materials, Assessments, etc.)
             _buildCategoryGrid(context),
             
-            const SizedBox(height: 35),
+            SizedBox(height: 35),
             
             // 2. Section Header
             const Text(
               "Assigned Courses",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             
             // 3. List of Courses
             if (_isLoading)
-              const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
+              Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
             else if (_error != null)
               Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
             else if (_courses.isEmpty)
-              const Center(child: Text("No courses assigned yet."))
+              Center(child: Text("No courses assigned yet."))
             else
               ..._courses.map((course) {
                 // Get initials
@@ -94,7 +94,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                 );
               }).toList(),
             
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
           ],
         ),
       ),
@@ -179,7 +179,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: Theme.of(context).cardColor.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(12)
                   ),
                   child: Icon(icon, size: 24, color: Colors.white),
@@ -204,7 +204,7 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -249,14 +249,14 @@ class _InstructorCoursesScreenState extends State<InstructorCoursesScreen> {
                     )
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 // Course Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(code, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),

@@ -67,21 +67,21 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
                   // Step 1 Content: Welcome Text & Get Started
                   if (_step == 1) ...[
-                    const Text(
+                    Text(
                       "Welcome to BDU E-Learning App",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
                     const Text(
                       "Learn Anytime, Anywhere",
                       style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: 40),
                     _buildButton(
                       text: "Get Started",
                       isPrimary: false,
@@ -101,7 +101,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                         MaterialPageRoute(builder: (context) => const RegisterScreen()),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     _buildButton(
                       text: "Log In",
                       isPrimary: false,
@@ -113,7 +113,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                     ),
                   ],
                   
-                  const SizedBox(height: 50),
+                  SizedBox(height: 50),
                 ],
               ),
             ),

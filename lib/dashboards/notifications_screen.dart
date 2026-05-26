@@ -89,7 +89,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           await _fetchSystemMsgCount();
         },
         child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
@@ -103,7 +103,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     child: Column(
                       children: [
                         Icon(Icons.notifications_none_rounded, size: 80, color: Colors.grey.shade300),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         Text("No notifications yet", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                       ],
                     ),
@@ -148,9 +148,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Text(n['content'] ?? '', style: TextStyle(color: isRead ? Colors.grey : Colors.black54)),
-                            const SizedBox(height: 6),
+                            SizedBox(height: 6),
                             Text(formattedDate, style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
                           ],
                         ),
@@ -206,12 +206,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Theme.of(context).cardColor.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 22),
             ),
-            const SizedBox(width: 14),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -239,7 +239,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             const Icon(Icons.chevron_right_rounded, color: Colors.white),
           ],
         ),

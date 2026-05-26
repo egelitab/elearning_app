@@ -76,8 +76,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ),
             child: Text(
               count > 99 ? '99+' : '$count',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).cardColor,
                 fontSize: 9,
                 fontWeight: FontWeight.bold,
               ),

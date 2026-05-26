@@ -97,14 +97,14 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _error != null
           ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
           : Column(
               children: [
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 _buildToggleSwitch(),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 Expanded(
                   child: isChatSelected ? _buildChatList() : _buildAnnouncementsList(),
                 ),
@@ -123,7 +123,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
         elevation: 4,
         child: Icon(
           isChatSelected ? Icons.maps_ugc_rounded : Icons.campaign_rounded, 
-          color: Colors.white, 
+          color: Theme.of(context).cardColor, 
           size: 28
         ),
       ),
@@ -179,8 +179,8 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
               bottom: MediaQuery.of(context).viewInsets.bottom,
               top: 30, left: 24, right: 24
             ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
             ),
             child: SingleChildScrollView(
@@ -189,9 +189,9 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
                   if (isModalLoading)
-                    const Center(child: CircularProgressIndicator())
+                    Center(child: CircularProgressIndicator())
                   else ...[
                     DropdownButtonFormField<String>(
                       decoration: InputDecoration(
@@ -223,7 +223,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                         }
                       },
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     if (selectedCourseId != null)
                       DropdownButtonFormField<String>(
                         decoration: InputDecoration(
@@ -242,7 +242,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                         ],
                         onChanged: (value) => setModalState(() => selectedSection = value),
                       ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     TextField(
                       controller: titleController,
                       decoration: InputDecoration(
@@ -250,7 +250,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     TextField(
                       controller: contentController,
                       maxLines: 4,
@@ -259,11 +259,11 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     
                     // Attach Files Section
                     const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     if (selectedAttachments.isNotEmpty)
                       Wrap(
                         spacing: 8,
@@ -293,7 +293,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       label: const Text("Attach from Storage")
                     ),
 
-                    const SizedBox(height: 25),
+                    SizedBox(height: 25),
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -336,7 +336,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -396,8 +396,8 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
           return Container(
             height: MediaQuery.of(context).size.height * 0.85,
             padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
             ),
             child: Column(
@@ -416,9 +416,9 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 if (isModalLoading)
-                  const Center(child: CircularProgressIndicator())
+                  Center(child: CircularProgressIndicator())
                 else ...[
                   // Filters
                   SingleChildScrollView(
@@ -426,18 +426,18 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                     child: Row(
                       children: [
                         _buildFilterChip("Course", filterCourse, courses, (val) => setModalState(() => filterCourse = val)),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         _buildFilterChip("Dept", filterDepartment, departments, (val) => setModalState(() => filterDepartment = val)),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         _buildFilterChip("Section", filterSection, sections, (val) => setModalState(() => filterSection = val)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   Expanded(
                     child: selectedBatch == null 
                       ? (batches.isEmpty 
-                          ? const Center(child: Text("No batches match filters"))
+                          ? Center(child: Text("No batches match filters"))
                           : ListView.builder(
                               itemCount: batches.length,
                               itemBuilder: (context, i) {
@@ -452,7 +452,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                               },
                             ))
                       : (filteredGroups.isEmpty
-                          ? const Center(child: Text("No groups match filters"))
+                          ? Center(child: Text("No groups match filters"))
                           : ListView.builder(
                               itemCount: filteredGroups.length,
                               itemBuilder: (context, i) {
@@ -566,7 +566,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -593,7 +593,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                   backgroundColor: avatarColor.withOpacity(0.15),
                   child: Text(name[0], style: TextStyle(color: avatarColor, fontWeight: FontWeight.bold, fontSize: 18)),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -606,7 +606,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                         ],
                       ),
                       Text(course, style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 12, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Text(
                         message.isNotEmpty ? message : "Starts a new group chat", 
                         maxLines: 1, 
@@ -757,7 +757,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -778,7 +778,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
             ),
             child: Icon(icon, color: iconColor, size: 24),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -788,7 +788,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                     courseTitle,
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.blueGrey.shade800),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                 ],
                 if (courseCode != null) ...[
                   Row(
@@ -807,7 +807,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                 ],
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -822,7 +822,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                     Text(time, style: const TextStyle(color: Colors.black45, fontSize: 12, fontWeight: FontWeight.w500)),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   description, 
                   style: const TextStyle(color: Colors.black54, fontSize: 13, height: 1.4),
@@ -830,7 +830,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (attachments != null && attachments.isNotEmpty) ...[
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   SizedBox(
                     height: 30,
                     child: ListView.builder(
@@ -849,7 +849,7 @@ class _InstructorInboxScreenState extends State<InstructorInboxScreen> {
                           child: Row(
                             children: [
                               Icon(Icons.description_rounded, size: 14, color: Theme.of(context).primaryColor),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Text(
                                 file['name'] ?? 'File', 
                                 style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Theme.of(context).colorScheme.secondary)

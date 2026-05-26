@@ -56,7 +56,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _groups.isEmpty 
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -76,11 +76,11 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.groups_rounded, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           const Text("You're not in any groups yet", 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           const Text("Groups assigned by your instructors will appear here.", 
             style: TextStyle(color: Colors.grey)
           ),
@@ -98,7 +98,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 8))],
       ),
@@ -118,13 +118,13 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                   decoration: BoxDecoration(color: Theme.of(context).primaryColor.withOpacity(0.1), shape: BoxShape.circle),
                   child: Icon(Icons.groups_rounded, color: Theme.of(context).primaryColor, size: 28),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(groupName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Theme.of(context).colorScheme.secondary)),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text("$courseTitle | $batchName", style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -138,7 +138,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("Group Members", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black54)),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 ...members.map((member) => _buildMemberTile(member)).toList(),
               ],
             ),
@@ -163,7 +163,7 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

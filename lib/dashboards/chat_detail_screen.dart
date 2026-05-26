@@ -117,7 +117,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
               child: Text(widget.name[0], style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 14, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
               child: Text(
                 widget.name, 
@@ -132,7 +132,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         children: [
           Expanded(
             child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(20),
@@ -198,7 +198,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   text, 
                   style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15)
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   time, 
                   style: TextStyle(color: isMe ? Colors.white70 : Colors.black38, fontSize: 10)
@@ -214,8 +214,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget _buildMessageInput() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))]
       ),
       child: SafeArea(
@@ -238,7 +238,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             GestureDetector(
               onTap: _sendMessage,
               child: Container(

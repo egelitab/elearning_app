@@ -77,7 +77,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _categorizedMaterials.isEmpty 
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -101,15 +101,15 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.folder_open_rounded, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           const Text('No shared materials yet', 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           const Text('Materials from your instructors will appear here.', 
             style: TextStyle(color: Colors.grey)
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _fetchMaterials, 
             icon: const Icon(Icons.refresh),
@@ -141,7 +141,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                   borderRadius: BorderRadius.circular(2)
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Expanded(
                 child: Text(
                   courseTitle, 
@@ -149,7 +149,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -165,7 +165,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
           ),
         ),
         ...materials.map((m) => _buildMaterialCard(m, courseTitle)).toList(),
-        const SizedBox(height: 20),
+        SizedBox(height: 20),
       ],
     );
   }
@@ -222,7 +222,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -270,7 +270,7 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,19 +281,19 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (description.isNotEmpty && description != 'null') ...[
-                            const SizedBox(height: 2),
+                            SizedBox(height: 2),
                             Text(description, 
                               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           Row(
                             children: [
                               if (date.isNotEmpty) ...[
                                 Text(date, style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12),
                               ],
                               Text(_formatFileSize(fileSize), style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
                             ],

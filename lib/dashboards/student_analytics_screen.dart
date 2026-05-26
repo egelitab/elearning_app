@@ -42,9 +42,9 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _data == null
-              ? const Center(child: Text("No analytics available", style: TextStyle(color: Colors.grey)))
+              ? Center(child: Text("No analytics available", style: TextStyle(color: Colors.grey)))
               : RefreshIndicator(
                   onRefresh: _fetch,
                   child: SingleChildScrollView(
@@ -57,42 +57,42 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
                         Row(
                           children: [
                             _statCard("Courses", "${_data!['courses_enrolled'] ?? 0}", Icons.school_rounded, Colors.blue),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             _statCard("Avg Grade", "${_data!['average_grade'] ?? 0}%", Icons.grade_rounded, Colors.green),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         Row(
                           children: [
                             _statCard("Attendance", "${_data!['attendance_rate'] ?? 0}%", Icons.how_to_reg_rounded, Colors.teal),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             _statCard("Quiz Avg", "${_data!['quiz_avg_score'] ?? 0}%", Icons.quiz_rounded, Colors.pink),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
 
                         // Assignments section
                         _sectionTitle("Assignments"),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _detailCard([
                           _detailRow("Completed", "${_data!['assignments_completed'] ?? 0}", Colors.green),
                           _detailRow("Pending", "${_data!['assignments_pending'] ?? 0}", Colors.orange),
                         ]),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
 
                         // Attendance breakdown
                         _sectionTitle("Attendance Breakdown"),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _detailCard([
                           _detailRow("Present", "${_data!['attendance_present'] ?? 0}", Colors.green),
                           _detailRow("Late", "${_data!['attendance_late'] ?? 0}", Colors.orange),
                           _detailRow("Total Sessions", "${_data!['attendance_total'] ?? 0}", Colors.blue),
                         ]),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
 
                         // Quiz performance
                         _sectionTitle("Quiz Performance"),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _detailCard([
                           _detailRow("Quizzes Taken", "${_data!['quiz_attempts'] ?? 0}", Colors.purple),
                           _detailRow("Average Score", "${_data!['quiz_avg_score'] ?? 0}%", Colors.pink),
@@ -100,16 +100,16 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
 
                         // Attendance visual bar
                         if ((_data!['attendance_total'] ?? 0) > 0) ...[
-                          const SizedBox(height: 24),
+                          SizedBox(height: 24),
                           _sectionTitle("Attendance Rate"),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           _progressBar(double.tryParse(_data!['attendance_rate'].toString()) ?? 0),
                         ],
 
                         // Grade visual bar
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20),
                         _sectionTitle("Overall Grade"),
-                        const SizedBox(height: 12),
+                        SizedBox(height: 12),
                         _progressBar(double.tryParse(_data!['average_grade'].toString()) ?? 0),
                       ],
                     ),
@@ -134,9 +134,9 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(label, style: TextStyle(fontSize: 13, color: color.withOpacity(0.8))),
           ],
         ),
@@ -152,7 +152,7 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -166,9 +166,9 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
       child: Row(
         children: [
           Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(child: Text(label, style: const TextStyle(fontSize: 15), overflow: TextOverflow.ellipsis)),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
@@ -181,7 +181,7 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
       ),
@@ -195,7 +195,7 @@ class _StudentAnalyticsScreenState extends State<StudentAnalyticsScreen> {
                 style: TextStyle(color: color, fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(

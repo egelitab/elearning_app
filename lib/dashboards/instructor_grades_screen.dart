@@ -80,7 +80,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -125,7 +125,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
           
           Expanded(
             child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : _error != null
                 ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
                 : filteredTasks.isEmpty
@@ -169,7 +169,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -206,17 +206,17 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             course,
             style: const TextStyle(fontSize: 13, color: Colors.black54),
           ),
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
           
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -227,7 +227,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
             ],
           ),
           
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
           if (!isFinished) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
@@ -238,7 +238,7 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
                 minHeight: 6,
               ),
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
           ],
           
           SizedBox(
@@ -283,9 +283,9 @@ class _InstructorGradesScreenState extends State<InstructorGradesScreen> {
     return Column(
       children: [
         Icon(icon, color: color, size: 20),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-        const SizedBox(height: 2),
+        SizedBox(height: 2),
         Text(label, style: const TextStyle(fontSize: 11, color: Colors.black54)),
       ],
     );

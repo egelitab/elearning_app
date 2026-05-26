@@ -46,7 +46,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
 
             GridView.count(
               shrinkWrap: true,
@@ -97,9 +97,9 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
               ],
             ),
             
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
             Text("Account & Support", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             _buildListAction(Icons.help_outline_rounded, "Help & Support", "Get assistance and tutorials", () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
             }),
@@ -127,7 +127,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
             height: 70,
             width: 70,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]
             ),
@@ -139,7 +139,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10),
           Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
         ],
       ),
@@ -150,7 +150,7 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 2))]
       ),

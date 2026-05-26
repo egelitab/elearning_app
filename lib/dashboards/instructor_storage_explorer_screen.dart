@@ -168,7 +168,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("Sort By", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             ListTile(
               leading: Icon(Icons.text_format_rounded, color: Theme.of(context).primaryColor),
               title: const Text("Name"),
@@ -630,7 +630,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : Column(
             children: [
               _buildBreadcrumbs(),
@@ -639,7 +639,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                   padding: const EdgeInsets.all(20),
                   children: [
                     if (_folders.isEmpty && _files.isEmpty)
-                      const Center(child: Padding(padding: EdgeInsets.only(top: 50), child: Text("This folder is empty", style: TextStyle(color: Colors.black38))))
+                      Center(child: Padding(padding: EdgeInsets.only(top: 50), child: Text("This folder is empty", style: TextStyle(color: Colors.black38))))
                     else ...[
                       // Special Section for System/Pinned Folders (only in root)
                       if (_currentFolderId == null) ...[
@@ -675,7 +675,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                         return _buildTile(file, 'file', isSelected);
                       }),
                     ],
-                    const SizedBox(height: 80),
+                    SizedBox(height: 80),
                   ],
                 ),
               ),
@@ -685,7 +685,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
           ),
           child: SizedBox(
@@ -749,7 +749,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
     if (isTruncated) {
       items.add(const Text("...", style: TextStyle(color: Colors.black45, fontWeight: FontWeight.bold)));
-      items.add(const Padding(
+      items.add(Padding(
         padding: EdgeInsets.symmetric(horizontal: 4),
         child: Text(">", style: TextStyle(color: Colors.black26, fontSize: 14)),
       ));
@@ -776,7 +776,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       ));
 
       if (!isLast) {
-        items.add(const Padding(
+        items.add(Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),
           child: Text(">", style: TextStyle(color: Colors.black26, fontSize: 14)),
         ));
@@ -799,7 +799,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
             )
           else
             Icon(Icons.storage_rounded, size: 20, color: Theme.of(context).colorScheme.secondary),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           
           Expanded(
             child: Row(
@@ -863,7 +863,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                 size: 24
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -872,7 +872,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                     children: [
                       Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       if (isUploads) ...[
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         const Icon(Icons.lock_rounded, size: 14, color: Colors.black26),
                       ]
                     ],
@@ -985,8 +985,8 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                 top: 20, left: 20, right: 20, 
                 bottom: MediaQuery.of(context).viewInsets.bottom + 30
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: Column(
@@ -994,12 +994,12 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text("Share Selected Items", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Text("Sharing ${_selectedIds.length} items from storage.", style: const TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   
                   const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -1016,10 +1016,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
@@ -1038,10 +1038,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  SizedBox(height: 5),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
@@ -1054,7 +1054,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     height: 55,

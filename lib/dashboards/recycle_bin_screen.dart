@@ -181,7 +181,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
               IconButton(
                 icon: Icon(
                   _selectedItemKeys.length == _items.length ? Icons.deselect_rounded : Icons.select_all_rounded,
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                 ),
                 tooltip: _selectedItemKeys.length == _items.length ? "Deselect All" : "Select All",
                 onPressed: () {
@@ -224,7 +224,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
             ],
           ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _items.isEmpty 
           ? _buildEmptyState()
           : ListView(
@@ -243,7 +243,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.delete_outline_rounded, size: 80, color: Colors.blue.withOpacity(0.2)),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           const Text("Recycle Bin is Empty", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black45)),
         ],
       ),
@@ -259,7 +259,7 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
           child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.5)),
         ),
         ...items.map((item) => _buildRecycleItemTile(item)),
-        const SizedBox(height: 10),
+        SizedBox(height: 10),
       ],
     );
   }
@@ -323,13 +323,13 @@ class _RecycleBinScreenState extends State<RecycleBinScreen> {
                 size: 24
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87), overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text("Deleted: $date", style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500)),
                 ],
               ),

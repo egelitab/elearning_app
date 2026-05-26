@@ -286,14 +286,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                       children: [
                         // Grid Menu
                         Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         _buildMenuGrid(),
                         
-                        const SizedBox(height: 30),
+                        SizedBox(height: 30),
                         Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         if (_isScheduleLoading)
-                          const Center(
+                          Center(
                             child: Padding(
                               padding: EdgeInsets.all(20.0),
                               child: CircularProgressIndicator(strokeWidth: 3),
@@ -304,11 +304,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                         else
                           ..._todaySchedule.map((s) => _buildScheduleTask(s['course'], s['time'], s['color'])),
 
-                        const SizedBox(height: 30),
+                        SizedBox(height: 30),
                         Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.isDark ? Colors.white : Theme.of(context).colorScheme.secondary)),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         if (_isTasksLoading)
-                          const Center(
+                          Center(
                              child: Padding(
                                padding: EdgeInsets.all(20.0),
                                child: CircularProgressIndicator(strokeWidth: 3),
@@ -322,7 +322,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                               color: AppColors.card,
                               borderRadius: BorderRadius.circular(16)
                             ),
-                            child: const Center(child: Text("No pending assignments or goals", style: TextStyle(color: Colors.grey))),
+                            child: Center(child: Text("No pending assignments or goals", style: TextStyle(color: Colors.grey))),
                           )
                         else
                           ...[..._myGoals, ..._pendingTasks].where((task) {
@@ -383,7 +383,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 const Text("Let's start learning!", style: TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
@@ -399,7 +399,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
               children: [
                 Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                      color: Colors.white24,
                      shape: BoxShape.circle,
                   ),
@@ -450,7 +450,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
              begin: Alignment.topLeft,
              end: Alignment.bottomRight,
            ),
-           child: const Center(child: CircularProgressIndicator(color: Colors.white)),
+           child: Center(child: CircularProgressIndicator(color: Colors.white)),
          ),
        );
     }
@@ -547,7 +547,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(displaySubtitle,
                           style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
                           overflow: TextOverflow.ellipsis,
@@ -658,7 +658,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             label,
             style: TextStyle(
@@ -698,7 +698,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                   builder: (context, constraints) {
                     // This is tricky inside Positioned without width. 
                     // We'll use a simpler approach with the Stack.
-                    return const SizedBox.shrink();
+                    return SizedBox.shrink();
                   }
                 ),
               );
@@ -746,7 +746,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -777,15 +777,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                     size: 24
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(courseTitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6),
                       Row(
                         children: [
                           Container(
@@ -797,7 +797,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                             child: Text(dueTime, style: TextStyle(color: isUrgent ? Colors.red : accent, fontSize: 10, fontWeight: FontWeight.bold)),
                           ),
                           if (isGroup) ...[
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
@@ -850,15 +850,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
               ),
               child: const Icon(Icons.star_rounded, color: Colors.orange, size: 24),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(goal['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(goal['course_title'] ?? "Course", style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
@@ -868,7 +868,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                     child: Text("GOAL: ${goal['recurrence']?.toUpperCase() ?? 'WEEKLY'}", style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
                   if (goal['target_hours'] != null) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildProgressBarWithMilestones(
                       (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
                       (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
@@ -902,11 +902,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
               Text(task['title'], 
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(task['course_title'] ?? "General", 
                 style: const TextStyle(fontSize: 14, color: Colors.grey)
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListTile(
                 leading: const Icon(Icons.upload_file_rounded, color: Colors.blue),
                 title: const Text("Upload Submission", style: TextStyle(fontWeight: FontWeight.w600)),
@@ -939,7 +939,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                     }
                   },
                 ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
           ),
         );
@@ -987,7 +987,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1014,13 +1014,13 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
                   ),
                   child: Icon(Icons.access_time_filled_rounded, color: accent, size: 24),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(timeDetails, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w600)),
                     ],
                   ),
@@ -1039,7 +1039,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
       width: double.infinity,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))
@@ -1048,7 +1048,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> with WidgetsBindi
       child: Column(
         children: [
           Icon(Icons.event_available_rounded, size: 40, color: Colors.grey.shade300),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             DateTime.now().weekday > 5 ? "Happy Weekend! No classes today." : "No classes scheduled for today.",
             style: TextStyle(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w500),

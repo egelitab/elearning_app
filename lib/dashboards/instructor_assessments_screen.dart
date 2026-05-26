@@ -143,8 +143,8 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
               ),
               child: Container(
                 padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30),
                     topRight: Radius.circular(30),
@@ -165,12 +165,12 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       Text(
                         "Create Assessment",
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                       ),
-                       const SizedBox(height: 20),
+                       SizedBox(height: 20),
 
                       // Title Field
                       TextField(
@@ -184,11 +184,11 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           prefixIcon: const Icon(Icons.title),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Course Selection Dropdown
                       const Text("Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
@@ -223,13 +223,13 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       const Text("Assign To Sections", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       // List of classes and their expandable sections
                       if (selectedCourseId == null)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
                           child: Center(child: Text("Please select a course first", style: TextStyle(color: Colors.black38))),
                         )
@@ -276,7 +276,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                         child: Text(cls["initials"], style: TextStyle(color: cls["color"], fontWeight: FontWeight.bold)),
                                       ),
                                     ),
-                                    const SizedBox(width: 15),
+                                    SizedBox(width: 15),
                                     Expanded(
                                       child: Text(
                                         cls["name"],
@@ -314,7 +314,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                         color: (allSectionsSelected || someSectionsSelected) ? Theme.of(context).primaryColor : Colors.black26,
                                       ),
                                     ),
-                                    const SizedBox(width: 10),
+                                    SizedBox(width: 10),
                                     Icon(isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded, color: Colors.black45),
                                   ],
                                 ),
@@ -360,7 +360,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                               color: isSecSelected ? Theme.of(context).primaryColor : Colors.black26,
                                               size: 20,
                                             ),
-                                            const SizedBox(width: 12),
+                                            SizedBox(width: 12),
                                             Text(
                                               sec["name"],
                                               style: TextStyle(
@@ -378,11 +378,11 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           ],
                         );
                       }),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Type Selection
                       const Text("Assessment Type", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Wrap(
                         spacing: 10,
                         children: ['Assignment', 'Project', 'Presentation'].map((type) {
@@ -412,11 +412,11 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // Format Selection
                       const Text("Assessment Format", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Wrap(
                         spacing: 10,
                         children: ['Individual', 'Group'].map((format) {
@@ -457,10 +457,10 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           );
                         }).toList(),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       if (selectedFormat == 'Group') ...[
                         const Text("Select Group Batch", style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Row(
                           children: [
                             Expanded(
@@ -491,7 +491,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                                   ),
                                 ),
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10),
                             ElevatedButton(
                               onPressed: () {
                                 if (selectedCourseId != null) {
@@ -512,7 +512,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                       ],
 
                       // Description Field
@@ -527,7 +527,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
 
                       // File Upload & Deadline
                       Row(
@@ -562,7 +562,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                               ),
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () async {
@@ -604,7 +604,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
 
                       // Create Button
                       SizedBox(
@@ -653,7 +653,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                           child: const Text("Create Assessment", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                     ],
                   ),
                 ),
@@ -695,8 +695,8 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                 right: 20, 
                 bottom: MediaQuery.of(context).viewInsets.bottom + 30
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
@@ -714,16 +714,16 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Text(
                       "Form New Groups",
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     
                     // 1. Group Name
                     const Text("Group Title", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     TextField(
                       controller: nameController,
                       decoration: InputDecoration(
@@ -734,11 +734,11 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       ),
                       onChanged: (val) => groupName = val,
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     // 2. Select Section
                     const Text("Select Class/Section", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
@@ -765,7 +765,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       ),
                     ),
                     if (selectedSectionId != null) ...[
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
                         decoration: BoxDecoration(
@@ -775,7 +775,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         child: Row(
                           children: [
                             Icon(Icons.people_alt_rounded, color: Theme.of(context).primaryColor, size: 20),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10),
                             const Text(
                               "Total Students:", 
                               style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)
@@ -789,7 +789,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         ),
                       ),
                     ],
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     Row(
                       children: [
@@ -800,7 +800,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text("Students Per Group", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               TextField(
                                 controller: sizeController,
                                 keyboardType: TextInputType.number,
@@ -844,7 +844,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                             ],
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         // 4. Method
                         Expanded(
                           flex: 2,
@@ -852,7 +852,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text("Grouping Method", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
-                              const SizedBox(height: 8),
+                              SizedBox(height: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
@@ -880,7 +880,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                       ],
                     ),
                     
-                    const SizedBox(height: 35),
+                    SizedBox(height: 35),
                     
                     // Generate Button
                     SizedBox(
@@ -1018,7 +1018,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 13)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   SizedBox(
                     height: 50,
                     child: ListView(
@@ -1125,20 +1125,20 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
           
           Expanded(
             child: _isLoading 
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator())
               : _error != null
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(_error!, style: const TextStyle(color: Colors.red)),
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
                         ElevatedButton(onPressed: _fetchData, child: const Text("Retry"))
                       ],
                     ),
                   )
                 : filteredAssessments.isEmpty
-                  ? const Center(child: Text("No assessments found", style: TextStyle(color: Colors.black54)))
+                  ? Center(child: Text("No assessments found", style: TextStyle(color: Colors.black54)))
                   : ListView.builder(
                       padding: const EdgeInsets.all(20),
                       itemCount: filteredAssessments.length,
@@ -1177,7 +1177,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1208,7 +1208,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                         style: TextStyle(color: typeColor, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
@@ -1223,12 +1223,12 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Icon(Icons.access_time_rounded, size: 14, color: Colors.redAccent),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4),
                   Text(
                     deadline,
                     style: const TextStyle(color: Colors.redAccent, fontSize: 12, fontWeight: FontWeight.bold),
@@ -1237,13 +1237,13 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
           if (item['description'] != null && item['description'].toString().isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               item['description'],
               style: const TextStyle(fontSize: 14, color: Colors.black54),
@@ -1251,11 +1251,11 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             children: [
               const Icon(Icons.people_alt_rounded, size: 16, color: Colors.black45),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Expanded(
                 child: Text(
                   item['course_title'] ?? "Course Info Unavailable",
@@ -1263,7 +1263,7 @@ class _InstructorAssessmentsScreenState extends State<InstructorAssessmentsScree
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(),
+              SizedBox(),
               
               TextButton(
                 onPressed: () {},

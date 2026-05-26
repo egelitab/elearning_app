@@ -42,7 +42,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
         ),
       ),
       body: courses.isEmpty
-          ? const Center(child: Text("No courses enrolled yet."))
+          ? Center(child: Text("No courses enrolled yet."))
           : ListView.builder(
               padding: const EdgeInsets.all(20),
               physics: const BouncingScrollPhysics(),
@@ -78,7 +78,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -114,7 +114,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
                   ),
                   child: Icon(_getIcon(course['title']), color: darkColor, size: 32),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,7 +129,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         course['instructor_name'] ?? 'Not Assigned',
                         style: TextStyle(
@@ -138,7 +138,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Row(
                         children: [
                           Container(
@@ -167,7 +167,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: progress,
                         backgroundColor: lightColor.withOpacity(0.1),

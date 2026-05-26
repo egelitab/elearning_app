@@ -59,7 +59,7 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _gradedAssessments.isEmpty 
           ? _buildEmptyState()
           : RefreshIndicator(
@@ -79,11 +79,11 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.grade_rounded, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           const Text("No graded assessments yet", 
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           const Text("Grades will appear here once released by instructors.", 
             style: TextStyle(color: Colors.grey)
           ),
@@ -101,7 +101,7 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -118,7 +118,7 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(course, style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -137,14 +137,14 @@ class _StudentGradesScreenState extends State<StudentGradesScreen> {
               ],
             ),
             if (feedback.isNotEmpty) ...[
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
               const Divider(),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Icon(Icons.feedback_rounded, size: 16, color: Colors.orange),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       "Feedback: $feedback", 

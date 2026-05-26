@@ -137,14 +137,14 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _messages.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.notifications_none_rounded, size: 80, color: Colors.grey.shade300),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Text(
                       "No system notifications",
                       style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
@@ -246,7 +246,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               formattedDate,
                               style: TextStyle(
@@ -254,7 +254,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                                 fontSize: 11,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Icon(
                               Icons.chevron_right_rounded,
                               color: isOpened ? Colors.black12 : Colors.black26,
@@ -262,7 +262,7 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Text(
                           content,
                           style: TextStyle(
@@ -357,13 +357,13 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Theme.of(context).cardColor.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: 10),
+                      Text(
                         "SYSTEM",
                         style: TextStyle(
                           color: Colors.white70,
@@ -374,21 +374,21 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).cardColor,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Row(
                     children: [
                       const Icon(Icons.access_time_rounded, color: Colors.white60, size: 14),
-                      const SizedBox(width: 5),
+                      SizedBox(width: 5),
                       Text(
                         formattedDate,
                         style: const TextStyle(color: Colors.white70, fontSize: 12),
@@ -399,13 +399,13 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -427,7 +427,7 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     content,
                     style: const TextStyle(
@@ -440,7 +440,7 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
           ],
         ),
       ),

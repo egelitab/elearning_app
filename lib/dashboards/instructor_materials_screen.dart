@@ -334,8 +334,8 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
 
             return Container(
               padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 30),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
@@ -350,14 +350,14 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                         decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Text("Share Materials", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text("You are sharing ${_selectedMaterials.length} material(s).", style: const TextStyle(color: Colors.black54, fontSize: 14)),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     
                     const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
+                    SizedBox(height: 5),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -383,10 +383,10 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     const Text("Select Chapter (Optional)", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
+                    SizedBox(height: 5),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -412,10 +412,10 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
+                    SizedBox(height: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
@@ -434,10 +434,10 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
 
                     const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 5),
+                    SizedBox(height: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
@@ -451,7 +451,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
                       height: 55,
@@ -591,7 +591,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
               ),
               child: Icon(iconData, color: colorData, size: 24),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,14 +605,14 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Text(_formatBytes(int.tryParse(material["file_size_bytes"]?.toString() ?? '0') ?? 0), style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       const Text("•", style: TextStyle(color: Colors.black38, fontSize: 13)),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(timeStr, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),
@@ -716,7 +716,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
         ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator()) 
+        ? Center(child: CircularProgressIndicator()) 
         : _error != null 
           ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
           : Stack(
@@ -728,7 +728,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   if (!isSelectionMode)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(bottom: 15),
                       child: Text(
                         "All Uploaded Materials",
@@ -737,13 +737,13 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                     ),
 
                   if (_materials.isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No materials uploaded yet.")))
+                    Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No materials uploaded yet.")))
                   else if (_searchQuery.isNotEmpty && _materials.where((m) => (m['title'] ?? '').toString().toLowerCase().contains(_searchQuery)).isEmpty)
-                    const Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No matching materials found.")))
+                    Center(child: Padding(padding: EdgeInsets.all(30), child: Text("No matching materials found.")))
                   else
                     ..._buildMaterialsList(),
 
-                      const SizedBox(height: 100),
+                      SizedBox(height: 100),
                     ],
                   ),
                 ),
@@ -762,7 +762,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
                   label: const Text("Upload", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                const SizedBox(width: 15),
+                SizedBox(width: 15),
                 FloatingActionButton.extended(
                   heroTag: "share_btn",
                   onPressed: () {
@@ -785,7 +785,7 @@ class _InstructorMaterialsScreenState extends State<InstructorMaterialsScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
                   ]

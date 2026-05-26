@@ -104,13 +104,13 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     return Scaffold(
       
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : _error != null
           ? Center(child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline_rounded, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text("Error: $_error", style: const TextStyle(color: Colors.red)),
                 TextButton(onPressed: _fetchStorage, child: const Text("Retry"))
               ],
@@ -159,16 +159,16 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                         _buildStorageToggle(),
                       
                       if (isLocalSelected) ...[
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
                         _buildRecentFilesSection(context),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         _buildStorageStatus(),
-                        const SizedBox(height: 40),
+                        SizedBox(height: 40),
                       ] else ...[
                         _buildDownloadsFilters(),
                         _buildDownloadsList(),
                       ],
-                      const SizedBox(height: 100), 
+                      SizedBox(height: 100), 
                     ],
                   ),
                 )
@@ -182,7 +182,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -253,7 +253,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildRecentFilesSection(BuildContext context) {
-    if (_recentFiles.isEmpty) return const SizedBox.shrink();
+    if (_recentFiles.isEmpty) return SizedBox.shrink();
     double itemWidth = MediaQuery.of(context).size.width * 0.28;
 
     return Column(
@@ -293,7 +293,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                     margin: const EdgeInsets.only(right: 15),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -325,7 +325,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       margin: const EdgeInsets.only(right: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -347,7 +347,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
             ),
             child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 28),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             name,
             maxLines: 1,
@@ -355,7 +355,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             date,
             textAlign: TextAlign.center,
@@ -407,9 +407,9 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                  const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16)
               ],
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(_formatBytes(usedBytes), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             LinearProgressIndicator(
               value: progress, 
               backgroundColor: Colors.white.withOpacity(0.2),
@@ -417,7 +417,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               borderRadius: BorderRadius.circular(10),
               minHeight: 8,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             const Text("Tap to explore and manage your files", style: TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic)),
           ],
         ),
@@ -461,7 +461,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
 
   Widget _buildDownloadsList() {
     if (_downloadedFiles.isEmpty) {
-      return const Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text("No downloaded files found", style: TextStyle(color: Colors.black38))));
+      return Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text("No downloaded files found", style: TextStyle(color: Colors.black38))));
     }
     final filtered = _downloadedFiles.where((f) {
       if (_selectedFilter == 'All') return true;
@@ -493,11 +493,11 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
       child: Row(
         children: [
           Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: iconColor, size: 24)),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis), Text("$size • $author", style: const TextStyle(color: Colors.black38, fontSize: 12))])),
           const Icon(Icons.more_vert_rounded, color: Colors.black26),
         ],

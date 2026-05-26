@@ -43,9 +43,9 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _courses.isEmpty
-              ? const Center(child: Text("No courses found", style: TextStyle(color: Colors.grey)))
+              ? Center(child: Text("No courses found", style: TextStyle(color: Colors.grey)))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: _courses.length,
@@ -61,7 +61,7 @@ class _InstructorAttendanceScreenState extends State<InstructorAttendanceScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -182,16 +182,16 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
         label: const Text("New Session", style: TextStyle(color: Colors.white)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _sessions.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.event_busy_rounded, size: 64, color: Colors.grey.shade300),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       const Text("No attendance sessions yet", style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       const Text("Tap + to create one", style: TextStyle(color: Colors.grey)),
                     ],
                   ),
@@ -216,7 +216,7 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -251,13 +251,13 @@ class _AttendanceSessionsScreenState extends State<_AttendanceSessionsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   _statusChip("Present", present, Colors.green),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _statusChip("Late", late, Colors.orange),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _statusChip("Absent", absent, Colors.red),
                   const Spacer(),
                   Text("$total students", style: const TextStyle(color: Colors.grey, fontSize: 12)),
@@ -378,25 +378,25 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
             TextButton(
               onPressed: _isSaving ? null : _save,
               child: _isSaving
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                   : const Text("SAVE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 // Quick action bar
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   child: Row(
                     children: [
                       const Text("Mark All: ", style: TextStyle(fontWeight: FontWeight.bold)),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       _quickButton("Present", Colors.green, () => _markAll('present')),
-                      const SizedBox(width: 6),
+                      SizedBox(width: 6),
                       _quickButton("Absent", Colors.red, () => _markAll('absent')),
                       const Spacer(),
                       Text("${_records.length} students", style: const TextStyle(color: Colors.grey, fontSize: 13)),
@@ -415,7 +415,7 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: _statusColor(status).withOpacity(0.3)),
                         ),

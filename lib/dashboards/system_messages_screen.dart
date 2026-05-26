@@ -54,14 +54,14 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
       body: RefreshIndicator(
         onRefresh: _fetchMessages,
         child: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _messages.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.mark_email_read_outlined, size: 80, color: Colors.grey.shade300),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     Text("No messages yet", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
                   ],
                 ),
@@ -77,7 +77,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -121,7 +121,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8),
                                     Text(
                                       msg['title'] ?? 'Global Announcement',
                                       style: const TextStyle(
@@ -130,7 +130,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                                         color: Color(0xFF1E293B)
                                       ),
                                     ),
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: 10),
                                     Text(
                                       msg['content'] ?? '',
                                       style: TextStyle(

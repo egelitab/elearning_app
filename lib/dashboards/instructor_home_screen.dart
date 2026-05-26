@@ -271,12 +271,12 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                       children: [
                         // Grid Menu
                         Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         _buildMenuGrid(),
                         
-                        const SizedBox(height: 25),
+                        SizedBox(height: 25),
                         Text("Quick Actions", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         _buildQuickAction(Icons.send_rounded, "Post Announcement", "Notify all students", () {
                           _showPostAnnouncementDialog(context);
                         }),
@@ -333,8 +333,8 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               bottom: MediaQuery.of(context).viewInsets.bottom,
               top: 30, left: 24, right: 24
             ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
             ),
             child: SingleChildScrollView(
@@ -343,7 +343,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                    Text("New Announcement", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                   const SizedBox(height: 25),
+                   SizedBox(height: 25),
                    
                    DropdownButtonFormField<String>(
                      decoration: InputDecoration(
@@ -375,7 +375,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                        }
                      },
                    ),
-                   const SizedBox(height: 15),
+                   SizedBox(height: 15),
                    
                    if (selectedCourseId != null)
                      DropdownButtonFormField<String>(
@@ -395,7 +395,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                        ],
                        onChanged: (value) => setModalState(() => selectedSection = value),
                      ),
-                   const SizedBox(height: 15),
+                   SizedBox(height: 15),
                    
                    TextField(
                      controller: titleController,
@@ -404,7 +404,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
                      ),
                    ),
-                   const SizedBox(height: 15),
+                   SizedBox(height: 15),
                    
                    TextField(
                      controller: contentController,
@@ -414,11 +414,11 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))
                      ),
                    ),
-                   const SizedBox(height: 15),
+                   SizedBox(height: 15),
                    
                    // Attach Files Section
                    const Text("Attachments", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                   const SizedBox(height: 8),
+                   SizedBox(height: 8),
                    if (selectedAttachments.isNotEmpty)
                      Wrap(
                        spacing: 8,
@@ -447,10 +447,10 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                      label: const Text("Attach from Storage")
                    ),
 
-                   const SizedBox(height: 25),
+                   SizedBox(height: 25),
                    
                    if (isModalLoading)
-                     const Center(child: CircularProgressIndicator())
+                     Center(child: CircularProgressIndicator())
                    else
                      SizedBox(
                        width: double.infinity,
@@ -492,7 +492,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                          child: const Text("Post Announcement", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                        ),
                      ),
-                   const SizedBox(height: 30),
+                   SizedBox(height: 30),
                 ],
               ),
             ),
@@ -565,7 +565,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 const Text("Welcome to BDU ELMS", style: TextStyle(color: Colors.white70, fontSize: 14)),
               ],
             ),
@@ -580,7 +580,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                      color: Colors.white24,
                      shape: BoxShape.circle,
                   ),
@@ -662,9 +662,9 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                         Text("Upcoming Class", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     if (_isLoadingSchedules)
-                      const SizedBox(height: 30, width: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      SizedBox(height: 30, width: 30, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     else if (_upcomingClass != null) ...[
                       if (_upcomingClass!['type'] == 'digital')
                         Text("${_upcomingClass!['day']} ${_upcomingClass!['time']}", style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))
@@ -681,7 +681,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                       const Spacer(),
                       const Text("Schedule is not available", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                     ],
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     const Text("Tap to view details ›", style: TextStyle(color: Colors.white60, fontSize: 12)),
                   ],
                 ),
@@ -723,7 +723,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Theme.of(context).cardColor.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.cloud_upload_rounded, color: Colors.white, size: 36),
@@ -737,7 +737,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
       ),
      ),
     ),
-    const SizedBox(height: 15),
+    SizedBox(height: 15),
     Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(2, (index) {
@@ -829,7 +829,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
             height: 55,
             width: 55,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -850,7 +850,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             label, 
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
@@ -871,7 +871,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text("More Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             _buildQuickAction(Icons.help_outline_rounded, "Help & Support", "Get assistance", () {
               Navigator.pop(context);
               Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
@@ -890,7 +890,7 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -917,13 +917,13 @@ class _InstructorHomeScreenState extends State<InstructorHomeScreen> {
                   ),
                   child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(sub, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     ],
                   ),

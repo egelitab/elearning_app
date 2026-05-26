@@ -77,8 +77,8 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
           ),
           child: Container(
             padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
@@ -99,7 +99,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -109,7 +109,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           submission['name'],
@@ -119,7 +119,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       )
                     ],
                   ),
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
                   
                   // Grade Input
                   Row(
@@ -139,14 +139,14 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                           ),
                         ),
                       ),
-                      const SizedBox(width: 15),
+                      SizedBox(width: 15),
                       const Text(
                         "/ 100", 
                         style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black54)
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   
                   // Feedback Input
                   TextField(
@@ -160,7 +160,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                   
                   // Save Button
                   SizedBox(
@@ -203,7 +203,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                       child: const Text("Save Grade", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                 ],
               ),
             ),
@@ -218,7 +218,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
     Color typeColor = widget.gradingTask['color'] ?? Colors.blue;
     
     if (_isLoading) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -276,7 +276,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.black12),
                     ),
@@ -310,12 +310,12 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.black12),
                     ),
@@ -387,7 +387,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
           
           Expanded(
             child: filteredSubmissions.isEmpty
-              ? const Center(child: Text("No submissions found", style: TextStyle(color: Colors.black54)))
+              ? Center(child: Text("No submissions found", style: TextStyle(color: Colors.black54)))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: filteredSubmissions.length,
@@ -429,7 +429,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -462,19 +462,19 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                         )
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(displayName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text("${item['department_name'] ?? ''} - ${item['section'] ?? ''}", style: const TextStyle(fontSize: 12, color: Colors.black54), overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Row(
                             children: [
                               const Icon(Icons.access_time_rounded, size: 12, color: Colors.black45),
-                              const SizedBox(width: 4),
+                              SizedBox(width: 4),
                               Expanded(
                                 child: Text("Submitted: $submittedAt", style: const TextStyle(color: Colors.black45, fontSize: 12), overflow: TextOverflow.ellipsis),
                               ),
@@ -486,7 +486,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               if (isGraded)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -497,7 +497,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                   child: Row(
                     children: [
                       const Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4),
                       Text(
                         "${item['grade']} / 100",
                         style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13),
@@ -519,7 +519,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                 )
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Submitted File File Preview
           DownloadableBehavior(
             filePath: item['file_path']?.toString() ?? '',
@@ -563,7 +563,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
                           Icon(mainIcon, color: mainColor, size: 24),
                         ],
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,7 +583,7 @@ class _InstructorGradingSubmissionsScreenState extends State<InstructorGradingSu
               );
             }
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // Action Button
           SizedBox(
             width: double.infinity,

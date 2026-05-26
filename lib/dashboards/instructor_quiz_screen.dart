@@ -41,7 +41,7 @@ class _InstructorQuizScreenState extends State<InstructorQuizScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : ListView.builder(
               padding: const EdgeInsets.all(20),
               itemCount: _courses.length,
@@ -50,7 +50,7 @@ class _InstructorQuizScreenState extends State<InstructorQuizScreen> {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
@@ -136,9 +136,9 @@ class _CourseQuizManageScreenState extends State<_CourseQuizManageScreen> {
         label: const Text("New Quiz", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _quizzes.isEmpty
-              ? const Center(child: Text("No quizzes yet. Tap + to create one.", style: TextStyle(color: Colors.grey)))
+              ? Center(child: Text("No quizzes yet. Tap + to create one.", style: TextStyle(color: Colors.grey)))
               : RefreshIndicator(
                   onRefresh: _fetch,
                   child: ListView.builder(
@@ -155,7 +155,7 @@ class _CourseQuizManageScreenState extends State<_CourseQuizManageScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -191,7 +191,7 @@ class _CourseQuizManageScreenState extends State<_CourseQuizManageScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text("${quiz['question_count'] ?? 0} questions · ${quiz['attempt_count'] ?? 0} attempts",
                       style: const TextStyle(color: Colors.grey, fontSize: 13)),
                   ],
@@ -254,11 +254,11 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(controller: textCtrl, decoration: const InputDecoration(labelText: "Question*", border: OutlineInputBorder()), maxLines: 3),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 TextField(controller: pointsCtrl, decoration: const InputDecoration(labelText: "Points", border: OutlineInputBorder()), keyboardType: TextInputType.number),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 const Text("Options (tap radio to mark correct):", style: TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 ...List.generate(options.length, (i) {
                   final ctrl = TextEditingController(text: options[i]["text"]);
                   return Padding(
@@ -363,9 +363,9 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
               child: const Icon(Icons.add, color: Colors.white),
             ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : questions.isEmpty
-              ? const Center(child: Text("No questions yet. Tap + to add.", style: TextStyle(color: Colors.grey)))
+              ? Center(child: Text("No questions yet. Tap + to add.", style: TextStyle(color: Colors.grey)))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: questions.length,
@@ -376,7 +376,7 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
                       margin: const EdgeInsets.only(bottom: 14),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
                       ),
@@ -390,12 +390,12 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
                                 backgroundColor: const Color(0xFFE91E63),
                                 child: Text("${index + 1}", style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                               ),
-                              const SizedBox(width: 10),
+                              SizedBox(width: 10),
                               Expanded(child: Text(q['question_text'] ?? '', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15))),
                               Text("${q['points'] ?? 1} pt", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                             ],
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           ...opts.map((opt) => Padding(
                             padding: const EdgeInsets.only(left: 38, bottom: 4),
                             child: Row(
@@ -405,7 +405,7 @@ class _QuizEditorScreenState extends State<_QuizEditorScreen> {
                                   size: 16,
                                   color: opt['is_correct'] == true ? Colors.green : Colors.grey,
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Expanded(child: Text(opt['option_text'] ?? '', style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: opt['is_correct'] == true ? FontWeight.bold : FontWeight.normal,

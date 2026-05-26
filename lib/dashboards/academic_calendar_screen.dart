@@ -49,7 +49,7 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
         title: Text("Academic Calendar", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: _fetchCalendars,
             child: _calendars.isEmpty 
@@ -81,9 +81,9 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.calendar_month_outlined, size: 80, color: Colors.grey.shade300),
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
           const Text("No academic calendars uploaded yet.", style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 5),
+          SizedBox(height: 5),
           const Text("Updates from admin will appear here.", style: TextStyle(color: Colors.grey, fontSize: 13)),
         ],
       ),
@@ -114,7 +114,7 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -163,21 +163,21 @@ class _AcademicCalendarScreenState extends State<AcademicCalendarScreen> {
                     }
                   ),
                 ),
-                const SizedBox(width: 18),
+                SizedBox(width: 18),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Theme.of(context).colorScheme.secondary)),
-                      const SizedBox(height: 5),
+                      SizedBox(height: 5),
                       Row(
                         children: [
                           const Icon(Icons.history_rounded, size: 14, color: Colors.grey),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Text("Year: $year", style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                         ],
                       ),
-                      const SizedBox(height: 3),
+                      SizedBox(height: 3),
                       Text(fileName, style: TextStyle(color: Colors.grey.shade400, fontSize: 12), overflow: TextOverflow.ellipsis),
                     ],
                   ),

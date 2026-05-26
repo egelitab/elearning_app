@@ -43,9 +43,9 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _courses.isEmpty
-              ? const Center(child: Text("No courses found", style: TextStyle(color: Colors.grey)))
+              ? Center(child: Text("No courses found", style: TextStyle(color: Colors.grey)))
               : ListView.builder(
                   padding: const EdgeInsets.all(20),
                   itemCount: _courses.length,
@@ -61,7 +61,7 @@ class _StudentQuizScreenState extends State<StudentQuizScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -129,9 +129,9 @@ class _CourseQuizListScreenState extends State<_CourseQuizListScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : _quizzes.isEmpty
-              ? const Center(child: Text("No quizzes available", style: TextStyle(color: Colors.grey, fontSize: 16)))
+              ? Center(child: Text("No quizzes available", style: TextStyle(color: Colors.grey, fontSize: 16)))
               : RefreshIndicator(
                   onRefresh: _fetch,
                   child: ListView.builder(
@@ -147,7 +147,7 @@ class _CourseQuizListScreenState extends State<_CourseQuizListScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -166,16 +166,16 @@ class _CourseQuizListScreenState extends State<_CourseQuizListScreen> {
             children: [
               Text(quiz['title'] ?? 'Untitled Quiz', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
               if (quiz['description'] != null && quiz['description'].toString().isNotEmpty) ...[
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(quiz['description'], style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
               ],
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   _infoBadge(Icons.help_outline, "${quiz['question_count'] ?? 0} Q's", Colors.blue),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _infoBadge(Icons.timer_outlined, "${quiz['duration_minutes'] ?? 30} min", Colors.orange),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   _infoBadge(Icons.replay, "Max ${quiz['max_attempts'] ?? 1}", Colors.purple),
                 ],
               ),
@@ -194,7 +194,7 @@ class _CourseQuizListScreenState extends State<_CourseQuizListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color)),
         ],
       ),
@@ -299,9 +299,9 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                   size: 64,
                   color: score >= total * 0.5 ? Colors.amber : Colors.grey,
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text("$score / $total", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   score >= total * 0.7 ? "Excellent!" : score >= total * 0.5 ? "Good job!" : "Keep practicing!",
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
@@ -339,14 +339,14 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.quizTitle)),
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: Text(widget.quizTitle)),
-        body: const Center(child: Text("This quiz has no questions")),
+        body: Center(child: Text("This quiz has no questions")),
       );
     }
 
@@ -373,7 +373,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
               child: Row(
                 children: [
                   const Icon(Icons.timer, size: 16, color: Colors.white),
-                  const SizedBox(width: 4),
+                  SizedBox(width: 4),
                   Text(_formatTime(_timeLeft), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -400,7 +400,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
                     ),
@@ -408,14 +408,14 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Question ${_currentIndex + 1}", style: const TextStyle(color: Colors.pink, fontWeight: FontWeight.bold, fontSize: 13)),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8),
                         Text(q['question_text'] ?? '', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600, height: 1.4)),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text("${q['points'] ?? 1} point(s)", style: const TextStyle(color: Colors.grey, fontSize: 12)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Options
                   ...options.map((opt) {
@@ -444,7 +444,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                               isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
                               color: isSelected ? const Color(0xFFE91E63) : Colors.grey,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(child: Text(opt['option_text'] ?? '', style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal))),
                           ],
                         ),
@@ -459,7 +459,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
           // Navigation buttons
           Container(
             padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             child: SafeArea(
               child: Row(
                 children: [
@@ -474,7 +474,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                         child: const Text("Previous"),
                       ),
                     ),
-                  if (_currentIndex > 0) const SizedBox(width: 12),
+                  if (_currentIndex > 0) SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _isSubmitting
@@ -488,7 +488,7 @@ class _QuizTakingScreenState extends State<_QuizTakingScreen> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                       child: _isSubmitting
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                           : Text(
                               _currentIndex < _questions.length - 1 ? "Next" : "Submit Quiz",
                               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16),

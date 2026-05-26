@@ -98,7 +98,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
         ),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : TabBarView(
             controller: _tabController,
             children: [
@@ -117,7 +117,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(isPending ? Icons.assignment_turned_in_rounded : Icons.pending_actions_rounded, size: 60, color: Colors.grey.withOpacity(0.3)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(isPending ? "No pending assignments!" : "No finished assignments yet.", 
               style: const TextStyle(color: Colors.grey, fontSize: 16)
             ),
@@ -140,7 +140,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.star_outline_rounded, size: 60, color: Colors.grey.withOpacity(0.3)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             const Text("No active goals.", style: TextStyle(color: Colors.grey, fontSize: 16)),
           ],
         ),
@@ -205,7 +205,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.orange.withOpacity(0.3)),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
@@ -216,13 +216,13 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(goal['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(goal['course_title'] ?? 'Course', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
             if (goal['description'] != null && goal['description'].isNotEmpty) ...[
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(goal['description'], style: const TextStyle(color: Colors.black87, fontSize: 13)),
             ],
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
             Wrap(
               spacing: 10,
               runSpacing: 8,
@@ -235,7 +235,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
               ],
             ),
             if (goal['target_hours'] != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildProgressBarWithMilestones(
                 (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
                 (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
@@ -255,7 +255,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -279,11 +279,11 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
                     const Icon(Icons.check_circle_rounded, color: Colors.green, size: 24)
                 ],
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(task['course_title'] ?? 'General', 
                 style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500)
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
               Wrap(
                 spacing: 10,
                 runSpacing: 8,
@@ -300,14 +300,14 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
                 ],
               ),
               if (isSubmitted && task['feedback'] != null) ...[
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12)),
                   child: Row(
                     children: [
                       const Icon(Icons.feedback_rounded, color: Colors.black38, size: 16),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(child: Text("Feedback: ${task['feedback']}", style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.black54))),
                     ],
                   ),
@@ -328,7 +328,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 14),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
         ],
       ),
@@ -354,7 +354,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(task['title'], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListTile(
                 leading: Icon(isSubmitted ? Icons.update_rounded : Icons.upload_file_rounded, color: Colors.blue),
                 title: Text(isSubmitted ? "Resubmit File" : "Upload Submission", style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -376,7 +376,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
                     }
                   },
                 ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
           ),
         );

@@ -133,7 +133,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
         title: Text("Schedule & Office Hours", style: TextStyle(color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.bold)),
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: _fetchData,
             child: SingleChildScrollView(
@@ -143,7 +143,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildSectionHeader("Weekly Class Schedule"),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   
                   if (_weeklyClasses.isEmpty && _fileSchedules.isEmpty)
                     _buildEmptyState("No classes scheduled yet.")
@@ -153,19 +153,19 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                     )),
                     
                     if (_fileSchedules.isNotEmpty) ...[
-                      const SizedBox(height: 25),
+                      SizedBox(height: 25),
                       _buildSectionHeader("Uploaded Schedule Files"),
-                      const SizedBox(height: 15),
+                      SizedBox(height: 15),
                       ..._fileSchedules.map((fs) => _buildFileItem(fs)),
                     ],
                   ],
                   
-                  const SizedBox(height: 35),
+                  SizedBox(height: 35),
                   _buildSectionHeader("Office Hours"),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   _buildOfficeHourItem("Tuesdays & Thursdays", "10:00 AM - 12:00 PM", "Block 4, Office 412"),
                   
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                   Center(
                     child: ElevatedButton.icon(
                       onPressed: () {
@@ -193,13 +193,13 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       padding: const EdgeInsets.all(30),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
           Icon(Icons.calendar_today_outlined, size: 50, color: Colors.grey.shade300),
-          const SizedBox(height: 15),
+          SizedBox(height: 15),
           Text(message, style: const TextStyle(color: Colors.grey)),
         ],
       ),
@@ -215,7 +215,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -226,13 +226,13 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
             height: 50,
             decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
           ),
-          const SizedBox(width: 15),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(course, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text("$day | $time", style: const TextStyle(color: Colors.grey, fontSize: 13)),
                 Text(location, style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 13, fontWeight: FontWeight.w500)),
               ],
@@ -252,14 +252,14 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.withOpacity(0.1)),
       ),
       child: Row(
         children: [
           const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent, size: 32),
-          const SizedBox(width: 15),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,7 +291,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       child: Row(
         children: [
           Icon(Icons.access_time_filled_rounded, color: Theme.of(context).colorScheme.secondary, size: 40),
-          const SizedBox(width: 20),
+          SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -115,7 +115,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
               text,
               style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15, height: 1.4),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               time,
               style: TextStyle(color: isMe ? Colors.white70 : Colors.black45, fontSize: 11),
@@ -130,7 +130,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
       ),
       child: SafeArea(
@@ -154,7 +154,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             GestureDetector(
               onTap: _isSending ? null : _sendMessage,
               child: Container(
@@ -164,7 +164,7 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
                   shape: BoxShape.circle,
                 ),
                 child: _isSending
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             )

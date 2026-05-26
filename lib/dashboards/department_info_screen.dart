@@ -23,7 +23,7 @@ class DepartmentInfoScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
               ),
@@ -34,7 +34,7 @@ class DepartmentInfoScreen extends StatelessWidget {
                     backgroundColor: Color(0xFFE3F2FD),
                     child: Icon(Icons.business_rounded, size: 45, color: const Color(0xFF09AEF5)),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text("Faculty of Computing", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF05398F))),
                   const Text("Department of Computer Science", style: TextStyle(fontSize: 16, color: Colors.black54)),
                   const Divider(height: 40),
@@ -44,14 +44,14 @@ class DepartmentInfoScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
             _buildInfoCard(
               "Head of Department",
               "Dr. Samuel Getachew",
               Icons.person_rounded,
               "Available: Mon-Fri, 9:00 AM - 5:00 PM"
             ),
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
             _buildInfoCard(
               "Department Portal",
               "Access internal resources and announcements",
@@ -70,7 +70,7 @@ class DepartmentInfoScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, size: 20, color: const Color(0xFF09AEF5)),
-          const SizedBox(width: 15),
+          SizedBox(width: 15),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,15 +99,15 @@ class DepartmentInfoScreen extends StatelessWidget {
             decoration: BoxDecoration(color: const Color(0xFF09AEF5).withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: const Color(0xFF09AEF5)),
           ),
-          const SizedBox(width: 20),
+          SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 14)),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(foot, style: TextStyle(color: const Color(0xFF05398F), fontSize: 12, fontWeight: FontWeight.w500)),
               ],
             ),

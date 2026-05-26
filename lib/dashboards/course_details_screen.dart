@@ -198,7 +198,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
+        ? Center(child: CircularProgressIndicator())
         : ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -206,7 +206,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               Text(_currentCourse['instructor_name'] ?? '', 
                 style: const TextStyle(color: Colors.black54, fontSize: 18)),
               
-              const SizedBox(height: 25),
+              SizedBox(height: 25),
               
               // Course Guide Card
               if (_currentCourse['course_guide_url'] != null)
@@ -214,31 +214,31 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
               else
                 _buildNoGuideCard(),
               
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
 
               // NEW: Course Goals
               if (_goals.isNotEmpty) ...[
                 Row(
                   children: [
                      Icon(Icons.track_changes_outlined, color: widget.themeColor),
-                     const SizedBox(width: 8),
+                     SizedBox(width: 8),
                      const Text("Course Goals", 
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
                   ]
                 ),
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 ..._goals.map((g) => _buildGoalCard(g)).toList(),
-                const SizedBox(height: 30),
+                SizedBox(height: 30),
               ],
               
               // NEW: Main Course Materials (Unassigned to chapters)
               if (_courseMaterials.isNotEmpty) ...[
                 const Text("General Materials", 
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
                   ),
@@ -246,15 +246,15 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     children: _courseMaterials.map((m) => _buildMaterialItem(m)).toList(),
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 30),
               ],
               
               const Text("Chapters & Materials", 
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
               
               if (_chapters.isEmpty)
-                const Center(child: Padding(
+                Center(child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
                   child: Text("No chapters added for this course yet.", style: TextStyle(color: Colors.black38)),
                 ))
@@ -319,16 +319,16 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(15)),
+            decoration: BoxDecoration(color: Theme.of(context).cardColor.withOpacity(0.2), borderRadius: BorderRadius.circular(15)),
             child: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white, size: 30),
           ),
-          const SizedBox(width: 15),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text("Course Guide", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text("Official PDF syllabus and guidelines", style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 15)),
               ],
             ),
@@ -352,11 +352,11 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.black12),
       ),
-      child: const Row(
+      child: Row(
         children: [
           Icon(Icons.info_outline_rounded, color: Colors.black38),
           SizedBox(width: 15),
@@ -373,7 +373,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -391,7 +391,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                     children: [
                       Text("Chapter ${chapter['order_index'] + 1}", 
                         style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: 1)),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(chapter['title'] ?? '', 
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
                     ],
@@ -408,7 +408,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
           ),
           
           if (materials.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 20, right: 20, bottom: 20),
               child: Text("No materials shared for this chapter.", style: TextStyle(color: Colors.black38, fontSize: 15, fontStyle: FontStyle.italic)),
             )
@@ -578,8 +578,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             return Container(
               height: MediaQuery.of(context).size.height * 0.7,
               padding: const EdgeInsets.all(25),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: Column(
@@ -587,14 +587,14 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 children: [
                   Text("Share to ${chapter['title']}", 
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.secondary)),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   const Text("Select materials from your storage to assign to this chapter.", 
                     style: TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   
                   Expanded(
                     child: myMaterials.isEmpty 
-                      ? const Center(child: Text("Your storage is empty."))
+                      ? Center(child: Text("Your storage is empty."))
                       : ListView.builder(
                           itemCount: myMaterials.length,
                           itemBuilder: (context, index) {
@@ -618,7 +618,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         ),
                   ),
                   
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -718,7 +718,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: widget.themeColor.withOpacity(0.3)),
         boxShadow: [BoxShadow(color: widget.themeColor.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
@@ -751,10 +751,10 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ],
           ),
           if (goal['description'] != null && goal['description'].isNotEmpty) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(goal['description'], style: const TextStyle(color: Colors.black87, fontSize: 14)),
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -774,7 +774,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
             ],
           ),
           if (goal['target_hours'] != null) ...[
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             _buildProgressBarWithMilestones(
               (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
               (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
@@ -806,8 +806,8 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                 top: 25, left: 25, right: 25,
                 bottom: MediaQuery.of(context).viewInsets.bottom + 25
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
               child: SingleChildScrollView(
@@ -817,7 +817,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                   children: [
                     Text(existingGoal == null ? "Set Course Goal" : "Edit Course Goal", 
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: widget.themeColor)),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     TextField(
                       controller: titleCtrl,
                       decoration: InputDecoration(
@@ -825,7 +825,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     TextField(
                       controller: descCtrl,
                       maxLines: 2,
@@ -834,7 +834,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     Row(
                       children: [
                         Expanded(
@@ -847,7 +847,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: 15),
                         Expanded(
                           child: TextField(
                             controller: scoreCtrl,
@@ -860,7 +860,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: 15),
                     DropdownButtonFormField<String>(
                       value: selectedRecurrence,
                       decoration: InputDecoration(
@@ -874,7 +874,7 @@ class _CourseDetailsScreenState extends State<CourseDetailsScreen> {
                         if (val != null) setSheetState(() => selectedRecurrence = val);
                       },
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       height: 55,
