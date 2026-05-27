@@ -26,6 +26,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   int _chatUnread = 0; // Inbox tab  ← new chat messages
   int _announcementUnread = 0; // Home tab   ← course announcements
   int _materialUnread = 0; // Courses tab ← new materials/tasks
+  int _systemUnread = 0; // Home tab <- system notifications
 
   Timer? _pollTimer;
 
@@ -101,6 +102,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   ? localUnreadAnn
                   : (counts['announcement'] ?? 0);
           _materialUnread = counts['material'] ?? 0;
+          _systemUnread = counts['system'] ?? 0;
           // Note: system unread is handled by the bell icon in StudentHomeScreen
         });
       }
@@ -189,26 +191,16 @@ class _StudentDashboardState extends State<StudentDashboard> {
                 ),
                 onTap: (i) {
                   setState(() => _index = i);
-                  // Only clear the in-memory badge for the current session.
-                  // SharedPreferences is written only when the student
-                  // actually opens an item inside the Inbox screen — or uses
-                  // the "Mark all read" button inside System Notifications.
-                  if (i == 0 && _announcementUnread > 0)
-                    setState(() => _announcementUnread = 0);
-                  if (i == 1 && _materialUnread > 0)
-                    setState(() => _materialUnread = 0);
-                  if (i == 2 && _chatUnread > 0)
-                    setState(() => _chatUnread = 0);
                 },
                 items: [
                   BottomNavigationBarItem(
                     icon: _badgeIcon(
                       const Icon(Icons.home_outlined),
-                      _announcementUnread,
+                      _systemUnread,
                     ),
                     activeIcon: _badgeIcon(
                       const Icon(Icons.home),
-                      _announcementUnread,
+                      _systemUnread,
                     ),
                     label: 'Home',
                   ),
@@ -226,11 +218,11 @@ class _StudentDashboardState extends State<StudentDashboard> {
                   BottomNavigationBarItem(
                     icon: _badgeIcon(
                       const Icon(Icons.chat_bubble_outline),
-                      _chatUnread,
+                      _chatUnread + _announcementUnread,
                     ),
                     activeIcon: _badgeIcon(
                       const Icon(Icons.chat_bubble),
-                      _chatUnread,
+                      _chatUnread + _announcementUnread,
                     ),
                     label: 'Inbox',
                   ),

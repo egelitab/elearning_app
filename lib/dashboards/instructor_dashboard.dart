@@ -22,6 +22,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   // Instructors only get chat badge on Inbox tab.
   // System notifications are handled by the bell icon in InstructorHomeScreen.
   int _chatUnread = 0;
+  int _systemUnread = 0;
 
   Timer? _pollTimer;
 
@@ -55,6 +56,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       if (mounted) {
         setState(() {
           _chatUnread = counts['chat'] ?? 0;
+          _systemUnread = counts['system'] ?? 0;
           // system unread is handled by the bell icon in InstructorHomeScreen
         });
       }
@@ -138,12 +140,17 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
             ),
             onTap: (i) {
               setState(() => _index = i);
-              if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
             },
             items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
+              BottomNavigationBarItem(
+                icon: _badgeIcon(
+                  const Icon(Icons.home_outlined),
+                  _systemUnread,
+                ),
+                activeIcon: _badgeIcon(
+                  const Icon(Icons.home),
+                  _systemUnread,
+                ),
                 label: 'Home',
               ),
               const BottomNavigationBarItem(
