@@ -41,28 +41,43 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        title: const Text("System Broadcasts", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: const Color(0xFF05398F),
+        title: const Text(
+          "System Broadcasts",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: _fetchMessages,
-        child: _isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : _messages.isEmpty
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : _messages.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.mark_email_read_outlined, size: 80, color: Colors.grey.shade300),
-                    const SizedBox(height: 15),
-                    Text("No messages yet", style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+                    Icon(
+                      Icons.mark_email_read_outlined,
+                      size: 80,
+                      color: Colors.grey.shade300,
+                    ),
+                    SizedBox(height: 15),
+                    Text(
+                      "No messages yet",
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -72,19 +87,21 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                 itemBuilder: (context, index) {
                   final msg = _messages[index];
                   final DateTime date = DateTime.parse(msg['created_at']);
-                  final String formattedDate = DateFormat('MMM d, h:mm a').format(date);
+                  final String formattedDate = DateFormat(
+                    'MMM d, h:mm a',
+                  ).format(date);
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.04),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
                     child: ClipRRect(
@@ -95,7 +112,7 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                           children: [
                             Container(
                               width: 6,
-                              color: const Color(0xFF09AEF5),
+                              color: Theme.of(context).primaryColor,
                             ),
                             Expanded(
                               child: Padding(
@@ -104,39 +121,45 @@ class _SystemMessagesScreenState extends State<SystemMessagesScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        const Text(
+                                        Text(
                                           "ADMINISTRATOR",
                                           style: TextStyle(
-                                            color: Color(0xFF05398F),
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.secondary,
                                             fontWeight: FontWeight.w800,
                                             fontSize: 10,
-                                            letterSpacing: 1.2
+                                            letterSpacing: 1.2,
                                           ),
                                         ),
                                         Text(
                                           formattedDate,
-                                          style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 11,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
+                                    SizedBox(height: 8),
                                     Text(
                                       msg['title'] ?? 'Global Announcement',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 17,
-                                        color: Color(0xFF1E293B)
+                                        color: Color(0xFF1E293B),
                                       ),
                                     ),
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: 10),
                                     Text(
                                       msg['content'] ?? '',
                                       style: TextStyle(
                                         color: Colors.grey.shade700,
                                         fontSize: 14,
-                                        height: 1.5
+                                        height: 1.5,
                                       ),
                                     ),
                                   ],

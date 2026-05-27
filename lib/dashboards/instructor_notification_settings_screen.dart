@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class InstructorNotificationSettingsScreen extends StatefulWidget {
   const InstructorNotificationSettingsScreen({super.key});
 
   @override
-  State<InstructorNotificationSettingsScreen> createState() => _InstructorNotificationSettingsScreenState();
+  State<InstructorNotificationSettingsScreen> createState() =>
+      _InstructorNotificationSettingsScreenState();
 }
 
-class _InstructorNotificationSettingsScreenState extends State<InstructorNotificationSettingsScreen> {
+class _InstructorNotificationSettingsScreenState
+    extends State<InstructorNotificationSettingsScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
-  
+
   bool _notifyChat = true;
   bool _notifySystem = true;
 
@@ -31,9 +35,9 @@ class _InstructorNotificationSettingsScreenState extends State<InstructorNotific
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to load settings: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to load settings: $e")));
       }
       setState(() => _isLoading = false);
     }
@@ -50,9 +54,9 @@ class _InstructorNotificationSettingsScreenState extends State<InstructorNotific
       await _apiService.updateNotificationSettings({key: value});
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Failed to update setting: $e")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Failed to update setting: $e")));
       }
       // Revert if failed
       setState(() {
@@ -64,60 +68,80 @@ class _InstructorNotificationSettingsScreenState extends State<InstructorNotific
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
-      appBar: AppBar(
-        title: const Text('Notification Settings', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF05398F)),
-      ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator(color: Color(0xFF09AEF5)))
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  "Preferences",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Choose which notifications you'd like to receive on this device.",
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-                const SizedBox(height: 25),
-                
-                _buildToggleCard(
-                  title: "Chat Messages",
-                  subtitle: "Direct and group chat notifications",
-                  icon: Icons.chat_bubble_outline_rounded,
-                  iconColor: Colors.blue,
-                  value: _notifyChat,
-                  onChanged: (val) => _updateSetting('notify_chat', val),
-                ),
-                
-                _buildToggleCard(
-                  title: "System Notifications",
-                  subtitle: "Security alerts and system updates",
-                  icon: Icons.notifications_none_rounded,
-                  iconColor: Colors.redAccent,
-                  value: _notifySystem,
-                  onChanged: (val) => _updateSetting('notify_system', val),
-                ),
-
-                const SizedBox(height: 40),
-                Center(
-                  child: Text(
-                    "Settings are automatically saved",
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
-                  ),
-                )
-              ],
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        appBar: AppBar(
+          title: Text(
+            'Notification Settings',
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
             ),
           ),
+          backgroundColor: AppColors.appBar,
+          elevation: 0,
+          iconTheme: IconThemeData(color: AppColors.appBarForeground),
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Preferences",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Choose which notifications you'd like to receive on this device.",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+
+                    _buildToggleCard(
+                      title: "Chat Messages",
+                      subtitle: "Direct and group chat notifications",
+                      icon: Icons.chat_bubble_outline_rounded,
+                      iconColor: Colors.blue,
+                      value: _notifyChat,
+                      onChanged: (val) => _updateSetting('notify_chat', val),
+                    ),
+
+                    _buildToggleCard(
+                      title: "System Notifications",
+                      subtitle: "Security alerts and system updates",
+                      icon: Icons.notifications_none_rounded,
+                      iconColor: Colors.redAccent,
+                      value: _notifySystem,
+                      onChanged: (val) => _updateSetting('notify_system', val),
+                    ),
+
+                    const SizedBox(height: 40),
+                    Center(
+                      child: Text(
+                        "Settings are automatically saved",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.secondaryText.withOpacity(0.5),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 
@@ -132,14 +156,14 @@ class _InstructorNotificationSettingsScreenState extends State<InstructorNotific
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 15,
             offset: const Offset(0, 5),
-          )
+          ),
         ],
       ),
       child: SwitchListTile(
@@ -151,10 +175,20 @@ class _InstructorNotificationSettingsScreenState extends State<InstructorNotific
           ),
           child: Icon(icon, color: iconColor, size: 24),
         ),
-        title: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 13, color: Colors.black54)),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.primaryText,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(fontSize: 13, color: AppColors.secondaryText),
+        ),
         value: value,
-        activeColor: const Color(0xFF09AEF5),
+        activeColor: Theme.of(context).primaryColor,
         onChanged: onChanged,
       ),
     );

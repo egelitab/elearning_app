@@ -7,7 +7,8 @@ class SystemNotificationsScreen extends StatefulWidget {
   const SystemNotificationsScreen({super.key});
 
   @override
-  State<SystemNotificationsScreen> createState() => _SystemNotificationsScreenState();
+  State<SystemNotificationsScreen> createState() =>
+      _SystemNotificationsScreenState();
 }
 
 class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
@@ -16,8 +17,11 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   bool _isLoading = true;
   Set<String> _openedIds = {};
 
-  // Must match the key used in api_service.dart
-  static const _prefsKey = 'system_notifications_opened_ids';
+  Future<String> _getOpenedIdsKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('email') ?? 'default';
+    return 'system_notifications_opened_ids_$email';
+  }
 
   @override
   void initState() {
@@ -51,14 +55,16 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
 
   Future<Set<String>> _loadOpenedIds() async {
     final prefs = await SharedPreferences.getInstance();
-    return (prefs.getStringList(_prefsKey) ?? []).toSet();
+    final key = await _getOpenedIdsKey();
+    return (prefs.getStringList(key) ?? []).toSet();
   }
 
   Future<void> _markAsOpened(String msgId) async {
     if (_openedIds.contains(msgId)) return;
     setState(() => _openedIds.add(msgId));
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, _openedIds.toList());
+    final key = await _getOpenedIdsKey();
+    await prefs.setStringList(key, _openedIds.toList());
   }
 
   Future<void> _markAllAsRead() async {
@@ -68,7 +74,8 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
         .toSet();
     setState(() => _openedIds = allIds);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_prefsKey, allIds.toList());
+    final key = await _getOpenedIdsKey();
+    await prefs.setStringList(key, allIds.toList());
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -89,14 +96,17 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               "System Notifications",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 18,
+              ),
             ),
             if (_unreadCount > 0)
               Text(
@@ -106,9 +116,12 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           ],
         ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+              colors: [
+                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).primaryColor,
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -120,10 +133,18 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           if (_unreadCount > 0)
             TextButton.icon(
               onPressed: _markAllAsRead,
-              icon: const Icon(Icons.done_all_rounded, color: Colors.white, size: 18),
+              icon: const Icon(
+                Icons.done_all_rounded,
+                color: Colors.white,
+                size: 18,
+              ),
               label: const Text(
                 "Mark all read",
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
         ],
@@ -131,17 +152,24 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _messages.isEmpty
+            ? Center(child: CircularProgressIndicator())
+            : _messages.isEmpty
             ? Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.notifications_none_rounded, size: 80, color: Colors.grey.shade300),
-                    const SizedBox(height: 16),
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      size: 80,
+                      color: Colors.grey.shade300,
+                    ),
+                    SizedBox(height: 16),
                     Text(
                       "No system notifications",
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 16,
+                      ),
                     ),
                   ],
                 ),
@@ -158,8 +186,11 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
   Widget _buildItem(dynamic msg) {
     final String id = _msgId(msg);
     final bool isOpened = _openedIds.contains(id);
-    final DateTime date = DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
-    final String formattedDate = DateFormat('MMM d, h:mm a').format(date.toLocal());
+    final DateTime date =
+        DateTime.tryParse(msg['created_at'] ?? '') ?? DateTime.now();
+    final String formattedDate = DateFormat(
+      'MMM d, h:mm a',
+    ).format(date.toLocal());
     final String title = msg['title'] ?? 'System Notification';
     final String content = msg['content'] ?? '';
 
@@ -186,15 +217,18 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
           borderRadius: BorderRadius.circular(16),
           border: isOpened
               ? Border.all(color: Colors.grey.shade200, width: 1)
-              : Border.all(color: const Color(0xFF09AEF5).withOpacity(0.3), width: 1.2),
+              : Border.all(
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  width: 1.2,
+                ),
           boxShadow: [
             BoxShadow(
               color: isOpened
                   ? Colors.black.withOpacity(0.02)
-                  : const Color(0xFF09AEF5).withOpacity(0.10),
+                  : Theme.of(context).primaryColor.withOpacity(0.10),
               blurRadius: isOpened ? 4 : 10,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
         child: ClipRRect(
@@ -206,11 +240,16 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   width: 5,
-                  color: isOpened ? Colors.grey.shade300 : const Color(0xFF09AEF5),
+                  color: isOpened
+                      ? Colors.grey.shade300
+                      : Theme.of(context).primaryColor,
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -219,12 +258,15 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                           children: [
                             if (!isOpened)
                               Padding(
-                                padding: const EdgeInsets.only(top: 4, right: 8),
+                                padding: const EdgeInsets.only(
+                                  top: 4,
+                                  right: 8,
+                                ),
                                 child: Container(
                                   width: 8,
                                   height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF09AEF5),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor,
                                     shape: BoxShape.circle,
                                   ),
                                 ),
@@ -233,22 +275,28 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                               child: Text(
                                 title,
                                 style: TextStyle(
-                                  fontWeight: isOpened ? FontWeight.w500 : FontWeight.bold,
+                                  fontWeight: isOpened
+                                      ? FontWeight.w500
+                                      : FontWeight.bold,
                                   fontSize: 15,
-                                  color: isOpened ? Colors.black54 : Colors.black87,
+                                  color: isOpened
+                                      ? Colors.black54
+                                      : Colors.black87,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Text(
                               formattedDate,
                               style: TextStyle(
-                                color: isOpened ? Colors.grey.shade400 : Colors.grey.shade500,
+                                color: isOpened
+                                    ? Colors.grey.shade400
+                                    : Colors.grey.shade500,
                                 fontSize: 11,
                               ),
                             ),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Icon(
                               Icons.chevron_right_rounded,
                               color: isOpened ? Colors.black12 : Colors.black26,
@@ -256,11 +304,13 @@ class _SystemNotificationsScreenState extends State<SystemNotificationsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
+                        SizedBox(height: 6),
                         Text(
                           content,
                           style: TextStyle(
-                            color: isOpened ? Colors.grey.shade400 : Colors.grey.shade600,
+                            color: isOpened
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade600,
                             fontSize: 13,
                             height: 1.4,
                           ),
@@ -298,20 +348,23 @@ class SystemNotificationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String formattedDate =
-        DateFormat('MMMM d, yyyy  •  h:mm a').format(date.toLocal());
+    final String formattedDate = DateFormat(
+      'MMMM d, yyyy  •  h:mm a',
+    ).format(date.toLocal());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
         title: const Text(
           "System Notification",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+              colors: [
+                Theme.of(context).colorScheme.secondary,
+                Theme.of(context).primaryColor,
+              ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
             ),
@@ -329,15 +382,20 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF05398F), Color(0xFF09AEF5)],
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.secondary,
+                    Theme.of(context).primaryColor,
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF05398F).withOpacity(0.25),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.secondary.withOpacity(0.25),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -351,13 +409,17 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Theme.of(context).cardColor.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.campaign_rounded, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.campaign_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      const Text(
+                      SizedBox(width: 10),
+                      Text(
                         "SYSTEM",
                         style: TextStyle(
                           color: Colors.white70,
@@ -368,24 +430,31 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: Theme.of(context).cardColor,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.access_time_rounded, color: Colors.white60, size: 14),
-                      const SizedBox(width: 5),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: Colors.white60,
+                        size: 14,
+                      ),
+                      SizedBox(width: 5),
                       Text(
                         formattedDate,
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -393,13 +462,13 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
 
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -421,7 +490,7 @@ class SystemNotificationDetailScreen extends StatelessWidget {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: 14),
                   Text(
                     content,
                     style: const TextStyle(
@@ -434,7 +503,7 @@ class SystemNotificationDetailScreen extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
           ],
         ),
       ),

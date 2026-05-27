@@ -6,7 +6,8 @@ class InstructorScheduleScreen extends StatefulWidget {
   const InstructorScheduleScreen({super.key});
 
   @override
-  State<InstructorScheduleScreen> createState() => _InstructorScheduleScreenState();
+  State<InstructorScheduleScreen> createState() =>
+      _InstructorScheduleScreenState();
 }
 
 class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
@@ -51,55 +52,84 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
   }
 
   void _processSchedules(List<dynamic> courses, List<dynamic> schedules) {
-    final Set<String> myCourseTitles = courses.map((c) => (c['title'] as String).toLowerCase()).toSet();
-    myCourseTitles.addAll(courses.map((c) => (c['course_code'] as String).toLowerCase()));
+    final Set<String> myCourseTitles = courses
+        .map((c) => (c['title'] as String).toLowerCase())
+        .toSet();
+    myCourseTitles.addAll(
+      courses.map((c) => (c['course_code'] as String).toLowerCase()),
+    );
 
     List<Map<String, dynamic>> extractedClasses = [];
     List<dynamic> files = [];
 
-    final dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    final dayNames = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
     final slotTimes = [
       "02:00 - 03:45",
       "03:50 - 06:20",
       "07:35 - 09:20",
-      "09:25 - 12:05"
+      "09:25 - 12:05",
     ];
-    final List<Color> colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.red, Colors.teal];
+    final List<Color> colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.red,
+      Colors.teal,
+    ];
 
     for (var schedule in schedules) {
       if (schedule['file_path'] == 'DIGITAL_ENTRY') {
         final content = schedule['content'] as Map<String, dynamic>?;
         if (content != null) {
           content.forEach((key, value) {
-                String courseName = value.toString().trim();
-                String courseTitleOnly = courseName.split('|')[0].split('-')[0].trim().toLowerCase();
-                
-                bool isMyCourse = myCourseTitles.contains(courseName.toLowerCase()) || 
-                                 myCourseTitles.contains(courseTitleOnly);
-                
-                if (!isMyCourse) {
-                  isMyCourse = myCourseTitles.any((id) => 
-                    id.length > 3 && (courseName.toLowerCase().contains(id) || id.contains(courseName.toLowerCase()))
-                  );
-                }
+            String courseName = value.toString().trim();
+            String courseTitleOnly = courseName
+                .split('|')[0]
+                .split('-')[0]
+                .trim()
+                .toLowerCase();
 
-                if (isMyCourse) {
-                  final parts = key.split('-');
-                  if (parts.length == 2) {
-                    int slotIdx = int.parse(parts[0]);
-                    int dayIdx = int.parse(parts[1]);
-                    
-                    extractedClasses.add({
-                      'day': dayNames[dayIdx],
-                      'dayIdx': dayIdx,
-                      'slotIdx': slotIdx,
-                      'course': courseName,
-                      'time': DateHelper.formatTimeSlot(slotTimes[slotIdx % slotTimes.length]),
-                      'location': "See Digital Schedule", 
-                      'color': colors[extractedClasses.length % colors.length]
-                    });
-                  }
-                }
+            bool isMyCourse =
+                myCourseTitles.contains(courseName.toLowerCase()) ||
+                myCourseTitles.contains(courseTitleOnly);
+
+            if (!isMyCourse) {
+              isMyCourse = myCourseTitles.any(
+                (id) =>
+                    id.length > 3 &&
+                    (courseName.toLowerCase().contains(id) ||
+                        id.contains(courseName.toLowerCase())),
+              );
+            }
+
+            if (isMyCourse) {
+              final parts = key.split('-');
+              if (parts.length == 2) {
+                int slotIdx = int.parse(parts[0]);
+                int dayIdx = int.parse(parts[1]);
+
+                extractedClasses.add({
+                  'day': dayNames[dayIdx],
+                  'dayIdx': dayIdx,
+                  'slotIdx': slotIdx,
+                  'course': courseName,
+                  'time': DateHelper.formatTimeSlot(
+                    slotTimes[slotIdx % slotTimes.length],
+                  ),
+                  'location': "See Digital Schedule",
+                  'color': colors[extractedClasses.length % colors.length],
+                });
+              }
+            }
           });
         }
       } else {
@@ -122,69 +152,99 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
+          icon: Icon(
+            Icons.arrow_back_ios_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Schedule & Office Hours", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text(
+          "Schedule & Office Hours",
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : RefreshIndicator(
-            onRefresh: _fetchData,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader("Weekly Class Schedule"),
-                  const SizedBox(height: 15),
-                  
-                  if (_weeklyClasses.isEmpty && _fileSchedules.isEmpty)
-                    _buildEmptyState("No classes scheduled yet.")
-                  else ...[
-                    ..._weeklyClasses.map((c) => _buildScheduleItem(
-                      c['day'], c['course'], c['time'], c['location'], c['color']
-                    )),
-                    
-                    if (_fileSchedules.isNotEmpty) ...[
-                      const SizedBox(height: 25),
-                      _buildSectionHeader("Uploaded Schedule Files"),
-                      const SizedBox(height: 15),
-                      ..._fileSchedules.map((fs) => _buildFileItem(fs)),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _fetchData,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader("Weekly Class Schedule"),
+                    SizedBox(height: 15),
+
+                    if (_weeklyClasses.isEmpty && _fileSchedules.isEmpty)
+                      _buildEmptyState("No classes scheduled yet.")
+                    else ...[
+                      ..._weeklyClasses.map(
+                        (c) => _buildScheduleItem(
+                          c['day'],
+                          c['course'],
+                          c['time'],
+                          c['location'],
+                          c['color'],
+                        ),
+                      ),
+
+                      if (_fileSchedules.isNotEmpty) ...[
+                        SizedBox(height: 25),
+                        _buildSectionHeader("Uploaded Schedule Files"),
+                        SizedBox(height: 15),
+                        ..._fileSchedules.map((fs) => _buildFileItem(fs)),
+                      ],
                     ],
-                  ],
-                  
-                  const SizedBox(height: 35),
-                  _buildSectionHeader("Office Hours"),
-                  const SizedBox(height: 15),
-                  _buildOfficeHourItem("Tuesdays & Thursdays", "10:00 AM - 12:00 PM", "Block 4, Office 412"),
-                  
-                  const SizedBox(height: 40),
-                  Center(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Editing schedule will be available in the next update.")));
-                      },
-                      icon: const Icon(Icons.edit_calendar_rounded),
-                      label: const Text("Request Schedule Change"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF05398F),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+
+                    SizedBox(height: 35),
+                    _buildSectionHeader("Office Hours"),
+                    SizedBox(height: 15),
+                    _buildOfficeHourItem(
+                      "Tuesdays & Thursdays",
+                      "10:00 AM - 12:00 PM",
+                      "Block 4, Office 412",
+                    ),
+
+                    SizedBox(height: 40),
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Editing schedule will be available in the next update.",
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.edit_calendar_rounded),
+                        label: const Text("Request Schedule Change"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.secondary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
     );
   }
 
@@ -193,13 +253,17 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       padding: const EdgeInsets.all(30),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          Icon(Icons.calendar_today_outlined, size: 50, color: Colors.grey.shade300),
-          const SizedBox(height: 15),
+          Icon(
+            Icons.calendar_today_outlined,
+            size: 50,
+            color: Colors.grey.shade300,
+          ),
+          SizedBox(height: 15),
           Text(message, style: const TextStyle(color: Colors.grey)),
         ],
       ),
@@ -207,34 +271,72 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
   }
 
   Widget _buildSectionHeader(String title) {
-    return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87));
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black87,
+      ),
+    );
   }
 
-  Widget _buildScheduleItem(String day, String course, String time, String location, Color color) {
+  Widget _buildScheduleItem(
+    String day,
+    String course,
+    String time,
+    String location,
+    Color color,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             width: 5,
             height: 50,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
-          const SizedBox(width: 15),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(course, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 4),
-                Text("$day | $time", style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                Text(location, style: const TextStyle(color: Color(0xFF09AEF5), fontSize: 13, fontWeight: FontWeight.w500)),
+                Text(
+                  course,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  "$day | $time",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+                Text(
+                  location,
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -252,29 +354,44 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent, size: 32),
-          const SizedBox(width: 15),
+          const Icon(
+            Icons.picture_as_pdf_rounded,
+            color: Colors.redAccent,
+            size: 32,
+          ),
+          SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-                Text(fileName, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
+                Text(
+                  fileName,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                ),
               ],
             ),
           ),
           TextButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading schedule file...")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Downloading schedule file...")),
+              );
             },
             child: const Text("Open"),
-          )
+          ),
         ],
       ),
     );
@@ -284,20 +401,44 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.blue.shade50, Colors.white], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade50, Colors.white],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.blue.withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.access_time_filled_rounded, color: Color(0xFF05398F), size: 40),
-          const SizedBox(width: 20),
+          Icon(
+            Icons.access_time_filled_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+            size: 40,
+          ),
+          SizedBox(width: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(days, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Text(time, style: const TextStyle(color: Colors.black54, fontSize: 14)),
-              Text(location, style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.w600, fontSize: 14)),
+              Text(
+                days,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                time,
+                style: const TextStyle(color: Colors.black54, fontSize: 14),
+              ),
+              Text(
+                location,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.secondary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
             ],
           ),
         ],

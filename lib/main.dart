@@ -6,9 +6,17 @@ import 'dashboards/instructor_dashboard.dart';
 import 'dashboards/student_dashboard.dart';
 import 'utils/date_helper.dart';
 
+/// Global dark mode notifier — toggle anywhere, rebuilds the whole app
+final ValueNotifier<bool> darkModeNotifier = ValueNotifier(false);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DateHelper.init();
+
+  // Load saved dark mode pref before app starts
+  final prefs = await SharedPreferences.getInstance();
+  darkModeNotifier.value = prefs.getBool('pref_dark_mode') ?? false;
+
   runApp(const ELearningApp());
 }
 
@@ -17,18 +25,61 @@ class ELearningApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'ELMS Project',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        useMaterial3: true,
-      ),
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch, PointerDeviceKind.stylus, PointerDeviceKind.unknown},
-      ),
-      // Set the AuthWrapper as the home to handle persistent login
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) {
+        return MaterialApp(
+          title: 'ELMS Project',
+          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF09AEF5),
+              primary: const Color(0xFF09AEF5),
+              secondary: const Color(0xFF05398F),
+              brightness: Brightness.light,
+            ),
+            primaryColor: const Color(0xFF09AEF5),
+            primaryColorDark: const Color(0xFF05398F),
+            useMaterial3: true,
+            brightness: Brightness.light,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF09AEF5),
+              primary: const Color(0xFF09AEF5),
+              secondary: const Color(0xFF05398F),
+              brightness: Brightness.dark,
+              background: const Color(0xFF0F172A),
+              surface: const Color(0xFF1E293B),
+            ),
+            primaryColor: const Color(0xFF09AEF5),
+            primaryColorDark: const Color(0xFF05398F),
+            useMaterial3: true,
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF0F172A),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1E293B),
+              foregroundColor: Color(0xFFF8FAFC),
+            ),
+            cardColor: const Color(0xFF1E293B),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: Color(0xFF1E293B),
+              selectedItemColor: Color(0xFF09AEF5),
+              unselectedItemColor: Color(0xFF94A3B8),
+            ),
+          ),
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            dragDevices: {
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.touch,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.unknown,
+            },
+          ),
+          home: const AuthWrapper(),
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }
@@ -54,7 +105,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   // Logic to read from device storage
   Future<void> _checkLoginStatus() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    
+
     // Slight delay to ensure smooth transition or to show a splash logo
     await Future.delayed(const Duration(milliseconds: 500));
 
@@ -86,15 +137,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
               child: Column(
                 children: [
                   const Spacer(flex: 3),
-                  
+
                   // Central Logo lowered only on the loading screen
-                  Image.asset(
-                    'assets/logo.png',
-                    height: 180,
-                  ),
-                  
+                  Image.asset('assets/logo.png', height: 180),
+
                   const Spacer(flex: 1),
-                  
+
                   // This invisible layout mimics the element heights of the Welcome screen
                   // locking the logo in the exact same pixel position during transition
                   Opacity(
@@ -104,7 +152,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
                         const Text(
                           "Welcome to BDU E-Learning App",
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         const Text(
@@ -116,7 +167,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 50),
                 ],
               ),

@@ -5,19 +5,22 @@ class StudentProfileAskQuestionScreen extends StatefulWidget {
   const StudentProfileAskQuestionScreen({super.key});
 
   @override
-  State<StudentProfileAskQuestionScreen> createState() => _StudentProfileAskQuestionScreenState();
+  State<StudentProfileAskQuestionScreen> createState() =>
+      _StudentProfileAskQuestionScreenState();
 }
 
-class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuestionScreen> {
+class _StudentProfileAskQuestionScreenState
+    extends State<StudentProfileAskQuestionScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ApiService _apiService = ApiService();
   bool _isSending = false;
   final List<Map<String, dynamic>> _messages = [
     {
       "isMe": false,
-      "text": "Please leave your question below. An admin will review and respond to your inquiry as soon as possible.",
-      "time": "System Notice"
-    }
+      "text":
+          "Please leave your question below. An admin will review and respond to your inquiry as soon as possible.",
+      "time": "System Notice",
+    },
   ];
 
   void _sendMessage() async {
@@ -43,8 +46,9 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
           // Add confirmation
           _messages.add({
             "isMe": false,
-            "text": "Your question has been submitted as a support ticket. You'll receive a response from the admin soon.",
-            "time": "System"
+            "text":
+                "Your question has been submitted as a support ticket. You'll receive a response from the admin soon.",
+            "time": "System",
           });
           _isSending = false;
         });
@@ -56,7 +60,12 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
           _isSending = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString().replaceAll('Exception: ', '')}"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(
+              "Error: ${e.toString().replaceAll('Exception: ', '')}",
+            ),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -65,12 +74,19 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        title: const Text('Ask a Question', style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFFF4F7FC),
+        title: Text(
+          'Ask a Question',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF05398F)),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.secondary,
+        ),
       ),
       body: Column(
         children: [
@@ -97,28 +113,49 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF09AEF5) : Colors.white,
+          color: isMe ? Theme.of(context).primaryColor : Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
-            bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+            bottomLeft: isMe
+                ? const Radius.circular(16)
+                : const Radius.circular(4),
+            bottomRight: isMe
+                ? const Radius.circular(4)
+                : const Radius.circular(16),
           ),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Text(
               text,
-              style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 15, height: 1.4),
+              style: TextStyle(
+                color: isMe ? Colors.white : Colors.black87,
+                fontSize: 15,
+                height: 1.4,
+              ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Text(
               time,
-              style: TextStyle(color: isMe ? Colors.white70 : Colors.black45, fontSize: 11),
+              style: TextStyle(
+                color: isMe ? Colors.white70 : Colors.black45,
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -130,8 +167,14 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        color: Theme.of(context).cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -140,7 +183,6 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F7FC),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: TextField(
@@ -154,20 +196,33 @@ class _StudentProfileAskQuestionScreenState extends State<StudentProfileAskQuest
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             GestureDetector(
               onTap: _isSending ? null : _sendMessage,
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _isSending ? Colors.grey : const Color(0xFF09AEF5),
+                  color: _isSending
+                      ? Colors.grey
+                      : Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
                 child: _isSending
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.send_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
               ),
-            )
+            ),
           ],
         ),
       ),

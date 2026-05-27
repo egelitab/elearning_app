@@ -12,20 +12,28 @@ class StudentScheduleScreen extends StatefulWidget {
 class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = true;
-  
+
   // Matrix for the timetable: dayIdx -> slotIdx -> courseName
   Map<int, Map<int, String>> _timetable = {};
   int _maxSlotIdx = 3; // Minimum 4 slots
   final int _maxDayIdx = 6; // Mon-Sun
 
-  final List<String> _dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  final List<String> _dayNames = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ];
   final List<String> _slotTimes = [
     "02:00 - 03:45",
     "03:50 - 06:20",
     "07:35 - 09:20",
     "09:25 - 12:05",
     "12:10 - 01:50",
-    "01:55 - 03:30"
+    "01:55 - 03:30",
   ];
 
   @override
@@ -54,11 +62,15 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
     try {
       final courses = await _apiService.getStudentCourses();
       final schedules = await _apiService.getMySchedules();
-      
+
       final Set<String> myCourseIdentifiers = {};
       for (var course in courses) {
-        if (course['title'] != null) myCourseIdentifiers.add(course['title'].toString().toLowerCase());
-        if (course['course_code'] != null) myCourseIdentifiers.add(course['course_code'].toString().toLowerCase());
+        if (course['title'] != null)
+          myCourseIdentifiers.add(course['title'].toString().toLowerCase());
+        if (course['course_code'] != null)
+          myCourseIdentifiers.add(
+            course['course_code'].toString().toLowerCase(),
+          );
       }
 
       Map<int, Map<int, String>> newTimetable = {};
@@ -73,22 +85,30 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
                 try {
                   int slotIdx = int.parse(parts[0]);
                   int dayIdx = int.parse(parts[1]);
-                  
+
                   String courseName = value.toString().trim();
-                  String courseTitleOnly = courseName.split('|')[0].split('-')[0].trim().toLowerCase();
-                  
-                  bool isMyCourse = myCourseIdentifiers.contains(courseName.toLowerCase()) || 
-                                   myCourseIdentifiers.contains(courseTitleOnly);
-                  
+                  String courseTitleOnly = courseName
+                      .split('|')[0]
+                      .split('-')[0]
+                      .trim()
+                      .toLowerCase();
+
+                  bool isMyCourse =
+                      myCourseIdentifiers.contains(courseName.toLowerCase()) ||
+                      myCourseIdentifiers.contains(courseTitleOnly);
+
                   if (!isMyCourse) {
-                    isMyCourse = myCourseIdentifiers.any((id) => 
-                      id.length > 3 && (courseName.toLowerCase().contains(id) || id.contains(courseName.toLowerCase()))
+                    isMyCourse = myCourseIdentifiers.any(
+                      (id) =>
+                          id.length > 3 &&
+                          (courseName.toLowerCase().contains(id) ||
+                              id.contains(courseName.toLowerCase())),
                     );
                   }
 
                   if (isMyCourse) {
                     if (slotIdx > _maxSlotIdx) _maxSlotIdx = slotIdx;
-                    
+
                     newTimetable.putIfAbsent(dayIdx, () => {});
                     newTimetable[dayIdx]![slotIdx] = courseName;
                   }
@@ -110,9 +130,9 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading schedule: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading schedule: $e')));
       }
     }
   }
@@ -120,13 +140,18 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        title: const Text('Weekly Schedule', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text(
+          'Weekly Schedule',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         flexibleSpace: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).colorScheme.secondary,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -135,9 +160,9 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : _timetable.isEmpty 
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _timetable.isEmpty
           ? _buildEmptyState()
           : _buildTimetable(),
     );
@@ -148,26 +173,38 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.calendar_month_rounded, size: 80, color: Colors.grey.shade300),
+          Icon(
+            Icons.calendar_month_rounded,
+            size: 80,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 16),
-          const Text('No digital schedule found', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)
+          const Text(
+            'No digital schedule found',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 8),
-          const Text('Your class schedule will appear here once assigned.', 
-            style: TextStyle(color: Colors.grey)
+          const Text(
+            'Your class schedule will appear here once assigned.',
+            style: TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _fetchSchedule, 
+            onPressed: _fetchSchedule,
             icon: const Icon(Icons.refresh),
             label: const Text('Refresh'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF05398F),
+              backgroundColor: Theme.of(context).colorScheme.secondary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -188,10 +225,12 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
                 _buildCell("Day", isHeader: true, width: 80),
                 ...List.generate(_maxSlotIdx + 1, (slotIdx) {
                   return _buildCell(
-                    DateHelper.formatTimeSlot(_slotTimes[slotIdx % _slotTimes.length]), 
-                    isHeader: true, 
+                    DateHelper.formatTimeSlot(
+                      _slotTimes[slotIdx % _slotTimes.length],
+                    ),
+                    isHeader: true,
                     width: 140,
-                    isTime: true
+                    isTime: true,
                   );
                 }),
               ],
@@ -203,7 +242,11 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
                   _buildCell(_dayNames[dayIdx], isHeader: true, width: 80),
                   ...List.generate(_maxSlotIdx + 1, (slotIdx) {
                     final course = _timetable[dayIdx]?[slotIdx];
-                    return _buildCell(course ?? "", isHeader: false, width: 140);
+                    return _buildCell(
+                      course ?? "",
+                      isHeader: false,
+                      width: 140,
+                    );
                   }),
                 ],
               );
@@ -214,11 +257,20 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
     );
   }
 
-  Widget _buildCell(String text, {bool isHeader = false, double width = 120, bool isTime = false}) {
+  Widget _buildCell(
+    String text, {
+    bool isHeader = false,
+    double width = 120,
+    bool isTime = false,
+  }) {
     // Determine color based on text
-    Color bgColor = isHeader ? const Color(0xFF05398F).withOpacity(0.05) : Colors.white;
-    Color textColor = isHeader ? const Color(0xFF05398F) : Colors.black87;
-    
+    Color bgColor = isHeader
+        ? Theme.of(context).colorScheme.secondary.withOpacity(0.05)
+        : Colors.white;
+    Color textColor = isHeader
+        ? Theme.of(context).colorScheme.secondary
+        : Colors.black87;
+
     if (text.isNotEmpty && !isHeader) {
       // Logic for background color for courses
       final int hash = text.hashCode;
@@ -232,7 +284,7 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
         Colors.cyan.shade50,
       ];
       bgColor = courseColors[hash % courseColors.length];
-      textColor = Color(0xFF05398F);
+      textColor = Theme.of(context).colorScheme.secondary;
     }
 
     return Container(
@@ -244,13 +296,15 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
         color: bgColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isHeader ? const Color(0xFF05398F).withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-          width: 1
+          color: isHeader
+              ? Theme.of(context).colorScheme.secondary.withOpacity(0.1)
+              : Colors.grey.withOpacity(0.1),
+          width: 1,
         ),
       ),
       child: Center(
         child: Text(
-          text, 
+          text,
           style: TextStyle(
             fontWeight: isHeader ? FontWeight.bold : FontWeight.w500,
             fontSize: isHeader ? 13 : 11,

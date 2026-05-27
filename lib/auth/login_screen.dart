@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _rememberMe = true; // State for the Remember Me checkbox
+  bool _obscurePassword = true; // State to toggle password visibility
 
   void _handleLogin() async {
     // 1. Basic validation
@@ -27,16 +28,19 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (_emailController.text.trim() == "admin" && _passwordController.text.trim() == "123321") {
+    if (_emailController.text.trim() == "admin" &&
+        _passwordController.text.trim() == "123321") {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AdminRoleSelectionScreen()),
+        MaterialPageRoute(
+          builder: (context) => const AdminRoleSelectionScreen(),
+        ),
       );
       return;
     }
 
     setState(() => _isLoading = true);
-    
+
     try {
       final result = await ApiService().login(
         _emailController.text.trim(),
@@ -51,7 +55,9 @@ class _LoginScreenState extends State<LoginScreen> {
         throw Exception("Invalid server response: Missing token or user data");
       }
 
-      final String role = (userData['role'] ?? 'student').toString().toLowerCase();
+      final String role = (userData['role'] ?? 'student')
+          .toString()
+          .toLowerCase();
 
       // 3. PERSISTENCE
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -60,7 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('last_name', userData['last_name'] ?? '');
       await prefs.setString('email', userData['email'] ?? '');
       await prefs.setString('title', userData['title'] ?? '');
-      await prefs.setString('institutional_id', userData['institutional_id'] ?? '');
+      await prefs.setString(
+        'institutional_id',
+        userData['institutional_id'] ?? '',
+      );
 
       if (_rememberMe) {
         await prefs.setString('auth_token', token);
@@ -69,15 +78,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // 4. Navigation
       if (!mounted) return;
-      
+
       if (role == 'instructor') {
         Navigator.pushReplacement(
-          context, 
+          context,
           MaterialPageRoute(builder: (context) => const InstructorDashboard()),
         );
       } else {
         Navigator.pushReplacement(
-          context, 
+          context,
           MaterialPageRoute(builder: (context) => const StudentDashboard()),
         );
       }
@@ -95,11 +104,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Login",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
-        backgroundColor: Colors.white,
+
         foregroundColor: Colors.black,
       ),
       body: Padding(
@@ -107,34 +118,48 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               // Logo Placeholder
-              const Icon(Icons.school, size: 80, color: Colors.blue), 
-              const SizedBox(height: 40),
-              
+              const Icon(Icons.school, size: 80, color: Colors.blue),
+              SizedBox(height: 40),
+
               // Email Field
               TextField(
-                controller: _emailController, 
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: "Email",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   prefixIcon: const Icon(Icons.email_outlined),
                 ),
               ),
-              const SizedBox(height: 20),
-              
+              SizedBox(height: 20),
+
               // Password Field
               TextField(
-                controller: _passwordController, 
-                obscureText: true, 
+                controller: _passwordController,
+                obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: "Password",
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   prefixIcon: const Icon(Icons.lock_outline),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
               ),
-              
+
               // Remember Me + Forgot Password Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,48 +168,59 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Checkbox(
                         value: _rememberMe,
-                        onChanged: (value) => setState(() => _rememberMe = value!),
+                        onChanged: (value) =>
+                            setState(() => _rememberMe = value!),
                         activeColor: Colors.blue,
                       ),
-                      const Text("Remember Me", style: TextStyle(color: Colors.grey)),
+                      const Text(
+                        "Remember Me",
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const ForgotPasswordScreen(),
+                        ),
                       );
                     },
-                    child: const Text("Forgot Password?", style: TextStyle(color: Colors.blue)),
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: Colors.blue),
+                    ),
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 20),
-              
+
+              SizedBox(height: 20),
+
               // Login Button
-              _isLoading 
-                ? const CircularProgressIndicator() 
-                : SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton(
-                      onPressed: _handleLogin, 
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: const Text(
-                        "LOGIN", 
-                        style: TextStyle(
-                          fontSize: 16, 
-                          fontWeight: FontWeight.bold, 
-                          color: Colors.white
+              _isLoading
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: _handleLogin,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          "LOGIN",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).cardColor,
+                          ),
                         ),
                       ),
                     ),
-                  ),
             ],
           ),
         ),
@@ -199,11 +235,13 @@ class AdminRoleSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Select Role", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Select Role",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
-        backgroundColor: Colors.white,
+
         foregroundColor: Colors.black,
       ),
       body: Center(
@@ -219,24 +257,28 @@ class AdminRoleSelectionScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const StudentDashboard()),
+                      MaterialPageRoute(
+                        builder: (context) => const StudentDashboard(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "STUDENT",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white
+                      color: Theme.of(context).cardColor,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 55,
@@ -244,19 +286,23 @@ class AdminRoleSelectionScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const InstructorDashboard()),
+                      MaterialPageRoute(
+                        builder: (context) => const InstructorDashboard(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "INSTRUCTOR",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white
+                      color: Theme.of(context).cardColor,
                     ),
                   ),
                 ),

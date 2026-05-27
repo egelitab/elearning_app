@@ -13,8 +13,8 @@ class InstructorStorageExplorerScreen extends StatefulWidget {
   final bool isPicker;
 
   const InstructorStorageExplorerScreen({
-    super.key, 
-    this.initialFolders, 
+    super.key,
+    this.initialFolders,
     this.initialFiles,
     this.initialFolderId,
     this.initialFolderName = 'Main Storage',
@@ -22,16 +22,18 @@ class InstructorStorageExplorerScreen extends StatefulWidget {
   });
 
   @override
-  State<InstructorStorageExplorerScreen> createState() => _InstructorStorageExplorerScreenState();
+  State<InstructorStorageExplorerScreen> createState() =>
+      _InstructorStorageExplorerScreenState();
 }
 
-class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplorerScreen> {
+class _InstructorStorageExplorerScreenState
+    extends State<InstructorStorageExplorerScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
-  
+
   List<dynamic> _folders = [];
   List<dynamic> _files = [];
-  
+
   // Navigation State
   late List<Map<String, String?>> _navigationStack;
   String? get _currentFolderId => _navigationStack.last['id'];
@@ -39,7 +41,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
   // Clipboard State
   List<Map<String, dynamic>>? _clipboard;
-  
+
   // Selection State
   bool _isSelectionMode = false;
   final Set<String> _selectedIds = {};
@@ -50,7 +52,9 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   @override
   void initState() {
     super.initState();
-    _navigationStack = [{'id': widget.initialFolderId, 'name': widget.initialFolderName}];
+    _navigationStack = [
+      {'id': widget.initialFolderId, 'name': widget.initialFolderName},
+    ];
     _fetchInitialData();
   }
 
@@ -64,12 +68,14 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
       if (widget.initialFolders == null) {
         storageIndex = futures.length;
-        futures.add(_apiService.getInstructorStorage(folderId: _currentFolderId));
+        futures.add(
+          _apiService.getInstructorStorage(folderId: _currentFolderId),
+        );
       }
-      
+
       coursesIndex = futures.length;
       futures.add(_apiService.getInstructorCourses());
-      
+
       targetsIndex = futures.length;
       futures.add(_apiService.getInstructorTargets());
 
@@ -83,10 +89,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         _folders = widget.initialFolders ?? [];
         _files = widget.initialFiles ?? [];
       }
-      
+
       _courses = results[coursesIndex] as List<dynamic>;
       _targets = results[targetsIndex] as List<dynamic>;
-      
+
       _applySort('name_asc'); // Pin and sort
     } catch (e) {
       debugPrint("Init error: $e");
@@ -98,12 +104,14 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   Future<void> _fetchContent() async {
     setState(() => _isLoading = true);
     try {
-      final data = await _apiService.getInstructorStorage(folderId: _currentFolderId);
+      final data = await _apiService.getInstructorStorage(
+        folderId: _currentFolderId,
+      );
       if (mounted) {
         setState(() {
           _folders = data['folders'] ?? [];
           _files = data['files'] ?? [];
-          
+
           _applySort('name_asc'); // Default sort
           _isLoading = false;
         });
@@ -111,7 +119,9 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
@@ -144,7 +154,11 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
   void _toggleSelection(String id, {bool isSystem = false}) {
     if (isSystem) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("The Uploads folder cannot be modified or moved.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("The Uploads folder cannot be modified or moved."),
+        ),
+      );
       return;
     }
     setState(() {
@@ -161,16 +175,31 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   void _showSortOptions() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Sort By", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-            const SizedBox(height: 10),
+            Text(
+              "Sort By",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+            SizedBox(height: 10),
             ListTile(
-              leading: const Icon(Icons.text_format_rounded, color: Color(0xFF09AEF5)),
+              leading: Icon(
+                Icons.text_format_rounded,
+                color: Theme.of(context).primaryColor,
+              ),
               title: const Text("Name"),
               onTap: () {
                 _applySort('name_asc');
@@ -178,7 +207,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
               },
             ),
             ListTile(
-              leading: const Icon(Icons.calendar_today_rounded, color: Color(0xFF09AEF5)),
+              leading: Icon(
+                Icons.calendar_today_rounded,
+                color: Theme.of(context).primaryColor,
+              ),
               title: const Text("Date Modified"),
               onTap: () {
                 _applySort('date_desc');
@@ -211,20 +243,24 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         } else {
           name = _files.firstWhere((f) => f['id'].toString() == id)['name'];
         }
-      } catch (e) { name = 'Unknown'; }
+      } catch (e) {
+        name = 'Unknown';
+      }
       items.add({
-        'id': id, 
-        'type': type, 
-        'name': name, 
+        'id': id,
+        'type': type,
+        'name': name,
         'mode': 'cut',
-        'source_folder_id': _currentFolderId
+        'source_folder_id': _currentFolderId,
       });
     }
     setState(() {
       _clipboard = items;
       _exitSelectionMode();
     });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${items.length} items cut to clipboard")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("${items.length} items cut to clipboard")),
+    );
   }
 
   void _handleMultiCopy() {
@@ -240,20 +276,24 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         } else {
           name = _files.firstWhere((f) => f['id'].toString() == id)['name'];
         }
-      } catch (e) { name = 'Unknown'; }
+      } catch (e) {
+        name = 'Unknown';
+      }
       items.add({
-        'id': id, 
-        'type': type, 
-        'name': name, 
+        'id': id,
+        'type': type,
+        'name': name,
         'mode': 'copy',
-        'source_folder_id': _currentFolderId
+        'source_folder_id': _currentFolderId,
       });
     }
     setState(() {
       _clipboard = items;
       _exitSelectionMode();
     });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${items.length} items copied to clipboard")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("${items.length} items copied to clipboard")),
+    );
   }
 
   Future<void> _deleteSelected() async {
@@ -262,12 +302,20 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Delete Selected"),
-        content: Text("Are you sure you want to move $count items to the recycle bin?"),
+        content: Text(
+          "Are you sure you want to move $count items to the recycle bin?",
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Delete", style: TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
         ],
-      )
+      ),
     );
 
     if (confirm != true) return;
@@ -280,9 +328,13 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       }
       _exitSelectionMode();
       _fetchContent();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$count items moved to recycle bin")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("$count items moved to recycle bin")),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Delete failed: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Delete failed: $e")));
       _fetchContent();
     }
   }
@@ -292,27 +344,34 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       FilePickerResult? result = await FilePicker.pickFiles();
       if (result != null) {
         setState(() => _isLoading = true);
-        await _apiService.uploadInstructorFile(result.files.single.path!, folderId: _currentFolderId);
+        await _apiService.uploadInstructorFile(
+          result.files.single.path!,
+          folderId: _currentFolderId,
+        );
         _fetchContent();
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
       setState(() => _isLoading = false);
     }
   }
 
   void _showRenameDialog() {
     if (_selectedIds.length != 1) return;
-    
+
     final idStr = _selectedIds.first;
     final parts = idStr.split(':');
     final type = parts[0];
     final id = parts[1];
-    
+
     // Find item name
     String currentName = '';
     if (type == 'folder') {
-      currentName = _folders.firstWhere((f) => f['id'].toString() == id)['name'];
+      currentName = _folders.firstWhere(
+        (f) => f['id'].toString() == id,
+      )['name'];
     } else {
       currentName = _files.firstWhere((f) => f['id'].toString() == id)['name'];
     }
@@ -330,15 +389,18 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
     final controller = TextEditingController(text: base);
     // Auto-select the name part so the user can immediately overwrite it
-    controller.selection = TextSelection(baseOffset: 0, extentOffset: base.length);
+    controller.selection = TextSelection(
+      baseOffset: 0,
+      extentOffset: base.length,
+    );
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Rename ${type == 'folder' ? 'Folder' : 'File'}"),
         content: TextField(
-          controller: controller, 
-          autofocus: true, 
+          controller: controller,
+          autofocus: true,
           decoration: InputDecoration(
             hintText: "New Name",
             suffixText: ext.isNotEmpty ? ext : null,
@@ -346,7 +408,10 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
           ElevatedButton(
             onPressed: () async {
               final newBase = controller.text.trim();
@@ -359,11 +424,13 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                   _exitSelectionMode();
                   _fetchContent();
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Rename failed: $e")));
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("Rename failed: $e")));
                   setState(() => _isLoading = false);
                 }
               }
-            }, 
+            },
             child: const Text("Rename"),
           ),
         ],
@@ -402,7 +469,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
     String base = name.substring(0, dotIndex);
     String ext = name.substring(dotIndex);
-    
+
     final regex = RegExp(r'_(\d+)$');
     final match = regex.firstMatch(base);
     if (match != null) {
@@ -423,20 +490,28 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
         if (nameA == 'uploads' && nameB != 'uploads') return -1;
         if (nameB == 'uploads' && nameA != 'uploads') return 1;
-        
+
         if (criteria == 'name_asc') {
-          return a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase());
+          return a['name'].toString().toLowerCase().compareTo(
+            b['name'].toString().toLowerCase(),
+          );
         } else if (criteria == 'date_desc') {
-          return b['created_at'].toString().compareTo(a['created_at'].toString());
+          return b['created_at'].toString().compareTo(
+            a['created_at'].toString(),
+          );
         }
         return 0;
       });
 
       _files.sort((a, b) {
         if (criteria == 'name_asc') {
-          return a['name'].toString().toLowerCase().compareTo(b['name'].toString().toLowerCase());
+          return a['name'].toString().toLowerCase().compareTo(
+            b['name'].toString().toLowerCase(),
+          );
         } else if (criteria == 'date_desc') {
-          return b['created_at'].toString().compareTo(a['created_at'].toString());
+          return b['created_at'].toString().compareTo(
+            a['created_at'].toString(),
+          );
         }
         return 0;
       });
@@ -449,10 +524,11 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     setState(() => _isLoading = true);
     try {
       final List<Map<String, dynamic>> clipboardCopy = List.from(_clipboard!);
-      
+
       for (var item in clipboardCopy) {
         // Optimization: If pasting in same folder during CUT, it's a no-op
-        if (item['mode'] == 'cut' && item['source_folder_id'] == _currentFolderId) {
+        if (item['mode'] == 'cut' &&
+            item['source_folder_id'] == _currentFolderId) {
           continue;
         }
 
@@ -460,26 +536,40 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
         String newName = baseName;
 
         // Auto-resolve conflicts by incrementing name until unique
-        while (_folders.any((f) => f['name'] == newName) || _files.any((f) => f['name'] == newName)) {
+        while (_folders.any((f) => f['name'] == newName) ||
+            _files.any((f) => f['name'] == newName)) {
           newName = _incrementName(newName, item['type']);
         }
 
         if (item['mode'] == 'copy') {
-          await _apiService.duplicateEntry(item['id'], item['type'], _currentFolderId, newName: newName);
+          await _apiService.duplicateEntry(
+            item['id'],
+            item['type'],
+            _currentFolderId,
+            newName: newName,
+          );
         } else {
           // Cut mode: Rename if name was changed, then move
           if (newName != baseName) {
             await _apiService.renameEntry(item['id'], item['type'], newName);
           }
-          await _apiService.moveEntry(item['id'], item['type'], _currentFolderId);
+          await _apiService.moveEntry(
+            item['id'],
+            item['type'],
+            _currentFolderId,
+          );
         }
       }
 
       setState(() => _clipboard = null);
       _fetchContent();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Items placed successfully")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Items placed successfully")),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Paste failed: $e")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Paste failed: $e")));
       _fetchContent();
     }
   }
@@ -495,7 +585,7 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
             return AlertDialog(
               title: const Text("New Folder"),
               content: TextField(
-                controller: controller, 
+                controller: controller,
                 autofocus: true,
                 onChanged: (val) {
                   if (errorText != null) setDialogState(() => errorText = null);
@@ -504,37 +594,56 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
                   hintText: "Folder Name",
                   errorText: errorText,
                   errorMaxLines: 2,
-                ), 
+                ),
               ),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
                 ElevatedButton(
                   onPressed: () async {
                     if (controller.text.isNotEmpty) {
                       final String folderName = controller.text;
                       // Check for duplicate name
-                      if (_folders.any((f) => f['name'].toString().toLowerCase() == folderName.toLowerCase()) || 
-                          _files.any((f) => f['name'].toString().toLowerCase() == folderName.toLowerCase())) {
-                        setDialogState(() => errorText = "A folder or file with this name already exists.");
+                      if (_folders.any(
+                            (f) =>
+                                f['name'].toString().toLowerCase() ==
+                                folderName.toLowerCase(),
+                          ) ||
+                          _files.any(
+                            (f) =>
+                                f['name'].toString().toLowerCase() ==
+                                folderName.toLowerCase(),
+                          )) {
+                        setDialogState(
+                          () => errorText =
+                              "A folder or file with this name already exists.",
+                        );
                         return;
                       }
 
                       Navigator.pop(context);
                       setState(() => _isLoading = true);
                       try {
-                        await _apiService.createFolder(folderName, parentId: _currentFolderId);
+                        await _apiService.createFolder(
+                          folderName,
+                          parentId: _currentFolderId,
+                        );
                         _fetchContent();
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+                        ScaffoldMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text("Error: $e")));
                         setState(() => _isLoading = false);
                       }
                     }
-                  }, 
-                  child: const Text("Create")
+                  },
+                  child: const Text("Create"),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
@@ -543,199 +652,364 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        backgroundColor: _isSelectionMode ? const Color(0xFF05398F) : const Color(0xFFF4F7FC),
+        backgroundColor: _isSelectionMode
+            ? Theme.of(context).colorScheme.secondary
+            : const Color(0xFFF4F7FC),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(_isSelectionMode ? Icons.close_rounded : Icons.arrow_back_rounded, color: _isSelectionMode ? Colors.white : const Color(0xFF05398F)),
-          onPressed: _isSelectionMode ? _exitSelectionMode : () => Navigator.pop(context),
+          icon: Icon(
+            _isSelectionMode ? Icons.close_rounded : Icons.arrow_back_rounded,
+            color: _isSelectionMode
+                ? Colors.white
+                : Theme.of(context).colorScheme.secondary,
+          ),
+          onPressed: _isSelectionMode
+              ? _exitSelectionMode
+              : () => Navigator.pop(context),
         ),
         title: Text(
-          _isSelectionMode ? "${_selectedIds.length} Selected" : "Storage Explorer",
-          style: TextStyle(color: _isSelectionMode ? Colors.white : const Color(0xFF05398F), fontWeight: FontWeight.bold),
+          _isSelectionMode
+              ? "${_selectedIds.length} Selected"
+              : "Storage Explorer",
+          style: TextStyle(
+            color: _isSelectionMode
+                ? Colors.white
+                : Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        actions: _isSelectionMode ? [
-          if (_selectedIds.length == 1)
-            IconButton(icon: const Icon(Icons.edit_rounded, color: Colors.white), onPressed: _showRenameDialog, tooltip: "Rename"),
-          IconButton(icon: const Icon(Icons.content_cut_rounded, color: Colors.white), onPressed: _handleMultiCut, tooltip: "Cut"),
-          IconButton(icon: const Icon(Icons.content_copy_rounded, color: Colors.white), onPressed: _handleMultiCopy, tooltip: "Copy"),
-          IconButton(icon: const Icon(Icons.delete_outline_rounded, color: Colors.white), onPressed: _deleteSelected, tooltip: "Delete"),
-          IconButton(
-            icon: const Icon(Icons.select_all_rounded, color: Colors.white),
-            onPressed: () {
-              final selectableFolders = _folders.where((f) => f['name'].toString().toLowerCase() != 'uploads' || _currentFolderId != null).toList();
-              final total = selectableFolders.length + _files.length;
-              
-              setState(() {
-                if (_selectedIds.length == total) {
-                  _selectedIds.clear();
-                  _isSelectionMode = false;
-                } else {
-                  for (var f in selectableFolders) _selectedIds.add("folder:${f['id']}");
-                  for (var f in _files) _selectedIds.add("file:${f['id']}");
-                  _isSelectionMode = true;
-                }
-              });
-            },
-            tooltip: "Select All",
-          ),
-        ] : [
-          MenuAnchor(
-            builder: (context, controller, child) {
-              return IconButton(
-                icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
-                onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-                tooltip: "More actions",
-              );
-            },
-            menuChildren: [
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.cloud_upload_rounded, size: 20, color: Color(0xFF09AEF5)),
-                onPressed: _pickAndUploadFile,
-                child: const Text("Upload File"),
-              ),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.create_new_folder_rounded, size: 20, color: Color(0xFF09AEF5)),
-                onPressed: _showNewFolderDialog,
-                child: const Text("New Folder"),
-              ),
-              MenuItemButton(
-                leadingIcon: const Icon(Icons.share_rounded, size: 20, color: Color(0xFF09AEF5)),
-                onPressed: () {
-                  setState(() => _isSelectionMode = true);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Tap on the items you wish to share.")));
-                },
-                child: const Text("Share Items"),
-              ),
-              const Divider(height: 1),
-              SubmenuButton(
-                leadingIcon: const Icon(Icons.sort_rounded, size: 20, color: Color(0xFF05398F)),
-                menuChildren: [
-                  MenuItemButton(
-                    leadingIcon: const Icon(Icons.text_format_rounded, size: 20),
-                    onPressed: () => _applySort('name_asc'),
-                    child: const Text("Name"),
+        actions: _isSelectionMode
+            ? [
+                if (_selectedIds.length == 1)
+                  IconButton(
+                    icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                    onPressed: _showRenameDialog,
+                    tooltip: "Rename",
                   ),
-                  MenuItemButton(
-                    leadingIcon: const Icon(Icons.calendar_today_rounded, size: 20),
-                    onPressed: () => _applySort('date_desc'),
-                    child: const Text("Date"),
+                IconButton(
+                  icon: const Icon(
+                    Icons.content_cut_rounded,
+                    color: Colors.white,
                   ),
-                ],
-                child: const Text("Sort By"),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : Column(
-            children: [
-              _buildBreadcrumbs(),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    if (_folders.isEmpty && _files.isEmpty)
-                      const Center(child: Padding(padding: EdgeInsets.only(top: 50), child: Text("This folder is empty", style: TextStyle(color: Colors.black38))))
-                    else ...[
-                      // Special Section for System/Pinned Folders (only in root)
-                      if (_currentFolderId == null) ...[
-                        ..._folders.where((f) => f['name'].toString().toLowerCase() == 'uploads').map((folder) {
-                          final id = "folder:${folder['id']}";
-                          final isSelected = _selectedIds.contains(id);
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildTile(folder, 'folder', isSelected),
-                              const Divider(height: 32, thickness: 1, color: Colors.black12),
-                            ],
-                          );
-                        }),
+                  onPressed: _handleMultiCut,
+                  tooltip: "Cut",
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.content_copy_rounded,
+                    color: Colors.white,
+                  ),
+                  onPressed: _handleMultiCopy,
+                  tooltip: "Copy",
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.white,
+                  ),
+                  onPressed: _deleteSelected,
+                  tooltip: "Delete",
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.select_all_rounded,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    final selectableFolders = _folders
+                        .where(
+                          (f) =>
+                              f['name'].toString().toLowerCase() != 'uploads' ||
+                              _currentFolderId != null,
+                        )
+                        .toList();
+                    final total = selectableFolders.length + _files.length;
+
+                    setState(() {
+                      if (_selectedIds.length == total) {
+                        _selectedIds.clear();
+                        _isSelectionMode = false;
+                      } else {
+                        for (var f in selectableFolders)
+                          _selectedIds.add("folder:${f['id']}");
+                        for (var f in _files)
+                          _selectedIds.add("file:${f['id']}");
+                        _isSelectionMode = true;
+                      }
+                    });
+                  },
+                  tooltip: "Select All",
+                ),
+              ]
+            : [
+                MenuAnchor(
+                  builder: (context, controller, child) {
+                    return IconButton(
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      onPressed: () => controller.isOpen
+                          ? controller.close()
+                          : controller.open(),
+                      tooltip: "More actions",
+                    );
+                  },
+                  menuChildren: [
+                    MenuItemButton(
+                      leadingIcon: Icon(
+                        Icons.cloud_upload_rounded,
+                        size: 20,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: _pickAndUploadFile,
+                      child: const Text("Upload File"),
+                    ),
+                    MenuItemButton(
+                      leadingIcon: Icon(
+                        Icons.create_new_folder_rounded,
+                        size: 20,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: _showNewFolderDialog,
+                      child: const Text("New Folder"),
+                    ),
+                    MenuItemButton(
+                      leadingIcon: Icon(
+                        Icons.share_rounded,
+                        size: 20,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      onPressed: () {
+                        setState(() => _isSelectionMode = true);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Tap on the items you wish to share.",
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text("Share Items"),
+                    ),
+                    const Divider(height: 1),
+                    SubmenuButton(
+                      leadingIcon: Icon(
+                        Icons.sort_rounded,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      menuChildren: [
+                        MenuItemButton(
+                          leadingIcon: const Icon(
+                            Icons.text_format_rounded,
+                            size: 20,
+                          ),
+                          onPressed: () => _applySort('name_asc'),
+                          child: const Text("Name"),
+                        ),
+                        MenuItemButton(
+                          leadingIcon: const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 20,
+                          ),
+                          onPressed: () => _applySort('date_desc'),
+                          child: const Text("Date"),
+                        ),
                       ],
-
-                      // Remaining Folders
-                      ..._folders.where((f) {
-                        if (_currentFolderId == null) {
-                          return f['name'].toString().toLowerCase() != 'uploads';
-                        }
-                        return true;
-                      }).map((folder) {
-                        final id = "folder:${folder['id']}";
-                        final isSelected = _selectedIds.contains(id);
-                        return _buildTile(folder, 'folder', isSelected);
-                      }),
-
-                      // Files
-                      ..._files.map((file) {
-                        final id = "file:${file['id']}";
-                        final isSelected = _selectedIds.contains(id);
-                        return _buildTile(file, 'file', isSelected);
-                      }),
-                    ],
-                    const SizedBox(height: 80),
+                      child: const Text("Sort By"),
+                    ),
                   ],
                 ),
-              ),
-            ],
-          ),
-      bottomNavigationBar: _isSelectionMode ? SafeArea(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            height: 55,
-            child: widget.isPicker ? ElevatedButton.icon(
-              onPressed: () {
-                if (_selectedIds.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select at least one item.")));
-                } else {
-                  // Return a list of selected items (only files usually for attachments)
-                  final List<Map<String, dynamic>> selectedItems = [];
-                  for (final selectionId in _selectedIds) {
-                    final parts = selectionId.split(':');
-                    final type = parts[0];
-                    final id = parts[1];
-                    try {
-                      final item = type == 'folder' 
-                        ? _folders.firstWhere((f) => f['id'].toString() == id)
-                        : _files.firstWhere((f) => f['id'].toString() == id);
-                      selectedItems.add({...item, 'type': type});
-                    } catch (_) {}
-                  }
-                  Navigator.pop(context, selectedItems);
-                }
-              },
-              icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
-              label: const Text("Select Item(s)", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF05398F),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ) : ElevatedButton.icon(
-              onPressed: () {
-                if (_selectedIds.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(behavior: SnackBarBehavior.floating, content: Text("Please select at least one item.")));
-                } else {
-                  _showShareBottomSheet();
-                }
-              },
-              icon: const Icon(Icons.share_rounded, color: Colors.white),
-              label: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF09AEF5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
+              ],
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                _buildBreadcrumbs(),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.all(20),
+                    children: [
+                      if (_folders.isEmpty && _files.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 50),
+                            child: Text(
+                              "This folder is empty",
+                              style: TextStyle(color: Colors.black38),
+                            ),
+                          ),
+                        )
+                      else ...[
+                        // Special Section for System/Pinned Folders (only in root)
+                        if (_currentFolderId == null) ...[
+                          ..._folders
+                              .where(
+                                (f) =>
+                                    f['name'].toString().toLowerCase() ==
+                                    'uploads',
+                              )
+                              .map((folder) {
+                                final id = "folder:${folder['id']}";
+                                final isSelected = _selectedIds.contains(id);
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildTile(folder, 'folder', isSelected),
+                                    const Divider(
+                                      height: 32,
+                                      thickness: 1,
+                                      color: Colors.black12,
+                                    ),
+                                  ],
+                                );
+                              }),
+                        ],
+
+                        // Remaining Folders
+                        ..._folders
+                            .where((f) {
+                              if (_currentFolderId == null) {
+                                return f['name'].toString().toLowerCase() !=
+                                    'uploads';
+                              }
+                              return true;
+                            })
+                            .map((folder) {
+                              final id = "folder:${folder['id']}";
+                              final isSelected = _selectedIds.contains(id);
+                              return _buildTile(folder, 'folder', isSelected);
+                            }),
+
+                        // Files
+                        ..._files.map((file) {
+                          final id = "file:${file['id']}";
+                          final isSelected = _selectedIds.contains(id);
+                          return _buildTile(file, 'file', isSelected);
+                        }),
+                      ],
+                      SizedBox(height: 80),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ),
-        ),
-      ) : null,
+      bottomNavigationBar: _isSelectionMode
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 15,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: widget.isPicker
+                      ? ElevatedButton.icon(
+                          onPressed: () {
+                            if (_selectedIds.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Text(
+                                    "Please select at least one item.",
+                                  ),
+                                ),
+                              );
+                            } else {
+                              // Return a list of selected items (only files usually for attachments)
+                              final List<Map<String, dynamic>> selectedItems =
+                                  [];
+                              for (final selectionId in _selectedIds) {
+                                final parts = selectionId.split(':');
+                                final type = parts[0];
+                                final id = parts[1];
+                                try {
+                                  final item = type == 'folder'
+                                      ? _folders.firstWhere(
+                                          (f) => f['id'].toString() == id,
+                                        )
+                                      : _files.firstWhere(
+                                          (f) => f['id'].toString() == id,
+                                        );
+                                  selectedItems.add({...item, 'type': type});
+                                } catch (_) {}
+                              }
+                              Navigator.pop(context, selectedItems);
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.check_circle_outline_rounded,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "Select Item(s)",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.secondary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: () {
+                            if (_selectedIds.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Text(
+                                    "Please select at least one item.",
+                                  ),
+                                ),
+                              );
+                            } else {
+                              _showShareBottomSheet();
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.share_rounded,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "Share Now",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -744,42 +1018,61 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     const int maxVisible = 3;
     final int total = _navigationStack.length;
     final bool isTruncated = total > maxVisible;
-    
+
     final List<Widget> items = [];
 
     if (isTruncated) {
-      items.add(const Text("...", style: TextStyle(color: Colors.black45, fontWeight: FontWeight.bold)));
-      items.add(const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4),
-        child: Text(">", style: TextStyle(color: Colors.black26, fontSize: 14)),
-      ));
+      items.add(
+        const Text(
+          "...",
+          style: TextStyle(color: Colors.black45, fontWeight: FontWeight.bold),
+        ),
+      );
+      items.add(
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            ">",
+            style: TextStyle(color: Colors.black26, fontSize: 14),
+          ),
+        ),
+      );
     }
 
     final int start = isTruncated ? total - maxVisible : 0;
     for (int i = start; i < total; i++) {
       final bool isLast = i == total - 1;
       final String name = _navigationStack[i]['name']!;
-      
-      items.add(Flexible(
-        child: GestureDetector(
-          onTap: () => _navigateToBreadcrumb(i),
-          child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontWeight: isLast ? FontWeight.bold : FontWeight.w500,
-              color: isLast ? const Color(0xFF05398F) : Colors.black54,
-              fontSize: 13,
+
+      items.add(
+        Flexible(
+          child: GestureDetector(
+            onTap: () => _navigateToBreadcrumb(i),
+            child: Text(
+              name,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: isLast ? FontWeight.bold : FontWeight.w500,
+                color: isLast
+                    ? Theme.of(context).colorScheme.secondary
+                    : Colors.black54,
+                fontSize: 13,
+              ),
             ),
           ),
         ),
-      ));
+      );
 
       if (!isLast) {
-        items.add(const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
-          child: Text(">", style: TextStyle(color: Colors.black26, fontSize: 14)),
-        ));
+        items.add(
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              ">",
+              style: TextStyle(color: Colors.black26, fontSize: 14),
+            ),
+          ),
+        );
       }
     }
 
@@ -787,30 +1080,42 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
       height: 50,
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3F2FD),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         children: [
-          if (total > 1) 
+          if (total > 1)
             IconButton(
-              icon: const Icon(Icons.arrow_back_rounded, size: 20, color: Color(0xFF05398F)), 
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                size: 20,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
               onPressed: _navigateBack,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
             )
           else
-            const Icon(Icons.storage_rounded, size: 20, color: Color(0xFF05398F)),
-          const SizedBox(width: 8),
-          
-          Expanded(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: items,
+            Icon(
+              Icons.storage_rounded,
+              size: 20,
+              color: Theme.of(context).colorScheme.secondary,
             ),
+          SizedBox(width: 8),
+
+          Expanded(
+            child: Row(mainAxisSize: MainAxisSize.min, children: items),
           ),
 
           if (_clipboard != null && _clipboard!.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.paste_rounded, color: Colors.green, size: 20),
+              icon: const Icon(
+                Icons.paste_rounded,
+                color: Colors.green,
+                size: 20,
+              ),
               tooltip: "Place here",
               onPressed: _pasteItems,
               padding: EdgeInsets.zero,
@@ -824,10 +1129,15 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   Widget _buildTile(dynamic item, String type, bool isSelected) {
     String name = item['name'];
     String date = _formatDate(item['created_at']);
-    String info = type == 'folder' ? "${item['item_count'] ?? 0} Items" : _formatBytes(item['file_size_bytes'] ?? 0);
-    
-    final bool isUploads = type == 'folder' && name.toLowerCase() == 'uploads' && _currentFolderId == null;
-    
+    String info = type == 'folder'
+        ? "${item['item_count'] ?? 0} Items"
+        : _formatBytes(item['file_size_bytes'] ?? 0);
+
+    final bool isUploads =
+        type == 'folder' &&
+        name.toLowerCase() == 'uploads' &&
+        _currentFolderId == null;
+
     return GestureDetector(
       onTap: () {
         if (_isSelectionMode) {
@@ -838,50 +1148,92 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           _openFile(item);
         }
       },
-      onLongPress: () => _toggleSelection("${type}:${item['id']}", isSystem: isUploads),
+      onLongPress: () =>
+          _toggleSelection("${type}:${item['id']}", isSystem: isUploads),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFE3F2FD) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? const Color(0xFF09AEF5) : Colors.transparent, width: 2),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]
+          border: Border.all(
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
-            if (isSelected) const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.check_circle_rounded, color: Color(0xFF09AEF5), size: 24)),
+            if (isSelected)
+              Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).primaryColor,
+                  size: 24,
+                ),
+              ),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isUploads ? const Color(0xFFE8F5E9) : _getIconColor(name, type).withOpacity(0.1), 
+                color: isUploads
+                    ? const Color(0xFFE8F5E9)
+                    : _getIconColor(name, type).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                isUploads ? Icons.folder_shared_rounded : _getIcon(name, type), 
-                color: isUploads ? Colors.green : _getIconColor(name, type), 
-                size: 24
+                isUploads ? Icons.folder_shared_rounded : _getIcon(name, type),
+                color: isUploads ? Colors.green : _getIconColor(name, type),
+                size: 24,
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                       if (isUploads) ...[
-                        const SizedBox(width: 6),
-                        const Icon(Icons.lock_rounded, size: 14, color: Colors.black26),
-                      ]
+                        SizedBox(width: 6),
+                        const Icon(
+                          Icons.lock_rounded,
+                          size: 14,
+                          color: Colors.black26,
+                        ),
+                      ],
                     ],
                   ),
-                  Text(date, style: const TextStyle(color: Colors.black38, fontSize: 11)),
+                  Text(
+                    date,
+                    style: const TextStyle(color: Colors.black38, fontSize: 11),
+                  ),
                 ],
               ),
             ),
-            Text(info, style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.bold)),
+            Text(
+              info,
+              style: const TextStyle(
+                color: Colors.black38,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ),
@@ -891,15 +1243,28 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
   Future<void> _openFile(dynamic fileItem) async {
     final urlStr = fileItem['file_path'] ?? fileItem['url'];
     if (urlStr == null) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("File not found")));
       return;
     }
-    
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening file...")));
+
+    if (mounted)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Downloading and opening file...")),
+      );
     try {
-      await _apiService.downloadAndOpenFile(urlStr, context: context, fileName: fileItem['name']);
+      await _apiService.downloadAndOpenFile(
+        urlStr,
+        context: context,
+        fileName: fileItem['name'],
+      );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -907,27 +1272,46 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     if (type == 'folder') return Icons.folder_rounded;
     String ext = name.toLowerCase().split('.').last;
     if (ext.contains('pdf')) return Icons.picture_as_pdf_rounded;
-    if (ext.contains('doc') || ext.contains('txt')) return Icons.description_rounded;
-    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Icons.video_collection_rounded;
-    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Icons.folder_zip_rounded;
-    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Icons.image_rounded;
-    if (ext.contains('ppt') || ext.contains('pptx')) return Icons.slideshow_rounded;
-    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Icons.table_chart_rounded;
-    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Icons.audiotrack_rounded;
+    if (ext.contains('doc') || ext.contains('txt'))
+      return Icons.description_rounded;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov'))
+      return Icons.video_collection_rounded;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z'))
+      return Icons.folder_zip_rounded;
+    if (ext.contains('jpg') ||
+        ext.contains('jpeg') ||
+        ext.contains('png') ||
+        ext.contains('gif'))
+      return Icons.image_rounded;
+    if (ext.contains('ppt') || ext.contains('pptx'))
+      return Icons.slideshow_rounded;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv'))
+      return Icons.table_chart_rounded;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac'))
+      return Icons.audiotrack_rounded;
     return Icons.insert_drive_file_rounded;
   }
 
   Color _getIconColor(String name, String type) {
-    if (type == 'folder') return const Color(0xFF09AEF5);
+    if (type == 'folder') return Theme.of(context).primaryColor;
     String ext = name.toLowerCase().split('.').last;
     if (ext.contains('pdf')) return Colors.red.shade600;
     if (ext.contains('doc') || ext.contains('txt')) return Colors.blue.shade700;
-    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov')) return Colors.deepPurple;
-    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z')) return Colors.orange.shade800;
-    if (ext.contains('jpg') || ext.contains('jpeg') || ext.contains('png') || ext.contains('gif')) return Colors.teal;
-    if (ext.contains('ppt') || ext.contains('pptx')) return Colors.orange.shade900;
-    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv')) return Colors.green.shade700;
-    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac')) return Colors.pink.shade400;
+    if (ext.contains('mp4') || ext.contains('avi') || ext.contains('mov'))
+      return Colors.deepPurple;
+    if (ext.contains('zip') || ext.contains('rar') || ext.contains('7z'))
+      return Colors.orange.shade800;
+    if (ext.contains('jpg') ||
+        ext.contains('jpeg') ||
+        ext.contains('png') ||
+        ext.contains('gif'))
+      return Colors.teal;
+    if (ext.contains('ppt') || ext.contains('pptx'))
+      return Colors.orange.shade900;
+    if (ext.contains('xls') || ext.contains('xlsx') || ext.contains('csv'))
+      return Colors.green.shade700;
+    if (ext.contains('mp3') || ext.contains('wav') || ext.contains('aac'))
+      return Colors.pink.shade400;
 
     return Colors.blueGrey;
   }
@@ -947,22 +1331,31 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
 
   void _showShareBottomSheet() {
     if (_selectedIds.isEmpty) return;
-    
-    String? selectedCourseId = _courses.isNotEmpty ? _courses.first['id'].toString() : null;
-    String? selectedDeptId = _targets.isNotEmpty ? _targets.first['id']?.toString() : null;
-    
+
+    String? selectedCourseId = _courses.isNotEmpty
+        ? _courses.first['id'].toString()
+        : null;
+    String? selectedDeptId = _targets.isNotEmpty
+        ? _targets.first['id']?.toString()
+        : null;
+
     // Helper to get sections for a dept
     List<String> getCleanedSections(String? deptId) {
       if (deptId == null) return [];
-      var dept = _targets.firstWhere((t) => t['id'].toString() == deptId, orElse: () => null);
+      var dept = _targets.firstWhere(
+        (t) => t['id'].toString() == deptId,
+        orElse: () => null,
+      );
       if (dept == null) return [];
-      
+
       List<String> raw = List<String>.from(dept['sections'] ?? []);
       Set<String> cleaned = {};
       for (String s in raw) {
         String c = s.trim();
-        if (c.length == 1) c = "Section $c";
-        else if (!c.toLowerCase().startsWith('section ')) c = "Section $c";
+        if (c.length == 1)
+          c = "Section $c";
+        else if (!c.toLowerCase().startsWith('section '))
+          c = "Section $c";
         cleaned.add(c);
       }
       List<String> sorted = cleaned.toList()..sort();
@@ -971,7 +1364,9 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
     }
 
     List<String> currentSections = getCleanedSections(selectedDeptId);
-    String? selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+    String? selectedSection = currentSections.isNotEmpty
+        ? currentSections.first
+        : null;
 
     showModalBottomSheet(
       context: context,
@@ -982,118 +1377,209 @@ class _InstructorStorageExplorerScreenState extends State<InstructorStorageExplo
           builder: (context, setSheetState) {
             return Container(
               padding: EdgeInsets.only(
-                top: 20, left: 20, right: 20, 
-                bottom: MediaQuery.of(context).viewInsets.bottom + 30
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 30,
               ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Share Selected Items", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                  const SizedBox(height: 8),
-                  Text("Sharing ${_selectedIds.length} items from storage.", style: const TextStyle(color: Colors.black54)),
-                  const SizedBox(height: 20),
-                  
-                  const Text("Select Course", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  Text(
+                    "Share Selected Items",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Sharing ${_selectedIds.length} items from storage.",
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                  SizedBox(height: 20),
+
+                  const Text(
+                    "Select Course",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: selectedCourseId,
-                        items: _courses.map((c) => DropdownMenuItem<String>(
-                          value: c['id'].toString(),
-                          child: Text((c['title'] ?? c['course_code']).toString()),
-                        )).toList(),
-                        onChanged: (val) => setSheetState(() => selectedCourseId = val),
+                        items: _courses
+                            .map(
+                              (c) => DropdownMenuItem<String>(
+                                value: c['id'].toString(),
+                                child: Text(
+                                  (c['title'] ?? c['course_code']).toString(),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setSheetState(() => selectedCourseId = val),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
-                  const Text("Select Department", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  const Text(
+                    "Select Department",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: selectedDeptId,
-                        items: _targets.map((d) => DropdownMenuItem<String>(value: d['id'].toString(), child: Text(d['name']))).toList(),
+                        items: _targets
+                            .map(
+                              (d) => DropdownMenuItem<String>(
+                                value: d['id'].toString(),
+                                child: Text(d['name']),
+                              ),
+                            )
+                            .toList(),
                         onChanged: (val) {
                           setSheetState(() {
                             selectedDeptId = val;
                             currentSections = getCleanedSections(val);
-                            selectedSection = currentSections.isNotEmpty ? currentSections.first : null;
+                            selectedSection = currentSections.isNotEmpty
+                                ? currentSections.first
+                                : null;
                           });
                         },
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
-                  const Text("Select Section", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 5),
+                  const Text(
+                    "Select Section",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
                         isExpanded: true,
                         value: selectedSection,
-                        items: currentSections.map((s) => DropdownMenuItem<String>(value: s, child: Text(s))).toList(),
-                        onChanged: (val) => setSheetState(() => selectedSection = val),
+                        items: currentSections
+                            .map(
+                              (s) => DropdownMenuItem<String>(
+                                value: s,
+                                child: Text(s),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) =>
+                            setSheetState(() => selectedSection = val),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                       onPressed: () async {
-                          final materialIds = _selectedIds.map((id) => id.split(':')[1]).toList();
-                          if (selectedCourseId == null || selectedDeptId == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please select a course and department"), backgroundColor: Colors.orange));
-                            return;
-                          }
+                      onPressed: () async {
+                        final materialIds = _selectedIds
+                            .map((id) => id.split(':')[1])
+                            .toList();
+                        if (selectedCourseId == null ||
+                            selectedDeptId == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Please select a course and department",
+                              ),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
 
-                          Navigator.pop(context);
-                          setState(() => _isLoading = true);
-                          try {
-                            await _apiService.shareMaterials(
-                              materialIds, 
-                              selectedCourseId,
-                              selectedDeptId, 
-                              selectedSection == "All Sections" ? null : selectedSection
-                            );
-                            _exitSelectionMode();
-                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Shared successfully"), backgroundColor: Colors.green));
-                          } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Share failed: $e"), backgroundColor: Colors.red));
-                          } finally {
-                            setState(() => _isLoading = false);
-                            _fetchContent();
-                          }
-                       },
-                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF09AEF5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                       child: const Text("Share Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Navigator.pop(context);
+                        setState(() => _isLoading = true);
+                        try {
+                          await _apiService.shareMaterials(
+                            materialIds,
+                            selectedCourseId,
+                            selectedDeptId,
+                            selectedSection == "All Sections"
+                                ? null
+                                : selectedSection,
+                          );
+                          _exitSelectionMode();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Shared successfully"),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Share failed: $e"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        } finally {
+                          setState(() => _isLoading = false);
+                          _fetchContent();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Share Now",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 }

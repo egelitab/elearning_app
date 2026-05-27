@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'system_notifications_screen.dart';
 import 'student_menu_screen.dart';
@@ -10,7 +11,10 @@ import 'student_materials_screen.dart';
 import 'student_schedule_screen.dart';
 import '../services/api_service.dart';
 import '../utils/date_helper.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 import 'package:file_picker/file_picker.dart';
+import 'course_details_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   const StudentHomeScreen({super.key});
@@ -19,7 +23,8 @@ class StudentHomeScreen extends StatefulWidget {
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
 }
 
-class _StudentHomeScreenState extends State<StudentHomeScreen> {
+class _StudentHomeScreenState extends State<StudentHomeScreen>
+    with WidgetsBindingObserver {
   String _title = '';
   String _firstName = '';
   bool _isUserDataLoading = true;
@@ -32,6 +37,11 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   List<dynamic> _courses = [];
   bool _isLoadingCourses = true;
   int _systemUnread = 0;
+  String _recentMaterialTitle = '';
+  String _recentMaterialUrl = '';
+  String _recentCourseTitle = '';
+  Map<String, dynamic>? _recentCourseData;
+  bool _hasInitialized = false;
 
   @override
   void initState() {
@@ -45,6 +55,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         DateHelper.calendarFormat.addListener(_handlePreferenceChange);
       }
     });
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadUserData();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_hasInitialized) {
+      // Refresh recent material each time this screen is shown (e.g., after back navigation)
+      _loadUserData();
+    } else {
+      _hasInitialized = true;
+    }
   }
 
   void _handlePreferenceChange() {
@@ -57,6 +86,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     DateHelper.calendarFormat.removeListener(_handlePreferenceChange);
     super.dispose();
   }
@@ -70,12 +100,23 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic>? courseData;
+    final courseJson = prefs.getString('recent_course_json');
+    if (courseJson != null && courseJson.isNotEmpty) {
+      try {
+        courseData = jsonDecode(courseJson) as Map<String, dynamic>;
+      } catch (_) {}
+    }
     if (mounted) {
       setState(() {
         _title = prefs.getString('title') ?? '';
         if (_title == 'None') _title = '';
         _firstName = prefs.getString('first_name') ?? '';
         _isUserDataLoading = false;
+        _recentMaterialTitle = prefs.getString('recent_material_title') ?? '';
+        _recentMaterialUrl = prefs.getString('recent_material_url') ?? '';
+        _recentCourseTitle = prefs.getString('recent_course_title') ?? '';
+        _recentCourseData = courseData;
       });
     }
   }
@@ -111,19 +152,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       if (mounted) {
         setState(() {
           _pendingTasks = tasks;
-          _myGoals = goals.map((g) => {
-            'id': 'goal_${g['id']}',
-            'title': g['title'],
-            'course_title': g['course_title'] ?? 'Course Goal',
-            'due_date': null, // Goals use recurrence, not exact due dates in this context
-            'recurrence': g['recurrence'],
-            'is_group_assignment': false,
-            'is_submitted': false,
-            'is_goal': true,
-            'description': g['description'],
-            'progress_hours': g['progress_hours'],
-            'target_hours': g['target_hours'],
-          }).toList();
+          _myGoals = goals
+              .map(
+                (g) => {
+                  'id': 'goal_${g['id']}',
+                  'title': g['title'],
+                  'course_title': g['course_title'] ?? 'Course Goal',
+                  'due_date':
+                      null, // Goals use recurrence, not exact due dates in this context
+                  'recurrence': g['recurrence'],
+                  'is_group_assignment': false,
+                  'is_submitted': false,
+                  'is_goal': true,
+                  'description': g['description'],
+                  'progress_hours': g['progress_hours'],
+                  'target_hours': g['target_hours'],
+                  'course_id': g['course_id'],
+                },
+              )
+              .toList();
         });
       }
     } catch (e) {
@@ -153,21 +200,31 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     // (I'll keep the original content here)
     final Set<String> myCourseIdentifiers = {};
     for (var course in courses) {
-      if (course['title'] != null) myCourseIdentifiers.add(course['title'].toString().toLowerCase());
-      if (course['course_code'] != null) myCourseIdentifiers.add(course['course_code'].toString().toLowerCase());
+      if (course['title'] != null)
+        myCourseIdentifiers.add(course['title'].toString().toLowerCase());
+      if (course['course_code'] != null)
+        myCourseIdentifiers.add(course['course_code'].toString().toLowerCase());
     }
 
-    final int todayIdx = DateTime.now().weekday - 1; // 0 = Monday, ..., 6 = Sunday
-    
+    final int todayIdx =
+        DateTime.now().weekday - 1; // 0 = Monday, ..., 6 = Sunday
+
     List<Map<String, dynamic>> todayClasses = [];
-    
+
     final slotTimes = [
       "02:00 - 03:45",
       "03:50 - 06:20",
       "07:35 - 09:20",
-      "09:25 - 12:05"
+      "09:25 - 12:05",
     ];
-    final List<Color> colors = [Colors.purple, Colors.green, Colors.orange, Colors.blue, Colors.red, Colors.teal];
+    final List<Color> colors = [
+      Colors.purple,
+      Colors.green,
+      Colors.orange,
+      Colors.blue,
+      Colors.red,
+      Colors.teal,
+    ];
 
     for (var schedule in schedules) {
       if (schedule['file_path'] == 'DIGITAL_ENTRY') {
@@ -180,26 +237,37 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               try {
                 int slotIdx = int.parse(parts[0]);
                 int dayIdx = int.parse(parts[1]);
-                
+
                 String courseName = value.toString().trim();
-                String courseTitleOnly = courseName.split('|')[0].split('-')[0].trim().toLowerCase();
-                
-                bool isMyCourse = myCourseIdentifiers.contains(courseName.toLowerCase()) || 
-                                 myCourseIdentifiers.contains(courseTitleOnly);
-                
+                String courseTitleOnly = courseName
+                    .split('|')[0]
+                    .split('-')[0]
+                    .trim()
+                    .toLowerCase();
+
+                bool isMyCourse =
+                    myCourseIdentifiers.contains(courseName.toLowerCase()) ||
+                    myCourseIdentifiers.contains(courseTitleOnly);
+
                 // Final fallback: check if any of our identifiers is a substring of the schedule entry
                 if (!isMyCourse) {
-                  isMyCourse = myCourseIdentifiers.any((id) => 
-                    id.length > 3 && (courseName.toLowerCase().contains(id) || id.contains(courseName.toLowerCase()))
+                  isMyCourse = myCourseIdentifiers.any(
+                    (id) =>
+                        id.length > 3 &&
+                        (courseName.toLowerCase().contains(id) ||
+                            id.contains(courseName.toLowerCase())),
                   );
                 }
 
                 if (dayIdx == todayIdx && isMyCourse) {
                   todayClasses.add({
                     'course': courseName,
-                    'time': DateHelper.formatTimeSlot(slotTimes[slotIdx % slotTimes.length], startOnly: true),
+                    'time': DateHelper.formatTimeSlot(
+                      slotTimes[slotIdx % slotTimes.length],
+                      startOnly: true,
+                    ),
                     'slotIdx': slotIdx,
-                    'color': colors[todayClasses.length % colors.length]
+                    'color': colors[todayClasses.length % colors.length],
                   });
                 }
               } catch (e) {
@@ -223,101 +291,165 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Professional light grayish blue background
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header Section with our primary gradient
-            _buildHeader(),
-            
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Horizontal Scrollable Cards
-                  _buildHorizontalCards(context),
-                  
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 25.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Grid Menu
-                        const Text("Main Menu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                        const SizedBox(height: 15),
-                        _buildMenuGrid(),
-                        
-                        const SizedBox(height: 30),
-                        const Text("Today's Schedule", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                        const SizedBox(height: 15),
-                        if (_isScheduleLoading)
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(20.0),
-                              child: CircularProgressIndicator(strokeWidth: 3),
-                            ),
-                          )
-                        else if (_todaySchedule.isEmpty)
-                          _buildEmptySchedule()
-                        else
-                          ..._todaySchedule.map((s) => _buildScheduleTask(s['course'], s['time'], s['color'])),
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Header Section with our primary gradient
+              _buildHeader(),
 
-                        const SizedBox(height: 30),
-                        const Text("Pending Tasks", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-                        const SizedBox(height: 15),
-                        if (_isTasksLoading)
-                          const Center(
-                             child: Padding(
-                               padding: EdgeInsets.all(20.0),
-                               child: CircularProgressIndicator(strokeWidth: 3),
-                             ),
-                           )
-                        else if (_pendingTasks.isEmpty && _myGoals.isEmpty)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Horizontal Scrollable Cards
+                    _buildHorizontalCards(context),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0,
+                        vertical: 25.0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Grid Menu
+                          Text(
+                            "Main Menu",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.isDark
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.secondary,
                             ),
-                            child: const Center(child: Text("No pending assignments or goals", style: TextStyle(color: Colors.grey))),
-                          )
-                        else
-                          ...[..._myGoals, ..._pendingTasks].where((task) {
-                            if (task['is_goal'] == true) return true;
-                            final isSub = task['is_submitted'];
-                            return isSub == false || isSub == null || isSub == 0 || isSub == 'false';
-                          }).take(5).map((task) => task['is_goal'] == true ? _buildGoalItem(task) : _buildTaskItem(task)),
-                      ],
+                          ),
+                          SizedBox(height: 15),
+                          _buildMenuGrid(),
+
+                          SizedBox(height: 30),
+                          Text(
+                            "Today's Schedule",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.isDark
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          if (_isScheduleLoading)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                ),
+                              ),
+                            )
+                          else if (_todaySchedule.isEmpty)
+                            _buildEmptySchedule()
+                          else
+                            ..._todaySchedule.map(
+                              (s) => _buildScheduleTask(
+                                s['course'],
+                                s['time'],
+                                s['color'],
+                              ),
+                            ),
+
+                          SizedBox(height: 30),
+                          Text(
+                            "Pending Tasks",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.isDark
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                          SizedBox(height: 15),
+                          if (_isTasksLoading)
+                            Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(20.0),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                ),
+                              ),
+                            )
+                          else if (_pendingTasks.isEmpty && _myGoals.isEmpty)
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: AppColors.card,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "No pending assignments or goals",
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ),
+                            )
+                          else
+                            ...[..._myGoals, ..._pendingTasks]
+                                .where((task) {
+                                  if (task['is_goal'] == true) return true;
+                                  final isSub = task['is_submitted'];
+                                  return isSub == false ||
+                                      isSub == null ||
+                                      isSub == 0 ||
+                                      isSub == 'false';
+                                })
+                                .take(5)
+                                .map(
+                                  (task) => task['is_goal'] == true
+                                      ? _buildGoalItem(task)
+                                      : _buildTaskItem(task),
+                                ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 35),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.secondary,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30), 
+          bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
         boxShadow: [
-           BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5))
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
         ],
       ),
       child: Row(
@@ -337,19 +469,34 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     ),
                   )
                 else
-                  Text("Hi, ${_title.isNotEmpty ? '$_title ' : ''}$_firstName".trim(), 
-                    style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5),
+                  Text(
+                    "Hi, ${_title.isNotEmpty ? '$_title ' : ''}$_firstName"
+                        .trim(),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                const SizedBox(height: 4),
-                const Text("Let's start learning!", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                SizedBox(height: 4),
+                const Text(
+                  "Let's start learning!",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
               ],
             ),
           ),
           GestureDetector(
             onTap: () async {
-              await Navigator.push(context, MaterialPageRoute(builder: (context) => const SystemNotificationsScreen()));
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SystemNotificationsScreen(),
+                ),
+              );
               // Refresh badge after returning
               _fetchSystemUnread();
             },
@@ -358,14 +505,17 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                     color: Colors.white24,
-                     shape: BoxShape.circle,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    shape: BoxShape.circle,
                   ),
-                  child: const CircleAvatar(
-                    backgroundColor: Colors.white,
+                  child: CircleAvatar(
                     radius: 22,
-                    child: Icon(Icons.notifications_none_rounded, color: Color(0xFF05398F), size: 24),
+                    child: Icon(
+                      Icons.notifications_none_rounded,
+                      color: Theme.of(context).colorScheme.secondary,
+                      size: 24,
+                    ),
                   ),
                 ),
                 if (_systemUnread > 0)
@@ -374,11 +524,21 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(3),
-                      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                      decoration: const BoxDecoration(color: Colors.redAccent, shape: BoxShape.circle),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                      ),
                       child: Text(
                         _systemUnread > 99 ? '99+' : '$_systemUnread',
-                        style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -386,53 +546,69 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ],
             ),
           ),
-
         ],
       ),
     );
   }
 
   Widget _buildHorizontalCards(BuildContext context) {
-    double cardWidth = MediaQuery.of(context).size.width - 40; // Full width with 20 padding on each side
+    double cardWidth =
+        MediaQuery.of(context).size.width -
+        40; // Full width with 20 padding on each side
 
     String displayTitle = "Welcome to ELMS";
     String displaySubtitle = "Start your learning journey";
     double progress = 0.0;
-    
+
     if (_isLoadingCourses) {
-       return Padding(
-         padding: const EdgeInsets.symmetric(horizontal: 20),
-         child: _buildBaseCard(
-           width: cardWidth,
-           gradient: const LinearGradient(
-             colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
-             begin: Alignment.topLeft,
-             end: Alignment.bottomRight,
-           ),
-           child: const Center(child: CircularProgressIndicator(color: Colors.white)),
-         ),
-       );
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: _buildBaseCard(
+          width: cardWidth,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+        ),
+      );
     }
 
-    if (_courses.isNotEmpty) {
-      displayTitle = _courses.first['title']?.toString() ?? "Course Hub";
-      displaySubtitle = _courses.first['course_code']?.toString() ?? "My Enrolled Course";
-      
-      final activeGoals = _myGoals.where((g) => g['target_hours'] != null).toList();
+    final Map<String, dynamic>? targetCourse =
+        _recentCourseData ??
+        (_courses.isNotEmpty
+            ? Map<String, dynamic>.from(_courses.first)
+            : null);
+
+    if (targetCourse != null) {
+      displayTitle = targetCourse['title']?.toString() ?? "Course Hub";
+      displaySubtitle =
+          _recentMaterialTitle.isNotEmpty && _recentCourseData != null
+          ? _recentMaterialTitle
+          : (targetCourse['course_code']?.toString() ?? 'Tap to open course');
+
+      final activeGoals = _myGoals
+          .where((g) => 
+              g['target_hours'] != null && 
+              g['course_id']?.toString() == targetCourse['id']?.toString()
+          )
+          .toList();
+          
       if (activeGoals.isNotEmpty) {
         double totalTarget = 0.0;
         double totalProgress = 0.0;
         for (var g in activeGoals) {
           totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-          
+
           // Safer check for progress_hours to avoid null errors
           String? progStr;
           if (g.containsKey('goal') && g['goal'] != null) {
             progStr = g['goal']['progress_hours']?.toString();
           }
           progStr ??= g['progress_hours']?.toString();
-          
-          totalProgress += double.tryParse(progStr ?? '0.0') ?? 0.0;
+
+          totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
         }
         if (totalTarget > 0) progress = totalProgress / totalTarget;
         if (progress > 1.0) progress = 1.0;
@@ -441,86 +617,142 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: _buildBaseCard(
-        width: cardWidth,
-        gradient: const LinearGradient(
-          colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(_courses.isNotEmpty ? "Continue Learning" : "Join a Course", style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
-                const SizedBox.shrink(),
-              ],
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(displayTitle, 
-                        style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(displaySubtitle, 
-                        style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+      child: GestureDetector(
+        onTap: targetCourse != null
+            ? () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CourseDetailsScreen(
+                      course: targetCourse,
+                      allCourses: _courses,
+                      themeColor: Theme.of(context).colorScheme.secondary,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 60,
-                  width: 60,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 6,
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                      Center(
-                        child: Text("${(progress * 100).toInt()}%", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                      ),
-                    ],
+                );
+              }
+            : null,
+        child: _buildBaseCard(
+          width: cardWidth,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    targetCourse != null
+                        ? (_recentCourseData != null
+                              ? 'Continue Learning'
+                              : 'My Courses')
+                        : 'Join a Course',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  if (targetCourse != null)
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
+                ],
+              ),
+              const Spacer(),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          displayTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          displaySubtitle,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 60,
+                    width: 60,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.white.withOpacity(0.3),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            "${(progress * 100).toInt()}%",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBaseCard({required double width, Gradient? gradient, required Widget child}) {
+  Widget _buildBaseCard({
+    required double width,
+    Gradient? gradient,
+    required Widget child,
+  }) {
     return Container(
       width: width,
       height: 150,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: gradient,
+        color: gradient == null ? AppColors.card : null,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: child,
@@ -535,23 +767,73 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       mainAxisSpacing: 25,
       crossAxisSpacing: 10,
       children: [
-        _buildIconBtn(Icons.folder_shared_rounded, "Materials", const Color(0xFFFFF3E0), Colors.orange, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentMaterialsScreen()));
-        }),
-        _buildIconBtn(Icons.assignment_rounded, "Tasks", const Color(0xFFE3F2FD), Colors.blue, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAssignmentsScreen()));
-        }),
-        _buildIconBtn(Icons.schedule_rounded, "Schedule", const Color(0xFFF3E5F5), Colors.purple, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentScheduleScreen()));
-        }),
-        _buildIconBtn(Icons.more_horiz_rounded, "More", Colors.grey.shade200, Colors.grey.shade700, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentMenuScreen()));
-        }),
+        _buildIconBtn(
+          Icons.folder_shared_rounded,
+          "Materials",
+          const Color(0xFFFFF3E0),
+          Colors.orange,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentMaterialsScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.assignment_rounded,
+          "Tasks",
+          const Color(0xFFE3F2FD),
+          Colors.blue,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentAssignmentsScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.schedule_rounded,
+          "Schedule",
+          const Color(0xFFF3E5F5),
+          Colors.purple,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentScheduleScreen(),
+              ),
+            );
+          },
+        ),
+        _buildIconBtn(
+          Icons.more_horiz_rounded,
+          "More",
+          Colors.grey.shade200,
+          Colors.grey.shade700,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const StudentMenuScreen(),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
-  Widget _buildIconBtn(IconData icon, String label, Color bgColor, Color iconColor, {VoidCallback? onTap}) {
+  Widget _buildIconBtn(
+    IconData icon,
+    String label,
+    Color bgColor,
+    Color iconColor, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -561,15 +843,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             height: 55,
             width: 55,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.card,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.04), 
+                  color: Colors.black.withOpacity(0.04),
                   blurRadius: 10,
-                  offset: const Offset(0, 4)
-                )
-              ]
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: Container(
@@ -582,10 +864,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
-            label, 
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.black87),
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.labelText,
+            ),
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -617,10 +903,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 right: null,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    // This is tricky inside Positioned without width. 
+                    // This is tricky inside Positioned without width.
                     // We'll use a simpler approach with the Stack.
-                    return const SizedBox.shrink();
-                  }
+                    return SizedBox.shrink();
+                  },
                 ),
               );
             }),
@@ -645,13 +931,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.only(left: position > 0 ? position : 0),
             child: Icon(
-              Icons.star_rounded, 
-              size: 20, 
+              Icons.star_rounded,
+              size: 20,
               color: completed ? color : Colors.grey.withOpacity(0.4),
-              shadows: completed ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)] : null,
+              shadows: completed
+                  ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)]
+                  : null,
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -667,14 +955,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -693,43 +981,81 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    isGroup ? Icons.groups_rounded : Icons.assignment_late_rounded, 
-                    color: accent, 
-                    size: 24
+                    isGroup
+                        ? Icons.groups_rounded
+                        : Icons.assignment_late_rounded,
+                    color: accent,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                      const SizedBox(height: 2),
-                      Text(courseTitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 6),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        courseTitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      SizedBox(height: 6),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isUrgent ? Colors.red.shade50 : accent.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10)
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
                             ),
-                            child: Text(dueTime, style: TextStyle(color: isUrgent ? Colors.red : accent, fontSize: 10, fontWeight: FontWeight.bold)),
+                            decoration: BoxDecoration(
+                              color: isUrgent
+                                  ? Colors.red.shade50
+                                  : accent.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              dueTime,
+                              style: TextStyle(
+                                color: isUrgent ? Colors.red : accent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                           if (isGroup) ...[
-                            const SizedBox(width: 8),
+                            SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.cyan.shade50,
-                                borderRadius: BorderRadius.circular(10)
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Text("GROUP", style: TextStyle(color: Colors.cyan, fontSize: 10, fontWeight: FontWeight.bold)),
+                              child: const Text(
+                                "GROUP",
+                                style: TextStyle(
+                                  color: Colors.cyan,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ]
+                          ],
                         ],
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -769,30 +1095,64 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 color: Colors.orange.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.star_rounded, color: Colors.orange, size: 24),
+              child: const Icon(
+                Icons.star_rounded,
+                color: Colors.orange,
+                size: 24,
+              ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(goal['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                  const SizedBox(height: 2),
-                  Text(goal['course_title'] ?? "Course", style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 6),
+                  Text(
+                    goal['title'],
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    goal['course_title'] ?? "Course",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(10)
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text("GOAL: ${goal['recurrence']?.toUpperCase() ?? 'WEEKLY'}", style: const TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      "GOAL: ${goal['recurrence']?.toUpperCase() ?? 'WEEKLY'}",
+                      style: const TextStyle(
+                        color: Colors.orange,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                   if (goal['target_hours'] != null) ...[
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     _buildProgressBarWithMilestones(
-                      (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
-                      (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
+                      (double.tryParse(
+                                goal['progress_hours']?.toString() ?? '0',
+                              ) ??
+                              0) /
+                          (double.tryParse(
+                                goal['target_hours']?.toString() ?? '1',
+                              ) ??
+                              1),
                       Colors.orange,
                     ),
                   ],
@@ -807,7 +1167,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   void _showTaskOptions(Map<String, dynamic> task) {
     final bool isGroup = task['is_group_assignment'] == true;
-    
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -820,17 +1180,29 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(task['title'], 
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))
+              Text(
+                task['title'],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(task['course_title'] ?? "General", 
-                style: const TextStyle(fontSize: 14, color: Colors.grey)
+              SizedBox(height: 8),
+              Text(
+                task['course_title'] ?? "General",
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.upload_file_rounded, color: Colors.blue),
-                title: const Text("Upload Submission", style: TextStyle(fontWeight: FontWeight.w600)),
+                leading: const Icon(
+                  Icons.upload_file_rounded,
+                  color: Colors.blue,
+                ),
+                title: const Text(
+                  "Upload Submission",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _handleFileUpload(task);
@@ -838,8 +1210,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ),
               if (isGroup)
                 ListTile(
-                  leading: const Icon(Icons.chat_bubble_rounded, color: Colors.cyan),
-                  title: const Text("Open Group Conversation", style: TextStyle(fontWeight: FontWeight.w600)),
+                  leading: const Icon(
+                    Icons.chat_bubble_rounded,
+                    color: Colors.cyan,
+                  ),
+                  title: const Text(
+                    "Open Group Conversation",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     if (task['group_id'] != null) {
@@ -855,12 +1233,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Group information not found."))
+                        const SnackBar(
+                          content: Text("Group information not found."),
+                        ),
                       );
                     }
                   },
                 ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
           ),
         );
@@ -876,20 +1256,22 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
         String? filePath = result.files.single.path;
         if (filePath != null) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Uploading file..."))
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text("Uploading file...")));
           }
-          
+
           await _apiService.submitAssignment(
-            task['id'].toString(), 
+            task['id'].toString(),
             filePath,
-            groupId: task['group_id']?.toString()
+            groupId: task['group_id']?.toString(),
           );
-          
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Assignment submitted successfully!"))
+              const SnackBar(
+                content: Text("Assignment submitted successfully!"),
+              ),
             );
             _fetchPendingTasks(); // Refresh tasks
           }
@@ -897,9 +1279,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Upload failed: $e"))
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
       }
     }
   }
@@ -908,14 +1290,14 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -933,16 +1315,34 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     color: accent.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.access_time_filled_rounded, color: accent, size: 24),
+                  child: Icon(
+                    Icons.access_time_filled_rounded,
+                    color: accent,
+                    size: 24,
+                  ),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-                      const SizedBox(height: 4),
-                      Text(timeDetails, style: const TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w600)),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        timeDetails,
+                        style: const TextStyle(
+                          color: Colors.black54,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -960,19 +1360,33 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         children: [
-          Icon(Icons.event_available_rounded, size: 40, color: Colors.grey.shade300),
-          const SizedBox(height: 12),
+          Icon(
+            Icons.event_available_rounded,
+            size: 40,
+            color: Colors.grey.shade300,
+          ),
+          SizedBox(height: 12),
           Text(
-            DateTime.now().weekday > 5 ? "Happy Weekend! No classes today." : "No classes scheduled for today.",
-            style: TextStyle(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w500),
+            DateTime.now().weekday > 5
+                ? "Happy Weekend! No classes today."
+                : "No classes scheduled for today.",
+            style: TextStyle(
+              color: Colors.grey.shade500,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

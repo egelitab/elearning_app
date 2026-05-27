@@ -14,7 +14,7 @@ class InstructorFilesScreen extends StatefulWidget {
   final bool startInDownloads;
 
   const InstructorFilesScreen({
-    super.key, 
+    super.key,
     this.showToggle = true,
     this.startInDownloads = false,
   });
@@ -25,10 +25,10 @@ class InstructorFilesScreen extends StatefulWidget {
 
 class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   final ApiService _apiService = ApiService();
-  bool isLocalSelected = true; 
+  bool isLocalSelected = true;
   String _selectedFilter = 'All';
-  final List<String> _filters = ['All', 'Documents', 'Videos', 'Images']; 
-  
+  final List<String> _filters = ['All', 'Documents', 'Videos', 'Images'];
+
   // Storage State
   List<dynamic> _folders = [];
   List<dynamic> _files = [];
@@ -36,14 +36,16 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   Map<String, dynamic> _stats = {'total_size': 0};
   bool _isLoading = true;
   String? _error;
-  
+
   // Download State
   List<FileSystemEntity> _downloadedFiles = [];
 
   @override
   void initState() {
     super.initState();
-    isLocalSelected = widget.startInDownloads == false; // Reversed logic: if startInDownloads is true, isLocalSelected should be false
+    isLocalSelected =
+        widget.startInDownloads ==
+        false; // Reversed logic: if startInDownloads is true, isLocalSelected should be false
     _fetchStorage();
     _loadDownloadedFiles();
   }
@@ -77,7 +79,9 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       if (Platform.isAndroid) {
         directory = Directory('/storage/emulated/0/Download/ELMS');
       } else {
-        directory = Directory('${(await getApplicationDocumentsDirectory()).path}/ELMS');
+        directory = Directory(
+          '${(await getApplicationDocumentsDirectory()).path}/ELMS',
+        );
       }
 
       if (await directory.exists()) {
@@ -102,42 +106,62 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : _error != null
-          ? Center(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline_rounded, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text("Error: $_error", style: const TextStyle(color: Colors.red)),
-                TextButton(onPressed: _fetchStorage, child: const Text("Retry"))
-              ],
-            ))
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.red,
+                    size: 48,
+                  ),
+                  SizedBox(height: 16),
+                  Text(
+                    "Error: $_error",
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  TextButton(
+                    onPressed: _fetchStorage,
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            )
           : CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  backgroundColor: const Color(0xFFF4F7FC),
                   elevation: 0,
                   pinned: true,
                   title: Text(
-                    (widget.showToggle == false && widget.startInDownloads == true) ? "Downloads" : "My Files", 
-                    style: const TextStyle(
-                      color: Color(0xFF05398F), 
-                      fontSize: 22, 
-                      fontWeight: FontWeight.bold
-                    )
+                    (widget.showToggle == false &&
+                            widget.startInDownloads == true)
+                        ? "Downloads"
+                        : "My Files",
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   actions: [
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert_rounded, color: Color(0xFF05398F)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      icon: Icon(
+                        Icons.more_vert_rounded,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       onSelected: (val) async {
                         if (val == 'recycle') {
                           final result = await Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const RecycleBinScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => const RecycleBinScreen(),
+                            ),
                           );
                           if (result == true) _fetchStorage();
                         }
@@ -145,7 +169,13 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                       itemBuilder: (context) => [
                         const PopupMenuItem(
                           value: 'recycle',
-                          child: Row(children: [Icon(Icons.delete_outline_rounded, size: 20), SizedBox(width: 10), Text("Recycle Bin")])
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outline_rounded, size: 20),
+                              SizedBox(width: 10),
+                              Text("Recycle Bin"),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -155,23 +185,22 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
                   child: Column(
                     children: [
                       _buildSearchBar(),
-                      if (widget.showToggle == true)
-                        _buildStorageToggle(),
-                      
+                      if (widget.showToggle == true) _buildStorageToggle(),
+
                       if (isLocalSelected) ...[
-                        const SizedBox(height: 10),
+                        SizedBox(height: 10),
                         _buildRecentFilesSection(context),
-                        const SizedBox(height: 15),
+                        SizedBox(height: 15),
                         _buildStorageStatus(),
-                        const SizedBox(height: 40),
+                        SizedBox(height: 40),
                       ] else ...[
                         _buildDownloadsFilters(),
                         _buildDownloadsList(),
                       ],
-                      const SizedBox(height: 100), 
+                      SizedBox(height: 100),
                     ],
                   ),
-                )
+                ),
               ],
             ),
     );
@@ -182,21 +211,24 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
               blurRadius: 10,
-              offset: const Offset(0, 4)
-            )
-          ]
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: TextField(
           decoration: InputDecoration(
             hintText: "Search your files...",
             hintStyle: const TextStyle(color: Colors.black38),
-            prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF05398F)),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
             filled: true,
             fillColor: Colors.transparent,
             border: OutlineInputBorder(
@@ -219,8 +251,16 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       ),
       child: Row(
         children: [
-          _toggleItem("Storage", isLocalSelected, () => setState(() => isLocalSelected = true)),
-          _toggleItem("Downloads", !isLocalSelected, () => setState(() => isLocalSelected = false)),
+          _toggleItem(
+            "Storage",
+            isLocalSelected,
+            () => setState(() => isLocalSelected = true),
+          ),
+          _toggleItem(
+            "Downloads",
+            !isLocalSelected,
+            () => setState(() => isLocalSelected = false),
+          ),
         ],
       ),
     );
@@ -236,13 +276,23 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           decoration: BoxDecoration(
             color: isSelected ? Colors.white : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
-            boxShadow: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4, offset: const Offset(0, 2))] : [],
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
             child: Text(
               title,
               style: TextStyle(
-                color: isSelected ? const Color(0xFF05398F) : Colors.black54,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.secondary
+                    : Colors.black54,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
             ),
@@ -253,7 +303,7 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildRecentFilesSection(BuildContext context) {
-    if (_recentFiles.isEmpty) return const SizedBox.shrink();
+    if (_recentFiles.isEmpty) return SizedBox.shrink();
     double itemWidth = MediaQuery.of(context).size.width * 0.28;
 
     return Column(
@@ -263,12 +313,29 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Recent Files", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+              const Text(
+                "Recent Files",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRecentFilesScreen(recentFiles: _recentFiles.take(100).toList())));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => InstructorRecentFilesScreen(
+                        recentFiles: _recentFiles.take(100).toList(),
+                      ),
+                    ),
+                  );
                 },
-                child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black45), 
+                child: const Icon(
+                  Icons.keyboard_arrow_right_rounded,
+                  color: Colors.black45,
+                ),
               ),
             ],
           ),
@@ -279,32 +346,41 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
           padding: const EdgeInsets.only(left: 20, bottom: 20),
           child: Row(
             children: [
-              ..._recentFiles.take(8).map((file) => _buildRecentFileItem(
-                file, 
-                itemWidth
-              )),
+              ..._recentFiles
+                  .take(8)
+                  .map((file) => _buildRecentFileItem(file, itemWidth)),
               if (_recentFiles.length > 8)
                 GestureDetector(
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRecentFilesScreen(recentFiles: _recentFiles.take(100).toList())));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => InstructorRecentFilesScreen(
+                          recentFiles: _recentFiles.take(100).toList(),
+                        ),
+                      ),
+                    );
                   },
                   child: Container(
                     width: itemWidth * 0.5,
                     margin: const EdgeInsets.only(right: 15),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.03),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
-                        )
+                        ),
                       ],
                     ),
-                    child: const Center(
-                      child: Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF05398F)),
+                    child: Center(
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Theme.of(context).colorScheme.secondary,
+                      ),
                     ),
                   ),
                 ),
@@ -322,47 +398,59 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
       onTap: () => _openRemoteFile(fileItem),
       child: Container(
         width: width,
-      margin: const EdgeInsets.only(right: 15),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: _getColorForFile(name).withOpacity(0.1),
-              shape: BoxShape.circle,
+        margin: const EdgeInsets.only(right: 15),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(_getIconForFile(name), color: _getColorForFile(name), size: 28),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            name,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            date,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.black38, fontSize: 11, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _getColorForFile(name).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _getIconForFile(name),
+                color: _getColorForFile(name),
+                size: 28,
+              ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              name,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              date,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.black38,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -379,22 +467,44 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
   }
 
   Widget _buildStorageStatus() {
-    final int usedBytes = int.tryParse(_stats['total_size']?.toString() ?? '0') ?? 0;
-    const int totalLimit = 1024 * 1024 * 1024; 
+    final int usedBytes =
+        int.tryParse(_stats['total_size']?.toString() ?? '0') ?? 0;
+    const int totalLimit = 1024 * 1024 * 1024;
     final double progress = (usedBytes / totalLimit).clamp(0.0, 1.0);
 
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorStorageExplorerScreen(initialFolders: _folders, initialFiles: _files))).then((_) => _fetchStorage());
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => InstructorStorageExplorerScreen(
+              initialFolders: _folders,
+              initialFiles: _files,
+            ),
+          ),
+        ).then((_) => _fetchStorage());
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFF09AEF5), Color(0xFF05398F)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).colorScheme.secondary,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: const Color(0xFF05398F).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,22 +513,47 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                 const Text("Virtual Storage Used", style: TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w600)),
-                 const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16)
+                const Text(
+                  "Virtual Storage Used",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(_formatBytes(usedBytes), style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
+            SizedBox(height: 8),
+            Text(
+              _formatBytes(usedBytes),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
             LinearProgressIndicator(
-              value: progress, 
+              value: progress,
               backgroundColor: Colors.white.withOpacity(0.2),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               borderRadius: BorderRadius.circular(10),
               minHeight: 8,
             ),
-            const SizedBox(height: 12),
-            const Text("Tap to explore and manage your files", style: TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic)),
+            SizedBox(height: 12),
+            const Text(
+              "Tap to explore and manage your files",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
       ),
@@ -447,11 +582,26 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
               margin: const EdgeInsets.only(right: 12),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF09AEF5) : Colors.white,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 3))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: Text(filter, style: TextStyle(color: isSelected ? Colors.white : Colors.black54, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, fontSize: 14)),
+              child: Text(
+                filter,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black54,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
             ),
           );
         }).toList(),
@@ -461,14 +611,27 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
 
   Widget _buildDownloadsList() {
     if (_downloadedFiles.isEmpty) {
-      return const Padding(padding: EdgeInsets.symmetric(vertical: 40), child: Center(child: Text("No downloaded files found", style: TextStyle(color: Colors.black38))));
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Text(
+            "No downloaded files found",
+            style: TextStyle(color: Colors.black38),
+          ),
+        ),
+      );
     }
     final filtered = _downloadedFiles.where((f) {
       if (_selectedFilter == 'All') return true;
       final name = f.path.toLowerCase();
-      if (_selectedFilter == 'Documents') return name.contains('.pdf') || name.contains('.docx') || name.contains('.txt');
-      if (_selectedFilter == 'Videos') return name.contains('.mp4') || name.contains('.avi');
-      if (_selectedFilter == 'Images') return name.contains('.jpg') || name.contains('.png');
+      if (_selectedFilter == 'Documents')
+        return name.contains('.pdf') ||
+            name.contains('.docx') ||
+            name.contains('.txt');
+      if (_selectedFilter == 'Videos')
+        return name.contains('.mp4') || name.contains('.avi');
+      if (_selectedFilter == 'Images')
+        return name.contains('.jpg') || name.contains('.png');
       return true;
     }).toList();
 
@@ -491,17 +654,52 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     return GestureDetector(
       onTap: () => _openLocalFile(file),
       child: Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
-      child: Row(
-        children: [
-          Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: iconColor.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, color: iconColor, size: 24)),
-          const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis), Text("$size • $author", style: const TextStyle(color: Colors.black38, fontSize: 12))])),
-          const Icon(Icons.more_vert_rounded, color: Colors.black26),
-        ],
-      ),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 24),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    "$size • $author",
+                    style: const TextStyle(color: Colors.black38, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.more_vert_rounded, color: Colors.black26),
+          ],
+        ),
       ),
     );
   }
@@ -517,21 +715,34 @@ class _InstructorFilesScreenState extends State<InstructorFilesScreen> {
     String ext = name.split('.').last.toLowerCase();
     if (ext == 'pdf') return Colors.red;
     if (ext == 'mp4') return Colors.orange;
-    return const Color(0xFF05398F);
+    return Theme.of(context).colorScheme.secondary;
   }
 
   Future<void> _openRemoteFile(dynamic fileItem) async {
     final urlStr = fileItem['file_path'] ?? fileItem['url'];
     if (urlStr == null) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("File not found")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("File not found")));
       return;
     }
-    
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Downloading and opening file...")));
+
+    if (mounted)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Downloading and opening file...")),
+      );
     try {
-      await _apiService.downloadAndOpenFile(urlStr, context: context, fileName: fileItem['name']);
+      await _apiService.downloadAndOpenFile(
+        urlStr,
+        context: context,
+        fileName: fileItem['name'],
+      );
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 

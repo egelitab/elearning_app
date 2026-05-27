@@ -22,6 +22,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   // Instructors only get chat badge on Inbox tab.
   // System notifications are handled by the bell icon in InstructorHomeScreen.
   int _chatUnread = 0;
+  int _systemUnread = 0;
 
   Timer? _pollTimer;
 
@@ -37,7 +38,10 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
   void initState() {
     super.initState();
     _fetchBadges();
-    _pollTimer = Timer.periodic(const Duration(seconds: 30), (_) => _fetchBadges());
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _fetchBadges(),
+    );
   }
 
   @override
@@ -52,6 +56,7 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       if (mounted) {
         setState(() {
           _chatUnread = counts['chat'] ?? 0;
+          _systemUnread = counts['system'] ?? 0;
           // system unread is handled by the bell icon in InstructorHomeScreen
         });
       }
@@ -95,7 +100,8 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
       onWillPop: () async {
         DateTime now = DateTime.now();
         if (currentBackPressTime == null ||
-            now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+            now.difference(currentBackPressTime!) >
+                const Duration(seconds: 2)) {
           currentBackPressTime = now;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Press back again to exit')),
@@ -114,26 +120,37 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
-              )
+              ),
             ],
           ),
           child: BottomNavigationBar(
             elevation: 0,
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
+
             currentIndex: _index,
-            selectedItemColor: const Color(0xFF09AEF5),
+            selectedItemColor: Theme.of(context).primaryColor,
             unselectedItemColor: Colors.grey.shade400,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 11),
+            selectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 11,
+            ),
             onTap: (i) {
               setState(() => _index = i);
-              if (i == 2 && _chatUnread > 0) setState(() => _chatUnread = 0);
             },
             items: [
-              const BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
+              BottomNavigationBarItem(
+                icon: _badgeIcon(
+                  const Icon(Icons.home_outlined),
+                  _systemUnread,
+                ),
+                activeIcon: _badgeIcon(
+                  const Icon(Icons.home),
+                  _systemUnread,
+                ),
                 label: 'Home',
               ),
               const BottomNavigationBarItem(
@@ -142,8 +159,14 @@ class _InstructorDashboardState extends State<InstructorDashboard> {
                 label: 'Courses',
               ),
               BottomNavigationBarItem(
-                icon: _badgeIcon(const Icon(Icons.chat_bubble_outline), _chatUnread),
-                activeIcon: _badgeIcon(const Icon(Icons.chat_bubble), _chatUnread),
+                icon: _badgeIcon(
+                  const Icon(Icons.chat_bubble_outline),
+                  _chatUnread,
+                ),
+                activeIcon: _badgeIcon(
+                  const Icon(Icons.chat_bubble),
+                  _chatUnread,
+                ),
                 label: 'Inbox',
               ),
               const BottomNavigationBarItem(

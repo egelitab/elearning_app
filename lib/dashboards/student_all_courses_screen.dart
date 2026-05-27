@@ -5,17 +5,21 @@ class StudentAllCoursesScreen extends StatelessWidget {
   final List<dynamic> courses;
   final List<dynamic> myGoals;
 
-  const StudentAllCoursesScreen({super.key, required this.courses, this.myGoals = const []});
+  StudentAllCoursesScreen({
+    super.key,
+    required this.courses,
+    this.myGoals = const [],
+  });
 
-  final List<Color> _cardColors = const [
-    Color(0xFF05398F),
+  final List<Color> _cardColors = [
+    const Color(0xFF05398F),
     Color(0xFF6A1B9A),
     Color(0xFFFF8F00),
     Color(0xFF2E7D32),
   ];
-  
-  final List<Color> _lightColors = const [
-    Color(0xFF09AEF5),
+
+  final List<Color> _lightColors = [
+    const Color(0xFF09AEF5),
     Color(0xFFAB47BC),
     Color(0xFFFFCA28),
     Color(0xFF66BB6A),
@@ -24,25 +28,27 @@ class StudentAllCoursesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F)),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "All Courses",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: Theme.of(context).colorScheme.secondary,
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
         ),
       ),
       body: courses.isEmpty
-          ? const Center(child: Text("No courses enrolled yet."))
+          ? Center(child: Text("No courses enrolled yet."))
           : ListView.builder(
               padding: const EdgeInsets.all(20),
               physics: const BouncingScrollPhysics(),
@@ -61,31 +67,49 @@ class StudentAllCoursesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFullWidthCourseCard(BuildContext context, dynamic course, Color darkColor, Color lightColor) {
-    final courseGoals = myGoals.where((g) => g['course_id'].toString() == course['id'].toString() && g['target_hours'] != null).toList();
+  Widget _buildFullWidthCourseCard(
+    BuildContext context,
+    dynamic course,
+    Color darkColor,
+    Color lightColor,
+  ) {
+    final courseGoals = myGoals
+        .where(
+          (g) =>
+              g['course_id'].toString() == course['id'].toString() &&
+              g['target_hours'] != null,
+        )
+        .toList();
     double progress = 0.0;
     if (courseGoals.isNotEmpty) {
       double totalTarget = 0.0;
       double totalProgress = 0.0;
       for (var g in courseGoals) {
         totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-        totalProgress += double.tryParse(g['progress_hours']?.toString() ?? '0.0') ?? 0.0;
+        
+        String? progStr;
+        if (g.containsKey('goal') && g['goal'] != null) {
+          progStr = g['goal']['progress_hours']?.toString();
+        }
+        progStr ??= g['progress_hours']?.toString();
+        
+        totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
       }
       if (totalTarget > 0) progress = totalProgress / totalTarget;
       if (progress > 1.0) progress = 1.0;
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
             blurRadius: 15,
             offset: const Offset(0, 8),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -95,11 +119,13 @@ class StudentAllCoursesScreen extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CourseDetailsScreen(
-                course: course, 
-                allCourses: courses,
-                themeColor: darkColor
-              )),
+              MaterialPageRoute(
+                builder: (context) => CourseDetailsScreen(
+                  course: course,
+                  allCourses: courses,
+                  themeColor: darkColor,
+                ),
+              ),
             );
           },
           child: Padding(
@@ -112,24 +138,28 @@ class StudentAllCoursesScreen extends StatelessWidget {
                     color: lightColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Icon(_getIcon(course['title']), color: darkColor, size: 32),
+                  child: Icon(
+                    _getIcon(course['title']),
+                    color: darkColor,
+                    size: 32,
+                  ),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         course['title'] ?? '',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF05398F),
+                          color: Theme.of(context).colorScheme.secondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text(
                         course['instructor_name'] ?? 'Not Assigned',
                         style: TextStyle(
@@ -138,11 +168,14 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: 12),
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: darkColor.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
@@ -158,7 +191,9 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           ),
                           const Spacer(),
                           Text(
-                            courseGoals.isNotEmpty ? "${(progress * 100).toInt()}% (Goal Progress)" : "0%",
+                            courseGoals.isNotEmpty
+                                ? "${(progress * 100).toInt()}% (Goal Progress)"
+                                : "0%",
                             style: const TextStyle(
                               fontSize: 12,
                               color: Colors.black45,
@@ -167,7 +202,7 @@ class StudentAllCoursesScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: progress,
                         backgroundColor: lightColor.withOpacity(0.1),

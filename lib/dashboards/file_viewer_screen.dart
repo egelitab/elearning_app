@@ -8,7 +8,11 @@ class FileViewerScreen extends StatefulWidget {
   final String filePath;
   final String fileName;
 
-  const FileViewerScreen({Key? key, required this.filePath, required this.fileName}) : super(key: key);
+  const FileViewerScreen({
+    Key? key,
+    required this.filePath,
+    required this.fileName,
+  }) : super(key: key);
 
   @override
   _FileViewerScreenState createState() => _FileViewerScreenState();
@@ -42,7 +46,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
     try {
       final ext = widget.fileName.split('.').last.toLowerCase();
       final file = File(widget.filePath);
-      
+
       if (ext == 'txt') {
         textContent = await file.readAsString();
       } else {
@@ -68,9 +72,7 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           DeviceOrientation.landscapeRight,
         ]);
       } else {
-        SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-        ]);
+        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       }
     });
   }
@@ -78,23 +80,45 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
   @override
   Widget build(BuildContext context) {
     final ext = widget.fileName.split('.').last.toLowerCase();
-    final isMicrosoftSupported = ['docx', 'pptx', 'xlsx', 'doc', 'ppt', 'xls'].contains(ext);
+    final isMicrosoftSupported = [
+      'docx',
+      'pptx',
+      'xlsx',
+      'doc',
+      'ppt',
+      'xls',
+    ].contains(ext);
     final isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp'].contains(ext);
     final isPdf = ext == 'pdf';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC), // Use a light grey theme consistent with the app
+      // Use a light grey theme consistent with the app
       appBar: AppBar(
-        title: Text(widget.fileName, style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFFF4F7FC),
+        title: Text(
+          widget.fileName,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
-            icon: Icon(isLandscape ? Icons.screen_lock_portrait_rounded : Icons.screen_lock_landscape_rounded, color: const Color(0xFF05398F)),
+            icon: Icon(
+              isLandscape
+                  ? Icons.screen_lock_portrait_rounded
+                  : Icons.screen_lock_landscape_rounded,
+              color: Theme.of(context).colorScheme.secondary,
+            ),
             onPressed: _toggleOrientation,
             tooltip: isLandscape ? "Switch to Portrait" : "Switch to Landscape",
           ),
@@ -103,25 +127,29 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : textContent != null
-              ? SizedBox.expand(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text(
-                      textContent!,
-                      style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black87),
-                    ),
+          ? SizedBox.expand(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(20.0),
+                child: Text(
+                  textContent!,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: Colors.black87,
                   ),
-                )
-              : (fileBytes != null && isMicrosoftSupported)
-                  ? SizedBox.expand(
-                      child: CustomMicrosoftViewer(fileBytes!),
-                    )
-                  : isImage
-                      ? _buildImageViewer()
-                      : isPdf
-                          ? _buildPdfViewer()
-                          : const Center(child: Text("Unsupported file format for internal viewer.")),
+                ),
+              ),
+            )
+          : (fileBytes != null && isMicrosoftSupported)
+          ? SizedBox.expand(child: CustomMicrosoftViewer(fileBytes!))
+          : isImage
+          ? _buildImageViewer()
+          : isPdf
+          ? _buildPdfViewer()
+          : const Center(
+              child: Text("Unsupported file format for internal viewer."),
+            ),
     );
   }
 
@@ -135,7 +163,8 @@ class _FileViewerScreenState extends State<FileViewerScreen> {
           child: Image.file(
             File(widget.filePath),
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const Center(child: Text("Could not load image")),
+            errorBuilder: (context, error, stackTrace) =>
+                const Center(child: Text("Could not load image")),
           ),
         ),
       ),

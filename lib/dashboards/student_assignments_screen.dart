@@ -8,10 +8,12 @@ class StudentAssignmentsScreen extends StatefulWidget {
   const StudentAssignmentsScreen({super.key});
 
   @override
-  State<StudentAssignmentsScreen> createState() => _StudentAssignmentsScreenState();
+  State<StudentAssignmentsScreen> createState() =>
+      _StudentAssignmentsScreenState();
 }
 
-class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> with SingleTickerProviderStateMixin {
+class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen>
+    with SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   late TabController _tabController;
   List<dynamic> _assignments = [];
@@ -56,11 +58,12 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error: $e")));
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -68,27 +71,35 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
       final isSub = task['is_submitted'];
       return isSub == false || isSub == null || isSub == 0 || isSub == 'false';
     }).toList();
-    
+
     final finished = _assignments.where((task) {
       final isSub = task['is_submitted'];
       return isSub == true || isSub == 1 || isSub == 'true';
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF05398F), size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("My Assignments", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
+        title: Text(
+          "My Assignments",
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.secondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF09AEF5),
+          labelColor: Theme.of(context).primaryColor,
           unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFF09AEF5),
+          indicatorColor: Theme.of(context).primaryColor,
           indicatorWeight: 3,
           tabs: [
             Tab(text: "Tasks (${pending.length})"),
@@ -97,16 +108,16 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
           ],
         ),
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : TabBarView(
-            controller: _tabController,
-            children: [
-              _buildList(pending, isPending: true),
-              _buildList(finished, isPending: false),
-              _buildGoalList(_goals),
-            ],
-          ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildList(pending, isPending: true),
+                _buildList(finished, isPending: false),
+                _buildGoalList(_goals),
+              ],
+            ),
     );
   }
 
@@ -116,10 +127,19 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isPending ? Icons.assignment_turned_in_rounded : Icons.pending_actions_rounded, size: 60, color: Colors.grey.withOpacity(0.3)),
-            const SizedBox(height: 16),
-            Text(isPending ? "No pending assignments!" : "No finished assignments yet.", 
-              style: const TextStyle(color: Colors.grey, fontSize: 16)
+            Icon(
+              isPending
+                  ? Icons.assignment_turned_in_rounded
+                  : Icons.pending_actions_rounded,
+              size: 60,
+              color: Colors.grey.withOpacity(0.3),
+            ),
+            SizedBox(height: 16),
+            Text(
+              isPending
+                  ? "No pending assignments!"
+                  : "No finished assignments yet.",
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
           ],
         ),
@@ -139,9 +159,16 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.star_outline_rounded, size: 60, color: Colors.grey.withOpacity(0.3)),
-            const SizedBox(height: 16),
-            const Text("No active goals.", style: TextStyle(color: Colors.grey, fontSize: 16)),
+            Icon(
+              Icons.star_outline_rounded,
+              size: 60,
+              color: Colors.grey.withOpacity(0.3),
+            ),
+            SizedBox(height: 16),
+            const Text(
+              "No active goals.",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
           ],
         ),
       );
@@ -190,13 +217,15 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
             alignment: Alignment.centerLeft,
             padding: EdgeInsets.only(left: position > 0 ? position : 0),
             child: Icon(
-              Icons.star_rounded, 
-              size: 20, 
+              Icons.star_rounded,
+              size: 20,
               color: completed ? color : Colors.grey.withOpacity(0.4),
-              shadows: completed ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)] : null,
+              shadows: completed
+                  ? [Shadow(color: color.withOpacity(0.4), blurRadius: 4)]
+                  : null,
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -205,59 +234,102 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.orange.withOpacity(0.3)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(goal['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-            const SizedBox(height: 4),
-            Text(goal['course_title'] ?? 'Course', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
-            if (goal['description'] != null && goal['description'].isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(goal['description'], style: const TextStyle(color: Colors.black87, fontSize: 13)),
+            Text(
+              goal['title'],
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              goal['course_title'] ?? 'Course',
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (goal['description'] != null &&
+                goal['description'].isNotEmpty) ...[
+              SizedBox(height: 8),
+              Text(
+                goal['description'],
+                style: const TextStyle(color: Colors.black87, fontSize: 13),
+              ),
             ],
-            const SizedBox(height: 15),
+            SizedBox(height: 15),
             Wrap(
               spacing: 10,
               runSpacing: 8,
               children: [
-                _buildBadge(Icons.star_rounded, "GOAL: ${goal['recurrence']?.toUpperCase() ?? 'WEEKLY'}", Colors.orange),
+                _buildBadge(
+                  Icons.star_rounded,
+                  "GOAL: ${goal['recurrence']?.toUpperCase() ?? 'WEEKLY'}",
+                  Colors.orange,
+                ),
                 if (goal['target_hours'] != null)
-                  _buildBadge(Icons.timer_rounded, "${goal['progress_hours'] ?? '0'} / ${goal['target_hours']} HRS", Colors.blue),
+                  _buildBadge(
+                    Icons.timer_rounded,
+                    "${goal['progress_hours'] ?? '0'} / ${goal['target_hours']} HRS",
+                    Colors.blue,
+                  ),
                 if (goal['target_score'] != null)
-                  _buildBadge(Icons.score_rounded, "${goal['target_score']}% SCORE", Colors.green),
+                  _buildBadge(
+                    Icons.score_rounded,
+                    "${goal['target_score']}% SCORE",
+                    Colors.green,
+                  ),
               ],
             ),
             if (goal['target_hours'] != null) ...[
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildProgressBarWithMilestones(
-                (double.tryParse(goal['progress_hours']?.toString() ?? '0') ?? 0) / 
-                (double.tryParse(goal['target_hours']?.toString() ?? '1') ?? 1),
+                (double.tryParse(goal['progress_hours']?.toString() ?? '0') ??
+                        0) /
+                    (double.tryParse(goal['target_hours']?.toString() ?? '1') ??
+                        1),
                 Colors.orange,
               ),
             ],
-          ]
-        )
-      )
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildAssignmentItem(Map<String, dynamic> task) {
     final bool isGroup = task['is_group_assignment'] == true;
     final bool isSubmitted = task['is_submitted'] == true;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
@@ -271,48 +343,85 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(task['title'], 
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)
+                    child: Text(
+                      task['title'],
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                   if (isSubmitted)
-                    const Icon(Icons.check_circle_rounded, color: Colors.green, size: 24)
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                      size: 24,
+                    ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(task['course_title'] ?? 'General', 
-                style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500)
+              SizedBox(height: 4),
+              Text(
+                task['course_title'] ?? 'General',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 15),
+              SizedBox(height: 15),
               Wrap(
                 spacing: 10,
                 runSpacing: 8,
                 children: [
                   _buildBadge(
-                    isGroup ? Icons.groups_rounded : Icons.person_rounded, 
-                    isGroup ? "GROUP" : "INDIVIDUAL", 
-                    isGroup ? Colors.cyan : Colors.blue
+                    isGroup ? Icons.groups_rounded : Icons.person_rounded,
+                    isGroup ? "GROUP" : "INDIVIDUAL",
+                    isGroup ? Colors.cyan : Colors.blue,
                   ),
                   if (!isSubmitted)
-                    _buildBadge(Icons.access_time_rounded, "Due ${_formatDate(task['due_date'])}", Colors.orange),
+                    _buildBadge(
+                      Icons.access_time_rounded,
+                      "Due ${_formatDate(task['due_date'])}",
+                      Colors.orange,
+                    ),
                   if (isSubmitted && task['grade'] != null)
-                    _buildBadge(Icons.star_rounded, "Grade: ${task['grade']}", Colors.amber.shade700),
+                    _buildBadge(
+                      Icons.star_rounded,
+                      "Grade: ${task['grade']}",
+                      Colors.amber.shade700,
+                    ),
                 ],
               ),
               if (isSubmitted && task['feedback'] != null) ...[
-                const SizedBox(height: 15),
+                SizedBox(height: 15),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Row(
                     children: [
-                      const Icon(Icons.feedback_rounded, color: Colors.black38, size: 16),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text("Feedback: ${task['feedback']}", style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: Colors.black54))),
+                      const Icon(
+                        Icons.feedback_rounded,
+                        color: Colors.black38,
+                        size: 16,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "Feedback: ${task['feedback']}",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                )
-              ]
+                ),
+              ],
             ],
           ),
         ),
@@ -323,13 +432,23 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
   Widget _buildBadge(IconData icon, String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: color, size: 14),
-          const SizedBox(width: 6),
-          Text(label, style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold)),
+          SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -342,10 +461,12 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
   void _showTaskOptions(Map<String, dynamic> task) {
     final bool isGroup = task['is_group_assignment'] == true;
     final bool isSubmitted = task['is_submitted'] == true;
-    
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
@@ -353,11 +474,26 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(task['title'], style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF05398F))),
-              const SizedBox(height: 20),
+              Text(
+                task['title'],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+              ),
+              SizedBox(height: 20),
               ListTile(
-                leading: Icon(isSubmitted ? Icons.update_rounded : Icons.upload_file_rounded, color: Colors.blue),
-                title: Text(isSubmitted ? "Resubmit File" : "Upload Submission", style: const TextStyle(fontWeight: FontWeight.w600)),
+                leading: Icon(
+                  isSubmitted
+                      ? Icons.update_rounded
+                      : Icons.upload_file_rounded,
+                  color: Colors.blue,
+                ),
+                title: Text(
+                  isSubmitted ? "Resubmit File" : "Upload Submission",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _handleFileUpload(task);
@@ -365,18 +501,37 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
               ),
               if (isGroup)
                 ListTile(
-                  leading: const Icon(Icons.chat_bubble_rounded, color: Colors.cyan),
-                  title: const Text("Open Group Conversation", style: TextStyle(fontWeight: FontWeight.w600)),
+                  leading: const Icon(
+                    Icons.chat_bubble_rounded,
+                    color: Colors.cyan,
+                  ),
+                  title: const Text(
+                    "Open Group Conversation",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     if (task['group_id'] != null) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailScreen(groupId: task['group_id'].toString(), name: task['group_title'] ?? "Group Chat", isGroup: true)));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatDetailScreen(
+                            groupId: task['group_id'].toString(),
+                            name: task['group_title'] ?? "Group Chat",
+                            isGroup: true,
+                          ),
+                        ),
+                      );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Group information not found.")));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Group information not found."),
+                        ),
+                      );
                     }
                   },
                 ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
           ),
         );
@@ -390,16 +545,30 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen> wit
       if (result != null) {
         String? filePath = result.files.single.path;
         if (filePath != null) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Uploading file...")));
-          await _apiService.submitAssignment(task['id'].toString(), filePath, groupId: task['group_id']?.toString());
+          if (mounted)
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text("Uploading file...")));
+          await _apiService.submitAssignment(
+            task['id'].toString(),
+            filePath,
+            groupId: task['group_id']?.toString(),
+          );
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Assignment submitted successfully!")));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Assignment submitted successfully!"),
+              ),
+            );
             _fetchAssignments();
           }
         }
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Upload failed: $e")));
     }
   }
 }

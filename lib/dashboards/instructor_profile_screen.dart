@@ -2,17 +2,22 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart'; 
+import 'package:path_provider/path_provider.dart';
 import '../auth/welcome_screen.dart';
 import 'instructor_profile_settings_screen.dart';
 import 'help_support_screen.dart';
-
+import 'privacy_security_screen.dart';
+import 'send_feedback_screen.dart';
+import 'about_lms_screen.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class InstructorProfileScreen extends StatefulWidget {
   const InstructorProfileScreen({super.key});
 
   @override
-  State<InstructorProfileScreen> createState() => _InstructorProfileScreenState();
+  State<InstructorProfileScreen> createState() =>
+      _InstructorProfileScreenState();
 }
 
 class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
@@ -58,7 +63,8 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
       if (result != null && result.files.single.path != null) {
         final File file = File(result.files.single.path!);
         final directory = await getApplicationDocumentsDirectory();
-        final String fileName = 'profile_picture_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final String fileName =
+            'profile_picture_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final File localImage = await file.copy('${directory.path}/$fileName');
 
         final prefs = await SharedPreferences.getInstance();
@@ -70,233 +76,370 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error picking image: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
-        elevation: 0,
-        centerTitle: false,
-        title: const Text(
-          "Profile",
-          style: TextStyle(color: Color(0xFF05398F), fontSize: 24, fontWeight: FontWeight.bold)
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        appBar: AppBar(
+          backgroundColor: AppColors.appBar,
+          elevation: 0,
+          centerTitle: false,
+          title: Text(
+            "Profile",
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
 
-            // 1. Profile Header Hero
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF09AEF5).withOpacity(0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        )
-                      ]
-                    ),
-                    child: CircleAvatar(
-                      radius: 65,
-                      backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: const Color(0xFFE3F2FD), // Profile placeholder
-                        backgroundImage: _profileImagePath != null ? FileImage(File(_profileImagePath!)) : null,
-                        child: _profileImagePath == null
-                            ? const Icon(Icons.person_rounded, size: 70, color: Color(0xFF09AEF5))
-                            : null,
+              // 1. Profile Header Hero
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
-                    ),
-                  ),
-                  if (_isOnline)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50), // Vibrant online green
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4CAF50).withOpacity(0.4),
-                              blurRadius: 8,
-                              spreadRadius: 1,
-                            )
-                          ]
+                      child: CircleAvatar(
+                        radius: 65,
+                        backgroundColor: isDark
+                            ? const Color(0xFF2C2C2C)
+                            : Colors.white,
+                        child: CircleAvatar(
+                          radius: 60,
+                          backgroundColor: const Color(
+                            0xFFE3F2FD,
+                          ), // Profile placeholder
+                          backgroundImage: _profileImagePath != null
+                              ? FileImage(File(_profileImagePath!))
+                              : null,
+                          child: _profileImagePath == null
+                              ? Icon(
+                                  Icons.person_rounded,
+                                  size: 70,
+                                  color: Theme.of(context).primaryColor,
+                                )
+                              : null,
                         ),
                       ),
                     ),
-                  Positioned(
-                    bottom: 0,
-                    right: 4,
+                    if (_isOnline)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF4CAF50,
+                            ), // Vibrant online green
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF121212)
+                                  : Colors.white,
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF4CAF50).withOpacity(0.4),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      bottom: 0,
+                      right: 4,
                       child: InkWell(
                         onTap: _pickImage,
                         borderRadius: BorderRadius.circular(30),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF09AEF5), Color(0xFF05398F)],
+                            gradient: LinearGradient(
+                              colors: [
+                                Theme.of(context).primaryColor,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF121212)
+                                  : Colors.white,
+                              width: 3,
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.15),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
-                              )
-                            ]
+                              ),
+                            ],
                           ),
-                          child: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                          child: const Icon(
+                            Icons.edit_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                       ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              if (_isLoading)
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  height: 30,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            
-            if (_isLoading)
-               Container(
-                 margin: const EdgeInsets.symmetric(vertical: 10),
-                 height: 30,
-                 width: 200,
-                 decoration: BoxDecoration(
-                   color: Colors.grey.shade200,
-                   borderRadius: BorderRadius.circular(8),
-                 ),
-               )
-            else
-              Text("${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName".replaceAll(RegExp(r'\s+'), ' ').trim(), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Colors.black87)),
-            
-            const SizedBox(height: 4),
-            
-            if (_isLoading)
-              Container(
-                 margin: const EdgeInsets.symmetric(vertical: 5),
-                 height: 20,
-                 width: 150,
-                 decoration: BoxDecoration(
-                   color: Colors.grey.shade200,
-                   borderRadius: BorderRadius.circular(8),
-                 ),
-               )
-            else ...[
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF09AEF5).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _email,
-                  style: const TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold, fontSize: 13)
-                ),
-              ),
-              const SizedBox(height: 4),
-              if (_institutionalId.isNotEmpty && _institutionalId != 'N/A')
+                )
+              else
                 Text(
-                  "ID: $_institutionalId",
-                  style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.w500, fontSize: 13)
+                  "${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName"
+                      .replaceAll(RegExp(r'\s+'), ' ')
+                      .trim(),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primaryText,
+                  ),
                 ),
+
+              const SizedBox(height: 4),
+
+              if (_isLoading)
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 5),
+                  height: 20,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                )
+              else ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _email,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (_institutionalId.isNotEmpty && _institutionalId != 'N/A')
+                  Text(
+                    "ID: $_institutionalId",
+                    style: TextStyle(
+                      color: AppColors.secondaryText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                    ),
+                  ),
+              ],
+
+              const SizedBox(height: 40),
+
+              // 2. Settings Options List
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    _buildProfileOption(
+                      Icons.settings_rounded,
+                      "Settings",
+                      Colors.grey.shade700,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const InstructorProfileSettingsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      Icons.security_rounded,
+                      "Privacy and Security",
+                      Colors.red,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const PrivacySecurityScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      Icons.help_outline_rounded,
+                      "Help Center",
+                      Colors.purple,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpSupportScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      Icons.feedback_outlined,
+                      "Send Feedback",
+                      Colors.teal,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SendFeedbackScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildProfileOption(
+                      Icons.info_outline_rounded,
+                      "About ELMS",
+                      Colors.blueGrey,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AboutLmsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 40),
+
+              // 3. Logout Button (Updated Logic)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    // PERSISTENCE: Clear locally stored data except notification states
+                    final SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    final keys = prefs.getKeys();
+                    for (final key in keys) {
+                      if (!key.startsWith('system_notifications_opened_ids_')) {
+                        await prefs.remove(key);
+                      }
+                    }
+
+                    // Ensure the context is still valid before navigating
+                    if (context.mounted) {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WelcomeScreen(),
+                        ),
+                        (route) => false,
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(
+                      0xFFD32F2F,
+                    ), // Strong professional red
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 55),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 5,
+                    shadowColor: const Color(0xFFD32F2F).withOpacity(0.4),
+                  ),
+                  label: const Text(
+                    "Log Out",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
-
-            const SizedBox(height: 40),
-
-            // 2. Settings Options List
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  _buildProfileOption(Icons.settings_rounded, "Settings", Colors.grey.shade700, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorProfileSettingsScreen()));
-                  }),
-                  _buildProfileOption(Icons.security_rounded, "Privacy and Security", Colors.red, onTap: () {}),
-                  _buildProfileOption(Icons.help_outline_rounded, "Help Center", Colors.purple, onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen()));
-                  }),
-                  _buildProfileOption(Icons.feedback_outlined, "Send Feedback", Colors.teal, onTap: () {}),
-                  _buildProfileOption(Icons.info_outline_rounded, "About ELMS", Colors.blueGrey, onTap: () {}),
-
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 40),
-
-            // 3. Logout Button (Updated Logic)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  // PERSISTENCE: Clear all locally stored data
-                  final SharedPreferences prefs = await SharedPreferences.getInstance();
-                  await prefs.clear();
-
-                  // Ensure the context is still valid before navigating
-                  if (context.mounted) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const WelcomeScreen()),
-                      (route) => false,
-                    );
-                  }
-                },
-                icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD32F2F), // Strong professional red
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 55),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                  elevation: 5,
-                  shadowColor: const Color(0xFFD32F2F).withOpacity(0.4),
-                ),
-                label: const Text("Log Out", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.0)),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title, Color color, {String? subtitle, VoidCallback? onTap}) {
+  Widget _buildProfileOption(
+    IconData icon,
+    String title,
+    Color color, {
+    String? subtitle,
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.02),
             blurRadius: 8,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Material(
@@ -311,8 +454,8 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1), 
-                    borderRadius: BorderRadius.circular(12)
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: color, size: 24),
                 ),
@@ -322,15 +465,31 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.black87)),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: AppColors.labelText,
+                        ),
+                      ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 4),
-                        Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                      ]
+                        Text(
+                          subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.secondaryText,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right_rounded, color: Colors.black38),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.navUnselected,
+                ),
               ],
             ),
           ),

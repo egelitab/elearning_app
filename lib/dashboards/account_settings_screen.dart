@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../utils/app_colors.dart';
+import '../main.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -12,13 +14,13 @@ class AccountSettingsScreen extends StatefulWidget {
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final ApiService _apiService = ApiService();
-  
+
   late TextEditingController _titleController;
   late TextEditingController _firstNameController;
   late TextEditingController _middleNameController;
   late TextEditingController _lastNameController;
   late TextEditingController _emailController;
-  
+
   bool _isLoading = false;
   bool _isInit = true;
   String _userRole = '';
@@ -39,10 +41,18 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         _userRole = prefs.getString('user_role') ?? 'student';
         _selectedTitle = prefs.getString('title');
         _titleController = TextEditingController(text: _selectedTitle ?? '');
-        _firstNameController = TextEditingController(text: prefs.getString('first_name') ?? '');
-        _middleNameController = TextEditingController(text: prefs.getString('middle_name') ?? '');
-        _lastNameController = TextEditingController(text: prefs.getString('last_name') ?? '');
-        _emailController = TextEditingController(text: prefs.getString('email') ?? '');
+        _firstNameController = TextEditingController(
+          text: prefs.getString('first_name') ?? '',
+        );
+        _middleNameController = TextEditingController(
+          text: prefs.getString('middle_name') ?? '',
+        );
+        _lastNameController = TextEditingController(
+          text: prefs.getString('last_name') ?? '',
+        );
+        _emailController = TextEditingController(
+          text: prefs.getString('email') ?? '',
+        );
         _isInit = false;
       });
     }
@@ -72,10 +82,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       };
 
       await _apiService.updateProfile(data);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Request sent to admin successfully"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Request sent to admin successfully"),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context);
       }
@@ -92,63 +105,129 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF4F7FC),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded, color: Color(0xFF05398F)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text("Account Settings", style: TextStyle(color: Color(0xFF05398F), fontWeight: FontWeight.bold)),
-      ),
-      body: _isInit ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Personal Information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-              const SizedBox(height: 20),
-              
-              if (_userRole == 'instructor') _buildTitleDropdown(),
-              if (_userRole != 'instructor' && _userRole != 'student') _buildTextField("Title", _titleController, Icons.title_rounded, "e.g. Dr., Prof."),
-              
-              _buildTextField("First Name", _firstNameController, Icons.person_outline_rounded, "Required", required: true),
-              _buildTextField("Middle Name", _middleNameController, Icons.person_outline_rounded, ""),
-              _buildTextField("Last Name", _lastNameController, Icons.person_outline_rounded, "Required", required: true),
-              _buildTextField("Email Address", _emailController, Icons.email_outlined, "Required", required: true, isEmail: true),
-              
-              const SizedBox(height: 40),
-              
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF05398F),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
-                  ),
-                  child: _isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text("Request Admin Approval", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
+    return ValueListenableBuilder<bool>(
+      valueListenable: darkModeNotifier,
+      builder: (context, isDark, _) => Scaffold(
+        backgroundColor: AppColors.scaffold,
+        appBar: AppBar(
+          backgroundColor: AppColors.appBar,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: AppColors.appBarForeground,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            "Account Settings",
+            style: TextStyle(
+              color: AppColors.appBarForeground,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
+        body: _isInit
+            ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Personal Information",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryText,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      if (_userRole == 'instructor') _buildTitleDropdown(),
+                      if (_userRole != 'instructor' && _userRole != 'student')
+                        _buildTextField(
+                          "Title",
+                          _titleController,
+                          Icons.title_rounded,
+                          "e.g. Dr., Prof.",
+                        ),
+
+                      _buildTextField(
+                        "First Name",
+                        _firstNameController,
+                        Icons.person_outline_rounded,
+                        "Required",
+                        required: true,
+                      ),
+                      _buildTextField(
+                        "Middle Name",
+                        _middleNameController,
+                        Icons.person_outline_rounded,
+                        "",
+                      ),
+                      _buildTextField(
+                        "Last Name",
+                        _lastNameController,
+                        Icons.person_outline_rounded,
+                        "Required",
+                        required: true,
+                      ),
+                      _buildTextField(
+                        "Email Address",
+                        _emailController,
+                        Icons.email_outlined,
+                        "Required",
+                        required: true,
+                        isEmail: true,
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 5,
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  "Request Admin Approval",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
       ),
     );
   }
 
   Widget _buildTitleDropdown() {
     final List<String> titles = ['Mr.', 'Ms.', 'Mrs.', 'Dr.', 'Prof.'];
-    
+
     // Ensure selected title is in the list
     if (_selectedTitle != null && !titles.contains(_selectedTitle)) {
       _selectedTitle = null;
@@ -159,14 +238,24 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54)),
+          Text(
+            "Title",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.secondaryText,
+            ),
+          ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _selectedTitle,
             items: titles.map((title) {
               return DropdownMenuItem(
                 value: title,
-                child: Text(title),
+                child: Text(
+                  title,
+                  style: TextStyle(color: AppColors.primaryText),
+                ),
               );
             }).toList(),
             onChanged: (value) {
@@ -176,13 +265,35 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             },
             decoration: InputDecoration(
               hintText: "Select Title",
-              prefixIcon: const Icon(Icons.title_rounded, color: Color(0xFF09AEF5), size: 22),
+              hintStyle: TextStyle(
+                color: AppColors.secondaryText.withOpacity(0.5),
+              ),
+              prefixIcon: Icon(
+                Icons.title_rounded,
+                color: Theme.of(context).primaryColor,
+                size: 22,
+              ),
               filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              fillColor: AppColors.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -196,32 +307,71 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, IconData icon, String hint, {bool required = false, bool isEmail = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+    String hint, {
+    bool required = false,
+    bool isEmail = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.black54)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.secondaryText,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
+            style: TextStyle(color: AppColors.primaryText),
             decoration: InputDecoration(
               hintText: hint,
-              prefixIcon: Icon(icon, color: const Color(0xFF09AEF5), size: 22),
+              hintStyle: TextStyle(
+                color: AppColors.secondaryText.withOpacity(0.5),
+              ),
+              prefixIcon: Icon(
+                icon,
+                color: Theme.of(context).primaryColor,
+                size: 22,
+              ),
               filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF09AEF5), width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              fillColor: AppColors.card,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
             ),
             validator: (value) {
               if (required && (value == null || value.trim().isEmpty)) {
                 return "$label is required";
               }
               if (isEmail && value != null && value.isNotEmpty) {
-                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                if (!RegExp(
+                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                ).hasMatch(value)) {
                   return "Enter a valid email address";
                 }
               }

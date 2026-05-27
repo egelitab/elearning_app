@@ -124,8 +124,8 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               left: 24,
               right: 24,
             ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(30),
                 topRight: Radius.circular(30),
@@ -136,15 +136,15 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Edit Announcement",
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF05398F),
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
 
                   DropdownButtonFormField<String>(
                     decoration: InputDecoration(
@@ -171,7 +171,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     onChanged: (value) =>
                         setModalState(() => selectedSection = value),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   TextField(
                     controller: titleController,
                     decoration: InputDecoration(
@@ -181,7 +181,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
                   TextField(
                     controller: contentController,
                     maxLines: 4,
@@ -192,7 +192,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  SizedBox(height: 15),
 
                   const Text(
                     "Attachments",
@@ -201,7 +201,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       color: Colors.black54,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   if (selectedAttachments.isNotEmpty)
                     Wrap(
                       spacing: 8,
@@ -247,7 +247,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     label: const Text("Attach from Storage"),
                   ),
 
-                  const SizedBox(height: 25),
+                  SizedBox(height: 25),
                   SizedBox(
                     width: double.infinity,
                     height: 55,
@@ -301,21 +301,21 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF09AEF5),
+                        backgroundColor: Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         "Update Announcement",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  SizedBox(height: 30),
                 ],
               ),
             ),
@@ -347,27 +347,29 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         _currentAnnouncement['attachment_details'] as List<dynamic>? ?? [];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF05398F)),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: Theme.of(context).colorScheme.secondary,
+          ),
           onPressed: () => Navigator.pop(context, _hasChanged),
         ),
-        title: const Text(
+        title: Text(
           "Announcement Details",
           style: TextStyle(
-            color: Color(0xFF05398F),
+            color: Theme.of(context).colorScheme.secondary,
             fontWeight: FontWeight.bold,
           ),
         ),
         actions: widget.canEdit
             ? [
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.edit_outlined,
-                    color: Color(0xFF05398F),
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                   onPressed: _showEditModal,
                   tooltip: "Edit",
@@ -380,12 +382,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   onPressed: _isDeleting ? null : _deleteAnnouncement,
                   tooltip: "Remove",
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
               ]
             : null,
       ),
       body: _isDeleting
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -401,7 +403,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                         color: Colors.blueGrey,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -409,27 +411,27 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF09AEF5).withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       section != null
                           ? "$courseCode • Section $section"
                           : courseCode,
-                      style: const TextStyle(
-                        color: Color(0xFF05398F),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF05398F),
+                      color: Theme.of(context).colorScheme.secondary,
                       height: 1.2,
                     ),
                   ),
@@ -443,17 +445,19 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: const Color(0xFF05398F),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.secondary,
                         radius: 20,
                         child: Text(
                           (instructor ?? 'A').substring(0, 1).toUpperCase(),
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).cardColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -482,7 +486,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: 32),
 
                   // Content
                   Text(
@@ -496,26 +500,26 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                   ),
 
                   if (attachments.isNotEmpty) ...[
-                    const SizedBox(height: 48),
+                    SizedBox(height: 48),
                     Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.attach_file_rounded,
-                          color: Color(0xFF05398F),
+                          color: Theme.of(context).colorScheme.secondary,
                           size: 20,
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           "Attachments (${attachments.length})",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF05398F),
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -524,7 +528,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                           _buildAttachmentTile(context, attachments[index]),
                     ),
                   ],
-                  const SizedBox(height: 40),
+                  SizedBox(height: 40),
                 ],
               ),
             ),
@@ -541,7 +545,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -550,27 +554,32 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: const Color(0xFF09AEF5).withOpacity(0.1)),
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF09AEF5).withOpacity(0.05),
+            color: Theme.of(context).primaryColor.withOpacity(0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: FutureBuilder<bool>(
-            future: path.isNotEmpty ? _apiService.isFileDownloaded(path) : Future.value(false),
+            future: path.isNotEmpty
+                ? _apiService.isFileDownloaded(path)
+                : Future.value(false),
             builder: (context, snapshot) {
               IconData currentIcon = _getIconForType(type);
-              Color currentColor = const Color(0xFF09AEF5);
-              if (snapshot.connectionState == ConnectionState.done && snapshot.data == false) {
+              Color currentColor = Theme.of(context).primaryColor;
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.data == false) {
                 currentIcon = Icons.download_rounded;
                 currentColor = Colors.grey;
               }
               return Icon(currentIcon, color: currentColor, size: 26);
-            }
+            },
           ),
         ),
         title: Text(
@@ -596,13 +605,13 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         ),
         trailing: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF05398F).withOpacity(0.05),
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.05),
             borderRadius: BorderRadius.circular(8),
           ),
           child: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.download_rounded,
-              color: Color(0xFF05398F),
+              color: Theme.of(context).colorScheme.secondary,
               size: 20,
             ),
             onPressed: () => _launchURL(context, fileUrl, name),
@@ -624,14 +633,22 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     return Icons.insert_drive_file_rounded;
   }
 
-  Future<void> _launchURL(BuildContext context, String url, String? fileName) async {
+  Future<void> _launchURL(
+    BuildContext context,
+    String url,
+    String? fileName,
+  ) async {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Downloading and opening file...")),
       );
     }
     try {
-      await _apiService.downloadAndOpenFile(url, context: context, fileName: fileName);
+      await _apiService.downloadAndOpenFile(
+        url,
+        context: context,
+        fileName: fileName,
+      );
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(
