@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'terms_conditions_screen.dart';
+import 'change_password_screen.dart';
 import '../utils/app_colors.dart';
 import '../main.dart';
 
@@ -35,6 +36,20 @@ class PrivacySecurityScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           children: [
             const SizedBox(height: 10),
+            _buildOption(
+              Icons.lock_outline_rounded,
+              "Change Password",
+              "Update your account password",
+              Colors.orange,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChangePasswordScreen(),
+                  ),
+                );
+              },
+            ),
             _buildOption(
               Icons.description_outlined,
               "Terms and Conditions",
