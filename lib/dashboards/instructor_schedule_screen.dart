@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/date_helper.dart';
+import 'digital_schedule_view_screen.dart';
 
 class InstructorScheduleScreen extends StatefulWidget {
   const InstructorScheduleScreen({super.key});
@@ -15,6 +16,8 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _weeklyClasses = [];
   List<dynamic> _fileSchedules = [];
+  final TextEditingController _changeRequestController = TextEditingController();
+  bool _isSendingRequest = false;
 
   @override
   void initState() {
@@ -34,16 +37,18 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
   @override
   void dispose() {
     DateHelper.calendarFormat.removeListener(_handlePreferenceChange);
+    _changeRequestController.dispose();
     super.dispose();
   }
 
   Future<void> _fetchData() async {
     setState(() => _isLoading = true);
     try {
+      final profile = await _apiService.getUserProfile();
       final courses = await _apiService.getInstructorCourses();
       final schedules = await _apiService.getMySchedules();
 
-      _processSchedules(courses, schedules);
+      _processSchedules(courses, schedules, profile);
     } catch (e) {
       print("Error fetching schedule data: $e");
     } finally {
@@ -51,7 +56,8 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
     }
   }
 
-  void _processSchedules(List<dynamic> courses, List<dynamic> schedules) {
+  void _processSchedules(List<dynamic> courses, List<dynamic> schedules, Map<String, dynamic> profile) {
+    final String? instructorDept = profile['department_name'];
     final Set<String> myCourseTitles = courses
         .map((c) => (c['title'] as String).toLowerCase())
         .toSet();
@@ -68,8 +74,6 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
       "Wednesday",
       "Thursday",
       "Friday",
-      "Saturday",
-      "Sunday",
     ];
     final slotTimes = [
       "02:00 - 03:45",
@@ -117,16 +121,68 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                 int slotIdx = int.parse(parts[0]);
                 int dayIdx = int.parse(parts[1]);
 
+                // Skip Saturday and Sunday (Idx 5 and 6)
+                if (dayIdx >= 5) return;
+
+                // 1. Try to extract from the courseName string (e.g. "Programming | Sec 1 | CS")
+                final courseParts = courseName.split('|').map((p) => p.trim()).toList();
+                
+                String? extractedSection;
+                String? extractedDept;
+
+                if (courseParts.length > 1) {
+                  for (int i = 1; i < courseParts.length; i++) {
+                    String p = courseParts[i].toLowerCase();
+                    if (p.contains('sec') || RegExp(r'^s[0-9]+').hasMatch(p) || (p.length <= 3 && int.tryParse(p) != null)) {
+                      extractedSection = courseParts[i].replaceAll(RegExp(r'sec', caseSensitive: false), '').trim();
+                    } else if (p.length > 3) {
+                      extractedDept = courseParts[i];
+                    }
+                  }
+                }
+
+                // 2. Fallback to schedule metadata
+                String deptInfo = extractedDept ?? "N/A";
+                if (deptInfo == "N/A" && schedule['departments'] != null) {
+                  final depts = schedule['departments'];
+                  if (depts is List && depts.isNotEmpty) {
+                    deptInfo = depts.join(", ");
+                  } else if (depts is String && depts != "[]") {
+                     deptInfo = depts.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '');
+                  }
+                }
+                
+                // 3. Final Fallback to instructor's own department
+                if (deptInfo == "N/A" || deptInfo == "All Departments") {
+                  deptInfo = instructorDept ?? deptInfo;
+                }
+
+                String sectionInfo = extractedSection ?? "General";
+                if (sectionInfo == "General" && schedule['sections'] != null) {
+                  final sects = schedule['sections'];
+                   if (sects is List && sects.isNotEmpty) {
+                    sectionInfo = sects.join(", ");
+                  } else if (sects is String && sects != "[]") {
+                     sectionInfo = sects.replaceAll('[', '').replaceAll(']', '').replaceAll('"', '');
+                  }
+                }
+
+                // Final Cleanups
+                if (sectionInfo == "[]") sectionInfo = "General";
+
                 extractedClasses.add({
                   'day': dayNames[dayIdx],
                   'dayIdx': dayIdx,
                   'slotIdx': slotIdx,
                   'course': courseName,
+                  'department': deptInfo,
+                  'section': sectionInfo,
                   'time': DateHelper.formatTimeSlot(
                     slotTimes[slotIdx % slotTimes.length],
                   ),
                   'location': "See Digital Schedule",
                   'color': colors[extractedClasses.length % colors.length],
+                  'sourceSchedule': schedule,
                 });
               }
             }
@@ -149,6 +205,124 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
     });
   }
 
+  void _showScheduleChangeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text("Request Schedule Change"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  "Please describe the changes you'd like to make to your schedule. An admin will review and update it.",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _changeRequestController,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    hintText: "Type your request here...",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: _isSendingRequest
+                    ? null
+                    : () async {
+                        final text = _changeRequestController.text.trim();
+                        if (text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Please type your request first."),
+                            ),
+                          );
+                          return;
+                        }
+
+                        setDialogState(() => _isSendingRequest = true);
+                        await _submitScheduleChangeRequest();
+                        if (mounted) {
+                          setDialogState(() => _isSendingRequest = false);
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: _isSendingRequest
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text("Send Request"),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _submitScheduleChangeRequest() async {
+    final text = _changeRequestController.text.trim();
+    setState(() => _isSendingRequest = true);
+
+    try {
+      await _apiService.createSupportTicket(
+        "Schedule Change Request",
+        text,
+        priority: "High",
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close dialog
+        _changeRequestController.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Request sent successfully! Admin will review it."),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to send request: $e"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSendingRequest = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,7 +336,7 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Schedule & Office Hours",
+          "Weekly Schedule",
           style: TextStyle(
             color: Theme.of(context).colorScheme.secondary,
             fontWeight: FontWeight.bold,
@@ -192,6 +366,9 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                           c['time'],
                           c['location'],
                           c['color'],
+                          c['department'] ?? "N/A",
+                          c['section'] ?? "General",
+                          c['sourceSchedule'],
                         ),
                       ),
 
@@ -203,27 +380,12 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                       ],
                     ],
 
-                    SizedBox(height: 35),
-                    _buildSectionHeader("Office Hours"),
-                    SizedBox(height: 15),
-                    _buildOfficeHourItem(
-                      "Tuesdays & Thursdays",
-                      "10:00 AM - 12:00 PM",
-                      "Block 4, Office 412",
-                    ),
+
 
                     SizedBox(height: 40),
                     Center(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                "Editing schedule will be available in the next update.",
-                              ),
-                            ),
-                          );
-                        },
+                        onPressed: _showScheduleChangeDialog,
                         icon: const Icon(Icons.edit_calendar_rounded),
                         label: const Text("Request Schedule Change"),
                         style: ElevatedButton.styleFrom(
@@ -287,6 +449,9 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
     String time,
     String location,
     Color color,
+    String department,
+    String section,
+    dynamic sourceSchedule,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
@@ -324,19 +489,63 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
                     fontSize: 16,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.business_rounded, size: 12, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        department,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Icon(Icons.groups_rounded, size: 12, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(
+                      "Section $section",
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
                 Text(
                   "$day | $time",
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: const TextStyle(color: Colors.black54, fontSize: 13),
                 ),
-                Text(
-                  location,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                if (location == "See Digital Schedule")
+                  InkWell(
+                    onTap: () {
+                      if (sourceSchedule != null &&
+                          sourceSchedule['content'] != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DigitalScheduleViewScreen(
+                              scheduleContent: sourceSchedule['content'],
+                              title: "Full Schedule: $section",
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      location,
+                      style: const TextStyle(
+                        color: Colors.blue,
+                        fontSize: 13,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  )
+                else
+                  Text(
+                    location,
+                    style: const TextStyle(color: Colors.black54, fontSize: 13),
                   ),
-                ),
               ],
             ),
           ),
@@ -397,52 +606,5 @@ class _InstructorScheduleScreenState extends State<InstructorScheduleScreen> {
     );
   }
 
-  Widget _buildOfficeHourItem(String days, String time, String location) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade50, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.withOpacity(0.1)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.access_time_filled_rounded,
-            color: Theme.of(context).colorScheme.secondary,
-            size: 40,
-          ),
-          SizedBox(width: 20),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                days,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                time,
-                style: const TextStyle(color: Colors.black54, fontSize: 14),
-              ),
-              Text(
-                location,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+
 }
