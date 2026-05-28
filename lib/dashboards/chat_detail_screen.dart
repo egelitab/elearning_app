@@ -167,7 +167,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         isMe,
                         msg['created_at'],
                         senderName: widget.isGroup && !isMe
-                            ? "${msg['first_name']} ${msg['last_name']}"
+                            ? "${msg['first_name']} ${msg['middle_name'] ?? ''}".trim()
                             : null,
                       );
                     },

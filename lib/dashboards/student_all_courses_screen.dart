@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'course_details_screen.dart';
 
 class StudentAllCoursesScreen extends StatelessWidget {
@@ -116,7 +118,15 @@ class StudentAllCoursesScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () {
+          onTap: () async {
+            final SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setString('recent_course_json', jsonEncode(course));
+            await prefs.setString(
+              'recent_course_title',
+              course['title']?.toString() ?? '',
+            );
+
+            if (!context.mounted) return;
             Navigator.push(
               context,
               MaterialPageRoute(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'chat_detail_screen.dart';
+
 
 class StudentGroupsScreen extends StatefulWidget {
   const StudentGroupsScreen({super.key});
@@ -172,8 +174,36 @@ class _StudentGroupsScreenState extends State<StudentGroupsScreen> {
                     ],
                   ),
                 ),
+                IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.chat_bubble_rounded,
+                      color: Theme.of(context).primaryColor,
+                      size: 20,
+                    ),
+                  ),
+                  tooltip: "Open Group Chat",
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatDetailScreen(
+                          groupId: group['id']?.toString(),
+                          name: groupName,
+                          isGroup: true,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
+
           ),
           Padding(
             padding: const EdgeInsets.all(20),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
@@ -277,16 +279,24 @@ class _StudentMaterialsScreenState extends State<StudentMaterialsScreen> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    final courseId = _courses
-                        .firstWhere(
-                          (c) => c['title'] == courseTitle,
-                          orElse: () => {'id': ''},
-                        )['id']
-                        .toString();
-                    if (courseId.isNotEmpty) {
+                  onTap: () async {
+                    final course = _courses.firstWhere(
+                      (c) => c['title'] == courseTitle,
+                      orElse: () => null,
+                    );
+                    if (course != null) {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString(
+                        'recent_course_json',
+                        jsonEncode(course),
+                      );
+                      await prefs.setString(
+                        'recent_course_title',
+                        course['title']?.toString() ?? '',
+                      );
+
                       _apiService.logReadingDuration(
-                        courseId,
+                        course['id'].toString(),
                         material['id']?.toString() ?? 'unknown',
                         3600,
                       );

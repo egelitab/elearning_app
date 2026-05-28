@@ -333,7 +333,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     final courseTitle = _currentAnnouncement['course_title'] ?? '';
     final section = _currentAnnouncement['section'];
     final fName = _currentAnnouncement['instructor_first_name'] ?? '';
-    final lName = _currentAnnouncement['instructor_last_name'] ?? '';
+    final mName = _currentAnnouncement['instructor_middle_name'] ?? '';
     final titleStr =
         _currentAnnouncement['instructor_title'] != null &&
             _currentAnnouncement['instructor_title'].toString().isNotEmpty &&
@@ -341,7 +341,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
         ? "${_currentAnnouncement['instructor_title']} "
         : "";
     final instructor = fName.isNotEmpty
-        ? "$titleStr$fName $lName".trim()
+        ? "$titleStr$fName $mName".trim()
         : null;
     final attachments =
         _currentAnnouncement['attachment_details'] as List<dynamic>? ?? [];

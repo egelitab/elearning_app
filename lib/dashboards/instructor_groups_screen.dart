@@ -581,18 +581,7 @@ class _InstructorGroupsScreenState extends State<InstructorGroupsScreen> {
                                 groupName!.isNotEmpty &&
                                 groupSize > 0)
                             ? () {
-                                if (groupingMethod == 'GPA Top Distributed') {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        "GPA Top Distributed feature is not available yet",
-                                      ),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: Colors.orange,
-                                    ),
-                                  );
-                                  return;
-                                }
+
 
                                 int totalStudents = currentSegmentCount;
                                 int remainder = totalStudents % groupSize;

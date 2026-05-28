@@ -492,7 +492,7 @@ class _InstructorGradingSubmissionsScreenState
 
     String displayName = isGroup
         ? (item['group_name'] ?? 'Unknown Group')
-        : "${item['first_name'] ?? ''} ${item['last_name'] ?? ''}";
+        : "${item['first_name'] ?? ''} ${item['middle_name'] ?? ''}";
 
     String initials = isGroup
         ? (item['group_name']?.toString().split('-').last.trim() ?? 'G')

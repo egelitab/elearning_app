@@ -609,7 +609,7 @@ class _MarkAttendanceScreenState extends State<_MarkAttendanceScreen> {
                             ),
                           ),
                           title: Text(
-                            "${record['first_name'] ?? ''} ${record['last_name'] ?? ''}",
+                            "${record['first_name'] ?? ''} ${record['middle_name'] ?? ''}",
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(

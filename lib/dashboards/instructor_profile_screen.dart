@@ -10,7 +10,9 @@ import 'privacy_security_screen.dart';
 import 'send_feedback_screen.dart';
 import 'about_lms_screen.dart';
 import '../utils/app_colors.dart';
+import '../services/api_service.dart';
 import '../main.dart';
+
 
 class InstructorProfileScreen extends StatefulWidget {
   const InstructorProfileScreen({super.key});
@@ -30,6 +32,9 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
   String? _profileImagePath;
   bool _isLoading = true;
   bool _isOnline = true; // Assume online if the user is in the profile screen
+  Map<String, dynamic>? _fullProfile;
+  final ApiService _apiService = ApiService();
+
 
   @override
   void initState() {
@@ -42,17 +47,38 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
     if (mounted) {
       setState(() {
         _title = prefs.getString('title') ?? '';
-        if (_title == 'None') _title = '';
+        if (_title == '[null]' || _title == 'None') _title = '';
         _firstName = prefs.getString('first_name') ?? '';
         _middleName = prefs.getString('middle_name') ?? '';
         _lastName = prefs.getString('last_name') ?? '';
         _email = prefs.getString('email') ?? '';
         _institutionalId = prefs.getString('institutional_id') ?? 'N/A';
         _profileImagePath = prefs.getString('profile_image_path');
-        _isLoading = false;
+        _isLoading = true;
       });
+
+      try {
+        final fullProfile = await _apiService.getUserProfile();
+        if (mounted) {
+          setState(() {
+            _fullProfile = fullProfile;
+            _isLoading = false;
+            _firstName = fullProfile['first_name'] ?? _firstName;
+            _lastName = fullProfile['last_name'] ?? _lastName;
+            _middleName = fullProfile['middle_name'] ?? _middleName;
+            _title = fullProfile['title'] ?? _title;
+            if (_title == 'None' || _title == '[null]') _title = '';
+            _email = fullProfile['email'] ?? _email;
+            _institutionalId = fullProfile['institutional_id'] ?? _institutionalId;
+          });
+        }
+      } catch (e) {
+        print("Error fetching full profile: $e");
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
+
 
   Future<void> _pickImage() async {
     try {
@@ -101,7 +127,17 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
               fontWeight: FontWeight.bold,
             ),
           ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.appBarForeground,
+              ),
+              onPressed: _showInfoBottomSheet,
+            ),
+          ],
         ),
+
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -233,7 +269,7 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
                 )
               else
                 Text(
-                  "${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName"
+                  "${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName"
                       .replaceAll(RegExp(r'\s+'), ' ')
                       .trim(),
                   style: TextStyle(
@@ -497,4 +533,177 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
       ),
     );
   }
+
+  void _showInfoBottomSheet() {
+    if (_fullProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Profile information still loading...")),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ListView(
+            controller: controller,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.badge_rounded,
+                      color: Theme.of(context).primaryColor,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Text(
+                    "User Information",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+              _buildInfoSection("Basic Information", [
+                _buildInfoRow(Icons.person_outline, "Full Name",
+                    "${_fullProfile!['title'] != null && _fullProfile!['title'] != '[null]' && _fullProfile!['title'] != 'None' ? _fullProfile!['title'] + ' ' : ''}${_fullProfile!['first_name'] ?? ''} ${_fullProfile!['middle_name'] ?? ''} ${_fullProfile!['last_name'] ?? ''}"),
+                _buildInfoRow(Icons.email_outlined, "Email",
+                    _fullProfile!['email'] ?? 'N/A'),
+                _buildInfoRow(Icons.fingerprint_rounded, "Institutional ID",
+                    _fullProfile!['institutional_id'] ?? 'N/A'),
+                _buildInfoRow(Icons.phone_android_rounded, "Phone Number",
+                    _fullProfile!['phone_number'] ?? 'N/A'),
+                _buildInfoRow(Icons.wc_rounded, "Sex",
+                    _fullProfile!['sex'] ?? 'N/A'),
+              ]),
+              const SizedBox(height: 24),
+              _buildInfoSection("Professional Information", [
+                _buildInfoRow(Icons.account_balance_rounded, "Faculty",
+                    _fullProfile!['faculty_name'] ?? 'N/A'),
+                _buildInfoRow(Icons.business_rounded, "Department",
+                    _fullProfile!['department_name'] ?? 'N/A'),
+              ]),
+              const SizedBox(height: 24),
+              _buildInfoSection("Account Status", [
+                _buildInfoRow(Icons.verified_user_rounded, "Role",
+                    _fullProfile!['role']?.toString().toUpperCase() ?? 'N/A'),
+                _buildInfoRow(Icons.power_settings_new_rounded, "Status",
+                    _fullProfile!['account_status']?.toString().toUpperCase() ??
+                        'N/A'),
+                _buildInfoRow(Icons.alternate_email_rounded, "Recovery Email",
+                    _fullProfile!['recovery_email'] ?? 'N/A'),
+              ]),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).primaryColor.withOpacity(0.8),
+              letterSpacing: 1.2,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: children,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: Colors.grey.shade500),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

@@ -117,6 +117,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
         _recentMaterialUrl = prefs.getString('recent_material_url') ?? '';
         _recentCourseTitle = prefs.getString('recent_course_title') ?? '';
         _recentCourseData = courseData;
+
+        // Sort existing courses if any
+        if (_courses.isNotEmpty && _recentCourseData != null) {
+          final recentId = _recentCourseData!['id']?.toString();
+          if (recentId != null) {
+            _courses.sort((a, b) {
+              if (a['id']?.toString() == recentId) return -1;
+              if (b['id']?.toString() == recentId) return 1;
+              return 0;
+            });
+          }
+        }
       });
     }
   }
@@ -126,6 +138,24 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     setState(() => _isScheduleLoading = true);
     try {
       final courses = await _apiService.getStudentCourses();
+
+      // Sort by recently clicked
+      final prefs = await SharedPreferences.getInstance();
+      final recentJson = prefs.getString('recent_course_json');
+      if (recentJson != null) {
+        try {
+          final decoded = jsonDecode(recentJson);
+          final recentId = decoded['id']?.toString();
+          if (recentId != null) {
+            courses.sort((a, b) {
+              if (a['id']?.toString() == recentId) return -1;
+              if (b['id']?.toString() == recentId) return 1;
+              return 0;
+            });
+          }
+        } catch (_) {}
+      }
+
       if (mounted) {
         setState(() {
           _courses = courses;
@@ -260,8 +290,20 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                 }
 
                 if (dayIdx == todayIdx && isMyCourse) {
+                  final courseMap = courses.firstWhere(
+                    (c) =>
+                        c['title'].toString().toLowerCase().contains(
+                              courseTitleOnly,
+                            ) ||
+                        courseTitleOnly.contains(
+                          c['title'].toString().toLowerCase(),
+                        ),
+                    orElse: () => null,
+                  );
+
                   todayClasses.add({
                     'course': courseName,
+                    'courseData': courseMap,
                     'time': DateHelper.formatTimeSlot(
                       slotTimes[slotIdx % slotTimes.length],
                       startOnly: true,
@@ -360,6 +402,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                                 s['course'],
                                 s['time'],
                                 s['color'],
+                                courseData: s['courseData'],
                               ),
                             ),
 
@@ -552,15 +595,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
   }
 
   Widget _buildHorizontalCards(BuildContext context) {
-    double cardWidth =
-        MediaQuery.of(context).size.width -
-        40; // Full width with 20 padding on each side
-
-    String displayTitle = "Welcome to ELMS";
-    String displaySubtitle = "Start your learning journey";
-    double progress = 0.0;
-
     if (_isLoadingCourses) {
+      double cardWidth = MediaQuery.of(context).size.width - 40;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: _buildBaseCard(
@@ -575,63 +611,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
       );
     }
 
-    final Map<String, dynamic>? targetCourse =
-        _recentCourseData ??
-        (_courses.isNotEmpty
-            ? Map<String, dynamic>.from(_courses.first)
-            : null);
-
-    if (targetCourse != null) {
-      displayTitle = targetCourse['title']?.toString() ?? "Course Hub";
-      displaySubtitle =
-          _recentMaterialTitle.isNotEmpty && _recentCourseData != null
-          ? _recentMaterialTitle
-          : (targetCourse['course_code']?.toString() ?? 'Tap to open course');
-
-      final activeGoals = _myGoals
-          .where((g) => 
-              g['target_hours'] != null && 
-              g['course_id']?.toString() == targetCourse['id']?.toString()
-          )
-          .toList();
-          
-      if (activeGoals.isNotEmpty) {
-        double totalTarget = 0.0;
-        double totalProgress = 0.0;
-        for (var g in activeGoals) {
-          totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
-
-          // Safer check for progress_hours to avoid null errors
-          String? progStr;
-          if (g.containsKey('goal') && g['goal'] != null) {
-            progStr = g['goal']['progress_hours']?.toString();
-          }
-          progStr ??= g['progress_hours']?.toString();
-
-          totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
-        }
-        if (totalTarget > 0) progress = totalProgress / totalTarget;
-        if (progress > 1.0) progress = 1.0;
-      }
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GestureDetector(
-        onTap: targetCourse != null
-            ? () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CourseDetailsScreen(
-                      course: targetCourse,
-                      allCourses: _courses,
-                      themeColor: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                );
-              }
-            : null,
+    if (_courses.isEmpty) {
+      double cardWidth = MediaQuery.of(context).size.width - 40;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: _buildBaseCard(
           width: cardWidth,
           gradient: const LinearGradient(
@@ -640,6 +623,141 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
             end: Alignment.bottomRight,
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Welcome to ELMS",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Start your learning journey",
+                style: TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final List<Gradient> cardGradients = [
+      const LinearGradient(
+        colors: [Color(0xFF42A5F5), Color(0xFF1976D2)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [Color(0xFF66BB6A), Color(0xFF2E7D32)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [Color(0xFFFFA726), Color(0xFFE65100)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [Color(0xFFAB47BC), Color(0xFF6A1B9A)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [Color(0xFFEC407A), Color(0xFFAD1457)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ];
+
+    return SizedBox(
+      height: 155, // Height of _buildBaseCard (150) + a little room
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        itemCount: _courses.length,
+        itemBuilder: (context, index) {
+          final course = _courses[index];
+          final gradient = cardGradients[index % cardGradients.length];
+          return _buildCourseHorizontalCard(course, gradient);
+        },
+      ),
+    );
+  }
+
+  Widget _buildCourseHorizontalCard(
+    Map<String, dynamic> course,
+    Gradient gradient,
+  ) {
+    double cardWidth = MediaQuery.of(context).size.width - 60;
+    String displayTitle = course['title']?.toString() ?? "Course Hub";
+    String displaySubtitle = course['course_code']?.toString() ?? 'Open Course';
+    double progress = 0.0;
+
+    // Check if this is the "most recent" course to potentially show material title
+    bool isVeryRecent = _recentCourseData != null &&
+        _recentCourseData!['id']?.toString() == course['id']?.toString();
+
+    if (isVeryRecent && _recentMaterialTitle.isNotEmpty) {
+      displaySubtitle = _recentMaterialTitle;
+    }
+
+    // Progress calculation
+    final activeGoals = _myGoals
+        .where(
+          (g) =>
+              g['target_hours'] != null &&
+              g['course_id']?.toString() == course['id']?.toString(),
+        )
+        .toList();
+
+    if (activeGoals.isNotEmpty) {
+      double totalTarget = 0.0;
+      double totalProgress = 0.0;
+      for (var g in activeGoals) {
+        totalTarget += double.tryParse(g['target_hours'].toString()) ?? 0.0;
+        String? progStr;
+        if (g.containsKey('goal') && g['goal'] != null) {
+          progStr = g['goal']['progress_hours']?.toString();
+        }
+        progStr ??= g['progress_hours']?.toString();
+        totalProgress += (double.tryParse(progStr ?? '0.0') ?? 0.0) / 3600;
+      }
+      if (totalTarget > 0) progress = totalProgress / totalTarget;
+      if (progress > 1.0) progress = 1.0;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: GestureDetector(
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('recent_course_json', jsonEncode(course));
+          await prefs.setString(
+            'recent_course_title',
+            course['title']?.toString() ?? '',
+          );
+
+          if (!context.mounted) return;
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CourseDetailsScreen(
+                course: course,
+                allCourses: _courses,
+                themeColor: (gradient as LinearGradient).colors.first,
+              ),
+            ),
+          );
+          _loadUserData();
+        },
+        child: _buildBaseCard(
+          width: cardWidth,
+          gradient: gradient,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -647,23 +765,18 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    targetCourse != null
-                        ? (_recentCourseData != null
-                              ? 'Continue Learning'
-                              : 'My Courses')
-                        : 'Join a Course',
+                    isVeryRecent ? 'Continue Learning' : 'My Courses',
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (targetCourse != null)
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white70,
+                    size: 14,
+                  ),
                 ],
               ),
               const Spacer(),
@@ -685,7 +798,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           displaySubtitle,
                           style: const TextStyle(
@@ -698,6 +811,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                       ],
                     ),
                   ),
+                  const SizedBox(width: 10),
                   SizedBox(
                     height: 60,
                     width: 60,
@@ -1167,6 +1281,50 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
 
   void _showTaskOptions(Map<String, dynamic> task) {
     final bool isGroup = task['is_group_assignment'] == true;
+    final bool isSubmitted = task['is_submitted'] == true;
+
+    if (task['due_date'] != null && !isSubmitted) {
+      try {
+        final dueDate = DateTime.parse(task['due_date'].toString());
+        if (dueDate.isBefore(DateTime.now())) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.timer_off_rounded, color: Colors.white),
+                  SizedBox(width: 12),
+                  const Text("The due date has passed. Time is over!"),
+                ],
+              ),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+          return;
+        }
+      } catch (_) {}
+    }
+
+    // Save as recent course when interacting with a task
+    try {
+      final courseId = task['course_id']?.toString();
+      if (courseId != null) {
+        final courseMap = _courses.firstWhere(
+          (c) => c['id']?.toString() == courseId,
+          orElse: () => null,
+        );
+        if (courseMap != null) {
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('recent_course_json', jsonEncode(courseMap));
+            prefs.setString('recent_course_title', courseMap['title']?.toString() ?? '');
+            _loadUserData();
+          });
+        }
+      }
+    } catch (_) {}
 
     showModalBottomSheet(
       context: context,
@@ -1200,7 +1358,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
                   color: Colors.blue,
                 ),
                 title: const Text(
-                  "Upload Submission",
+                   "Upload Submission",
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 onTap: () {
@@ -1286,7 +1444,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
     }
   }
 
-  Widget _buildScheduleTask(String title, String timeDetails, Color accent) {
+  Widget _buildScheduleTask(
+    String title,
+    String timeDetails,
+    Color accent, {
+    Map<String, dynamic>? courseData,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -1304,7 +1467,20 @@ class _StudentHomeScreenState extends State<StudentHomeScreen>
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () {},
+          onTap: courseData != null
+              ? () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CourseDetailsScreen(
+                        course: courseData,
+                        allCourses: _courses,
+                        themeColor: accent,
+                      ),
+                    ),
+                  ).then((_) => _loadUserData());
+                }
+              : null,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Row(

@@ -24,8 +24,6 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
     "Wed",
     "Thu",
     "Fri",
-    "Sat",
-    "Sun",
   ];
   final List<String> _slotTimes = [
     "02:00 - 03:45",
@@ -235,8 +233,8 @@ class _StudentScheduleScreenState extends State<StudentScheduleScreen> {
                 }),
               ],
             ),
-            // Data Rows (Days)
-            ...List.generate(7, (dayIdx) {
+            // Data Rows (Days) - Mon to Fri (5 days)
+            ...List.generate(5, (dayIdx) {
               return Row(
                 children: [
                   _buildCell(_dayNames[dayIdx], isHeader: true, width: 80),

@@ -12,7 +12,7 @@ import 'course_details_screen.dart';
 import 'instructor_files_screen.dart';
 import 'academic_calendar_screen.dart';
 import 'instructor_attendance_screen.dart';
-import 'instructor_convert_screen.dart';
+
 import 'instructor_quiz_screen.dart';
 import 'instructor_analytics_screen.dart';
 import 'app_preferences_screen.dart';
@@ -182,21 +182,6 @@ class _InstructorMenuScreenState extends State<InstructorMenuScreen> {
                     );
                   },
                 ),
-                _buildMenuIcon(
-                  Icons.picture_as_pdf_rounded,
-                  "To PDF",
-                  const Color(0xFFFBE9E7),
-                  Colors.deepOrange,
-                  () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const InstructorConvertScreen(),
-                      ),
-                    );
-                  },
-                ),
-
                 _buildMenuIcon(
                   Icons.how_to_reg_rounded,
                   "Attendance",
