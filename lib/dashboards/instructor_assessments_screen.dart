@@ -133,6 +133,14 @@ class _InstructorAssessmentsScreenState
     List<dynamic> attachedFiles = []; // To store selected files from explorer
     Set<String> selectedSections = {};
     Set<String> expandedCourses = {};
+    bool showCreateGroupForm = false; // Controls inline group creation form visibility
+    String? newGroupSectionId;
+    String? newGroupName;
+    int newGroupSize = 5;
+    String newGroupMethod = 'Random';
+    final TextEditingController newGroupNameController = TextEditingController();
+    final TextEditingController newGroupSizeController = TextEditingController(text: '5');
+    bool isCreatingGroup = false;
     // Default to the current filter, or the first available course if nothing is filtered
     String? selectedCourseId =
         _selectedCourseIdFilter ??
@@ -686,10 +694,18 @@ class _InstructorAssessmentsScreenState
                             ElevatedButton(
                               onPressed: () {
                                 if (selectedCourseId != null) {
-                                  _showCreateGroupBottomSheet(
-                                    setSheetState,
-                                    selectedCourseId!,
-                                  );
+                                  setSheetState(() {
+                                    showCreateGroupForm = !showCreateGroupForm;
+                                    if (showCreateGroupForm) {
+                                      // Reset form fields when opening
+                                      newGroupSectionId = null;
+                                      newGroupName = null;
+                                      newGroupSize = 5;
+                                      newGroupMethod = 'Random';
+                                      newGroupNameController.clear();
+                                      newGroupSizeController.text = '5';
+                                    }
+                                  });
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -701,9 +717,9 @@ class _InstructorAssessmentsScreenState
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(
-                                  context,
-                                ).primaryColor.withOpacity(0.1),
+                                backgroundColor: showCreateGroupForm
+                                    ? Theme.of(context).primaryColor
+                                    : Theme.of(context).primaryColor.withOpacity(0.1),
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -713,16 +729,443 @@ class _InstructorAssessmentsScreenState
                                   horizontal: 16,
                                 ),
                               ),
-                              child: Text(
-                                "Create New",
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    showCreateGroupForm ? Icons.close_rounded : Icons.add_rounded,
+                                    size: 18,
+                                    color: showCreateGroupForm
+                                        ? Colors.white
+                                        : Theme.of(context).primaryColor,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    showCreateGroupForm ? "Cancel" : "Create New",
+                                    style: TextStyle(
+                                      color: showCreateGroupForm
+                                          ? Colors.white
+                                          : Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
+                        // Inline Create Group Form
+                        if (showCreateGroupForm) ...[
+                          SizedBox(height: 12),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withOpacity(0.04),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Theme.of(context).primaryColor.withOpacity(0.15),
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.group_add_rounded,
+                                      color: Theme.of(context).primaryColor,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Form New Groups",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16),
+                                // Group Title
+                                const Text(
+                                  "Group Title",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                SizedBox(height: 6),
+                                TextField(
+                                  controller: newGroupNameController,
+                                  decoration: InputDecoration(
+                                    hintText: "e.g., Final Project Teams",
+                                    filled: true,
+                                    fillColor: const Color(0xFFF4F7FC),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  onChanged: (val) => newGroupName = val,
+                                ),
+                                SizedBox(height: 14),
+                                // Select Section
+                                const Text(
+                                  "Select Class/Section",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                SizedBox(height: 6),
+                                Builder(builder: (context) {
+                                  final course = _classes.firstWhere(
+                                    (c) => c['id'] == selectedCourseId,
+                                    orElse: () => {},
+                                  );
+                                  final sections = (course['sections'] as List? ?? []);
+                                  return Column(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFF4F7FC),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: DropdownButtonHideUnderline(
+                                          child: DropdownButton<String>(
+                                            isExpanded: true,
+                                            hint: const Text("Choose Section"),
+                                            value: newGroupSectionId,
+                                            items: sections.map((sec) {
+                                              return DropdownMenuItem<String>(
+                                                value: sec["id"],
+                                                child: Text(sec['name']),
+                                              );
+                                            }).toList(),
+                                            onChanged: (val) {
+                                              setSheetState(() {
+                                                newGroupSectionId = val;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                      if (newGroupSectionId != null) ...[
+                                        SizedBox(height: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE3F2FD),
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.people_alt_rounded,
+                                                color: Theme.of(context).primaryColor,
+                                                size: 18,
+                                              ),
+                                              SizedBox(width: 8),
+                                              const Text(
+                                                "Total Students:",
+                                                style: TextStyle(
+                                                  color: Colors.black87,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                              const Spacer(),
+                                              Text(
+                                                "${sections.firstWhere((s) => s["id"] == newGroupSectionId)["students"]}",
+                                                style: TextStyle(
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  );
+                                }),
+                                SizedBox(height: 14),
+                                Row(
+                                  children: [
+                                    // Group Size
+                                    Expanded(
+                                      flex: 1,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Per Group",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          SizedBox(height: 6),
+                                          TextField(
+                                            controller: newGroupSizeController,
+                                            keyboardType: TextInputType.number,
+                                            textAlign: TextAlign.center,
+                                            decoration: InputDecoration(
+                                              filled: true,
+                                              fillColor: const Color(0xFFF4F7FC),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide.none,
+                                              ),
+                                              contentPadding: EdgeInsets.zero,
+                                              prefixIcon: IconButton(
+                                                icon: Icon(
+                                                  Icons.remove_rounded,
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                  size: 18,
+                                                ),
+                                                onPressed: () {
+                                                  if (newGroupSize > 1) {
+                                                    setSheetState(() {
+                                                      newGroupSize--;
+                                                      newGroupSizeController.text = newGroupSize.toString();
+                                                    });
+                                                  }
+                                                },
+                                                splashRadius: 18,
+                                              ),
+                                              suffixIcon: IconButton(
+                                                icon: Icon(
+                                                  Icons.add_rounded,
+                                                  color: Theme.of(context).colorScheme.secondary,
+                                                  size: 18,
+                                                ),
+                                                onPressed: () {
+                                                  setSheetState(() {
+                                                    newGroupSize++;
+                                                    newGroupSizeController.text = newGroupSize.toString();
+                                                  });
+                                                },
+                                                splashRadius: 18,
+                                              ),
+                                            ),
+                                            onChanged: (val) {
+                                              if (int.tryParse(val) != null) {
+                                                setSheetState(() {
+                                                  newGroupSize = int.parse(val);
+                                                });
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    // Grouping Method
+                                    Expanded(
+                                      flex: 2,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Method",
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          SizedBox(height: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFF4F7FC),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                isExpanded: true,
+                                                value: newGroupMethod,
+                                                items: ['Random', 'Alphabetic', 'GPA Top Distributed'].map((m) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: m,
+                                                    child: Text(
+                                                      m,
+                                                      style: const TextStyle(fontSize: 13),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (val) {
+                                                  if (val != null) {
+                                                    setSheetState(() => newGroupMethod = val);
+                                                  }
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 16),
+                                // Generate Groups Button
+                                SizedBox(
+                                  width: double.infinity,
+                                  height: 48,
+                                  child: ElevatedButton.icon(
+                                    onPressed: (newGroupSectionId != null &&
+                                            newGroupName != null &&
+                                            newGroupName!.isNotEmpty &&
+                                            newGroupSize > 0 &&
+                                            !isCreatingGroup)
+                                        ? () async {
+                                            final course = _classes.firstWhere(
+                                              (c) => c['id'] == selectedCourseId,
+                                              orElse: () => {},
+                                            );
+                                            final sections = (course['sections'] as List? ?? []);
+                                            final sec = sections.firstWhere(
+                                              (s) => s["id"] == newGroupSectionId,
+                                            );
+                                            int totalStudents = sec["students"];
+                                            int remainder = totalStudents % newGroupSize;
+
+                                            Future<void> doCreate() async {
+                                              setSheetState(() => isCreatingGroup = true);
+                                              try {
+                                                String sectionName = sec['name'].toString().split(' - Section ')[1];
+                                                await _apiService.generateGroups(
+                                                  selectedCourseId!,
+                                                  newGroupSize,
+                                                  method: newGroupMethod,
+                                                  title: newGroupName!,
+                                                  section: sectionName,
+                                                );
+                                                // Refresh groups list
+                                                final groups = await _apiService.getExistingGroups(selectedCourseId!);
+                                                setSheetState(() {
+                                                  _availableGroups = groups;
+                                                  showCreateGroupForm = false;
+                                                  isCreatingGroup = false;
+                                                });
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text("Successfully formed groups using '$newGroupMethod' method!"),
+                                                      backgroundColor: Colors.green,
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                }
+                                              } catch (e) {
+                                                setSheetState(() => isCreatingGroup = false);
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text("Error generating groups: $e"),
+                                                      backgroundColor: Colors.red,
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            }
+
+                                            if (remainder != 0) {
+                                              showDialog(
+                                                context: context,
+                                                builder: (ctx) {
+                                                  return AlertDialog(
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(16),
+                                                    ),
+                                                    title: const Text("Uneven Group Distribution"),
+                                                    content: Text(
+                                                      "The group size ($newGroupSize) does not evenly divide the total number of students ($totalStudents). One group will only have $remainder students. Do you wish to continue?",
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () => Navigator.pop(ctx),
+                                                        child: const Text(
+                                                          "Change Options",
+                                                          style: TextStyle(color: Colors.black54),
+                                                        ),
+                                                      ),
+                                                      ElevatedButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(ctx);
+                                                          doCreate();
+                                                        },
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: Theme.of(context).primaryColor,
+                                                        ),
+                                                        child: const Text(
+                                                          "Continue",
+                                                          style: TextStyle(color: Colors.white),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            } else {
+                                              doCreate();
+                                            }
+                                          }
+                                        : null,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Theme.of(context).primaryColor,
+                                      disabledBackgroundColor: Colors.black12,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      elevation: (newGroupSectionId != null &&
+                                              newGroupName != null &&
+                                              newGroupName!.isNotEmpty &&
+                                              newGroupSize > 0)
+                                          ? 2
+                                          : 0,
+                                    ),
+                                    icon: isCreatingGroup
+                                        ? SizedBox(
+                                            width: 18,
+                                            height: 18,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Icon(Icons.auto_awesome_rounded, size: 18, color: Colors.white),
+                                    label: Text(
+                                      isCreatingGroup ? "Creating..." : "Generate Groups",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         SizedBox(height: 16),
                       ],
 
@@ -942,486 +1385,6 @@ class _InstructorAssessmentsScreenState
     );
   }
 
-  void _showCreateGroupBottomSheet(
-    StateSetter setAssessmentSheetState,
-    String courseId,
-  ) {
-    String? selectedSectionId;
-    String? groupName;
-    int groupSize = 5;
-    String groupingMethod = 'Random';
-
-    final List<String> methods = [
-      'Random',
-      'Alphabetic',
-      'GPA Top Distributed',
-    ];
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController sizeController = TextEditingController(
-      text: '5',
-    );
-
-    // Get sections for the specific course from the state
-    final course = _classes.firstWhere(
-      (c) => c['id'] == courseId,
-      orElse: () => {},
-    );
-    final sections = (course['sections'] as List? ?? []);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Container(
-              padding: EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 30,
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 50,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: Colors.black12,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Text(
-                      "Form New Groups",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.secondary,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-
-                    // 1. Group Name
-                    const Text(
-                      "Group Title",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    TextField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        hintText: "e.g., Final Project Teams",
-                        filled: true,
-                        fillColor: const Color(0xFFF4F7FC),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                      onChanged: (val) => groupName = val,
-                    ),
-                    SizedBox(height: 20),
-
-                    // 2. Select Section
-                    const Text(
-                      "Select Class/Section",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          hint: const Text("Choose Section"),
-                          value: selectedSectionId,
-                          items: sections.map((sec) {
-                            return DropdownMenuItem<String>(
-                              value: sec["id"],
-                              child: Text(sec['name']),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            setSheetState(() {
-                              selectedSectionId = val;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    if (selectedSectionId != null) ...[
-                      SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE3F2FD),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.people_alt_rounded,
-                              color: Theme.of(context).primaryColor,
-                              size: 20,
-                            ),
-                            SizedBox(width: 10),
-                            const Text(
-                              "Total Students:",
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              "${sections.firstWhere((s) => s["id"] == selectedSectionId)["students"]}",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.secondary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    SizedBox(height: 20),
-
-                    Row(
-                      children: [
-                        // 3. Group Size
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Students Per Group",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              TextField(
-                                controller: sizeController,
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: const Color(0xFFF4F7FC),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: EdgeInsets.zero,
-                                  prefixIcon: IconButton(
-                                    icon: Icon(
-                                      Icons.remove_rounded,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.secondary,
-                                      size: 20,
-                                    ),
-                                    onPressed: () {
-                                      if (groupSize > 1) {
-                                        setSheetState(() {
-                                          groupSize--;
-                                          sizeController.text = groupSize
-                                              .toString();
-                                        });
-                                      }
-                                    },
-                                    splashRadius: 20,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      Icons.add_rounded,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.secondary,
-                                      size: 20,
-                                    ),
-                                    onPressed: () {
-                                      setSheetState(() {
-                                        groupSize++;
-                                        sizeController.text = groupSize
-                                            .toString();
-                                      });
-                                    },
-                                    splashRadius: 20,
-                                  ),
-                                ),
-                                onChanged: (val) {
-                                  if (int.tryParse(val) != null) {
-                                    setSheetState(() {
-                                      groupSize = int.parse(val);
-                                    });
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(width: 15),
-                        // 4. Method
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Grouping Method",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                  fontSize: 13,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    isExpanded: true,
-                                    value: groupingMethod,
-                                    items: methods.map((m) {
-                                      return DropdownMenuItem<String>(
-                                        value: m,
-                                        child: Text(
-                                          m,
-                                          style: const TextStyle(fontSize: 14),
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        setSheetState(
-                                          () => groupingMethod = val,
-                                        );
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: 35),
-
-                    // Generate Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed:
-                            (selectedSectionId != null &&
-                                groupName != null &&
-                                groupName!.isNotEmpty &&
-                                groupSize > 0)
-                            ? () {
-                                final sec = sections.firstWhere(
-                                  (s) => s["id"] == selectedSectionId,
-                                );
-                                int totalStudents = sec["students"];
-
-                                int remainder = totalStudents % groupSize;
-                                if (remainder != 0) {
-                                  // Show warning alert
-                                  showDialog(
-                                    context: context,
-                                    builder: (ctx) {
-                                      return AlertDialog(
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        title: const Text(
-                                          "Uneven Group Distribution",
-                                        ),
-                                        content: Text(
-                                          "The group size ($groupSize) does not evenly divide the total number of students ($totalStudents). One group will only have $remainder students. Do you wish to continue?",
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(
-                                                ctx,
-                                              ); // Close dialog
-                                            },
-                                            child: const Text(
-                                              "Change Options",
-                                              style: TextStyle(
-                                                color: Colors.black54,
-                                              ),
-                                            ),
-                                          ),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              Navigator.pop(
-                                                ctx,
-                                              ); // Close dialog
-                                              Navigator.pop(
-                                                context,
-                                              ); // Close sheet
-                                              _finalizeGroupCreation(
-                                                groupName!,
-                                                sec,
-                                                totalStudents,
-                                                groupSize,
-                                                groupingMethod,
-                                                setAssessmentSheetState,
-                                                courseId,
-                                              );
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Theme.of(
-                                                context,
-                                              ).primaryColor,
-                                            ),
-                                            child: const Text(
-                                              "Continue",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                } else {
-                                  Navigator.pop(context); // Close sheet
-                                  _finalizeGroupCreation(
-                                    groupName!,
-                                    sec,
-                                    totalStudents,
-                                    groupSize,
-                                    groupingMethod,
-                                    setAssessmentSheetState,
-                                    courseId,
-                                  );
-                                }
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          disabledBackgroundColor: Colors.black12,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation:
-                              (selectedSectionId != null &&
-                                  groupName != null &&
-                                  groupName!.isNotEmpty &&
-                                  groupSize > 0)
-                              ? 4
-                              : 0,
-                        ),
-                        child: const Text(
-                          "Generate Groups",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _finalizeGroupCreation(
-    String title,
-    dynamic section,
-    int totalStudents,
-    int size,
-    String method,
-    StateSetter setAssessmentSheetState,
-    String courseId,
-  ) async {
-    try {
-      // Split section ID to get original section name/id if needed,
-      // but generateGroups takes section name as string usually in this backend.
-      String sectionName = section['name'].toString().split(' - Section ')[1];
-
-      await _apiService.generateGroups(
-        courseId,
-        size,
-        method: method,
-        title: title,
-        section: sectionName,
-      );
-
-      // Re-fetch groups for the assessment sheet
-      final groups = await _apiService.getExistingGroups(courseId);
-      setAssessmentSheetState(() {
-        _availableGroups = groups;
-      });
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Successfully formed groups using '$method' method!"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error generating groups: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
