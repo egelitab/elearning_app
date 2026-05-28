@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,6 +28,8 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   bool _isSearching = false;
   String _searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
+  Timer? _refreshTimer;
+
 
   // Tracks locally-opened items (like system notifications)
   Set<String> _openedChatIds = {};
@@ -47,7 +51,21 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
   void initState() {
     super.initState();
     _fetchData();
+    // Auto-refresh every 30 seconds to show new groups as soon as they are created
+    _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && !_isSearching) {
+        _fetchData(showLoading: false);
+      }
+    });
   }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
 
   // ── SharedPreferences helpers ──────────────────────────────────────────────
 
@@ -86,11 +104,14 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
-  Future<void> _fetchData() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  Future<void> _fetchData({bool showLoading = true}) async {
+    if (showLoading) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
+
     try {
       final ann = await _apiService.getAnnouncements('student');
       final inbox = await _apiService.getGroupInbox();
@@ -175,17 +196,20 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
                     child: Text(_error!,
                         style: const TextStyle(color: Colors.red)),
                   )
-                : Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      _buildToggleSwitch(),
-                      const SizedBox(height: 20),
-                      Expanded(
-                        child: isChatSelected
-                            ? _buildChatList()
-                            : _buildAnnouncementsList(),
-                      ),
-                    ],
+                : RefreshIndicator(
+                    onRefresh: _fetchData,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        _buildToggleSwitch(),
+                        const SizedBox(height: 20),
+                        Expanded(
+                          child: isChatSelected
+                              ? _buildChatList()
+                              : _buildAnnouncementsList(),
+                        ),
+                      ],
+                    ),
                   ),
       ),
     );

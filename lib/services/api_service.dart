@@ -2571,4 +2571,23 @@ class ApiService {
     }
     return 0;
   }
+
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final token = await _getToken();
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/me'),
+        headers: {"Authorization": "Bearer $token"},
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return data['data'];
+      } else {
+        throw Exception(data['message'] ?? 'Failed to load profile');
+      }
+    } catch (e) {
+      throw Exception('Server Error: $e');
+    }
+  }
 }
+
