@@ -174,7 +174,7 @@ class _StudentCoursesScreenState extends State<StudentCoursesScreen> {
                           scrollDirection: Axis.horizontal,
                           physics: const BouncingScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 10),
-                          itemCount: _courses.length > 3 ? 3 : _courses.length,
+                          itemCount: _courses.length,
                           itemBuilder: (context, index) {
                             final course = _courses[index];
                             final colorIndex = index % _cardColors.length;

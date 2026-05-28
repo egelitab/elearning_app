@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../services/api_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'chat_detail_screen.dart';
@@ -18,6 +20,7 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen>
   late TabController _tabController;
   List<dynamic> _assignments = [];
   List<dynamic> _goals = [];
+  List<dynamic> _courses = [];
   bool _isLoading = true;
 
   @override
@@ -48,10 +51,12 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen>
     try {
       final tasks = await _apiService.getStudentAssignments();
       final goals = await _apiService.getMyGoals();
+      final courses = await _apiService.getStudentCourses();
       if (mounted) {
         setState(() {
           _assignments = tasks;
           _goals = goals;
+          _courses = courses;
           _isLoading = false;
         });
       }
@@ -459,6 +464,26 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen>
   }
 
   void _showTaskOptions(Map<String, dynamic> task) {
+    // Save as recent course when interacting with a task
+    try {
+      final courseId = task['course_id']?.toString();
+      if (courseId != null) {
+        final courseMap = _courses.firstWhere(
+          (c) => c['id']?.toString() == courseId,
+          orElse: () => null,
+        );
+        if (courseMap != null) {
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('recent_course_json', jsonEncode(courseMap));
+            prefs.setString(
+              'recent_course_title',
+              courseMap['title']?.toString() ?? '',
+            );
+          });
+        }
+      }
+    } catch (_) {}
+
     final bool isGroup = task['is_group_assignment'] == true;
     final bool isSubmitted = task['is_submitted'] == true;
 
