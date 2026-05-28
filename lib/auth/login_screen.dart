@@ -70,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
         'institutional_id',
         userData['institutional_id'] ?? '',
       );
+      await prefs.setString('gpa', userData['gpa']?.toString() ?? 'N/A');
 
       if (_rememberMe) {
         await prefs.setString('auth_token', token);

@@ -27,6 +27,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   String _lastName = '';
   String _email = '';
   String _institutionalId = '';
+  String _gpa = 'N/A';
+  String _userRole = '';
   String? _profileImagePath;
   bool _isLoading = true;
   bool _isOnline = true; // Assume online if the user is in the profile screen
@@ -50,6 +52,8 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         _lastName = prefs.getString('last_name') ?? '';
         _email = prefs.getString('email') ?? '';
         _institutionalId = prefs.getString('institutional_id') ?? 'N/A';
+        _gpa = prefs.getString('gpa') ?? 'N/A';
+        _userRole = prefs.getString('user_role') ?? 'student';
         _profileImagePath = prefs.getString('profile_image_path');
         _isLoading = false;
       });
@@ -321,16 +325,43 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (_institutionalId.isNotEmpty && _institutionalId != 'N/A')
-                  Text(
-                    "ID: $_institutionalId",
-                    style: TextStyle(
-                      color: AppColors.secondaryText,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                    ),
                   ),
               ],
+
+              const SizedBox(height: 10),
+              if (_userRole == 'student' && _gpa != 'N/A')
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade700, Colors.blue.shade400],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.school, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        "GPA: $_gpa",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
               const SizedBox(height: 40),
 
