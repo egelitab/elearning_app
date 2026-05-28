@@ -233,7 +233,7 @@ class _InstructorProfileScreenState extends State<InstructorProfileScreen> {
                 )
               else
                 Text(
-                  "${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName $_lastName"
+                  "${_title.isNotEmpty ? '$_title ' : ''}$_firstName $_middleName"
                       .replaceAll(RegExp(r'\s+'), ' ')
                       .trim(),
                   style: TextStyle(

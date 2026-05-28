@@ -358,14 +358,14 @@ class _StudentInboxScreenState extends State<StudentInboxScreen> {
       itemBuilder: (context, index) {
         final a = filtered[index];
         final fName = a['instructor_first_name'] ?? '';
-        final lName = a['instructor_last_name'] ?? '';
+        final mName = a['instructor_middle_name'] ?? '';
         final titleStr =
             a['instructor_title'] != null &&
                     a['instructor_title'].toString().isNotEmpty &&
                     a['instructor_title'] != 'None'
                 ? "${a['instructor_title']} "
                 : "";
-        final sender = "$titleStr$fName $lName".trim();
+        final sender = "$titleStr$fName $mName".trim();
         final title = a['title'] ?? '';
         final content = a['content'] ?? '';
         final course = a['course_code'] ?? 'Global';
