@@ -462,6 +462,31 @@ class _StudentAssignmentsScreenState extends State<StudentAssignmentsScreen>
     final bool isGroup = task['is_group_assignment'] == true;
     final bool isSubmitted = task['is_submitted'] == true;
 
+    if (task['due_date'] != null && !isSubmitted) {
+      try {
+        final dueDate = DateTime.parse(task['due_date'].toString());
+        if (dueDate.isBefore(DateTime.now())) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.timer_off_rounded, color: Colors.white),
+                  SizedBox(width: 12),
+                  const Text("The due date has passed. Time is over!"),
+                ],
+              ),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          );
+          return;
+        }
+      } catch (_) {}
+    }
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
